@@ -6,9 +6,9 @@ Students will gain practical skills in using game engines, problem-solving, and 
 
 # Requirements
 
-- `git` & `git LFS`
-- `Unity 6000.0.37f1`
-- `Rider IDE` (for programmers)
+- git & git LFS
+- Unity 6000.0.37f1
+- Rider IDE (for programmers)
 
 # How to use
 
