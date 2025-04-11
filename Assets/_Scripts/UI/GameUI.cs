@@ -6,7 +6,7 @@ namespace GravityGame.UI
     /// <summary>
     ///     This hosts the sub-elements that are queried from the root GameUI element centrally,
     ///     so we can adjust whenever this whenever the layout of the GameUI document changes,
-    ///     and we need to query the elements differently
+    ///     and we need to query the elements differently.
     /// </summary>
     public record GameUIElements(VisualElement Root)
     {
