@@ -68,7 +68,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a4178df924dd4bb9ada9cf1080fb77aa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _maxObjectRange: 30
   _visualizationAxes:
     Up: {fileID: 4183016400899394350}
     Down: {fileID: 6773717936227390705}
@@ -76,6 +75,7 @@ MonoBehaviour:
     Right: {fileID: 2049121422551055425}
     Forward: {fileID: 1377105111605906921}
     Back: {fileID: 4370124163806689174}
+  _maxObjectRange: 30
 --- !u!1 &2446000720691385914
 GameObject:
   m_ObjectHideFlags: 0
@@ -122,9 +122,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 82c4cda855974e24a859ecef155676c4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _moveSpeedMps: 50
+  _moveSpeedMps: 45
   _gravity: 40
-  _jumpSpeed: 4
+  _jumpSpeed: 3
   _airMovementModifier: 0.5
   _friction: 5
 --- !u!143 &5791264481121941723
@@ -145,8 +145,8 @@ CharacterController:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Height: 2
-  m_Radius: 0.4
+  m_Height: 1.6
+  m_Radius: 0.3
   m_SlopeLimit: 45
   m_StepOffset: 0.3
   m_SkinWidth: 0.08
@@ -440,7 +440,7 @@ Transform:
   m_GameObject: {fileID: 8001898944626086763}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.64, z: 0}
+  m_LocalPosition: {x: 0, y: 0.56, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
