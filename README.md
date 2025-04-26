@@ -12,5 +12,8 @@ Students will gain practical skills in using game engines, problem-solving, and 
 
 # How to use
 
-1. Clone the repository `git clone https://gitlab2.informatik.uni-wuerzburg.de/GE/Teaching/special-courses/2025-gamestudio.git`
+1. Clone the repository 
+```
+git clone https://gitlab2.informatik.uni-wuerzburg.de/GE/Teaching/special-courses/2025-gamestudio.git
+```
 2. Open the project with Unity
