@@ -55,7 +55,6 @@ namespace GravityGame.Player
 
             if (_isGrounded) {
                 velocityChange = Vector3.ClampMagnitude(velocityChange, _maxAcceleration);
-                _rigidbody.AddForce(velocityChange, ForceMode.VelocityChange);
             } else {
                 // In air: only apply acceleration if trying to steer in a new direction
                 if (Vector3.Dot(desiredVelocity.normalized, velocity.normalized) > 0.9f) {
@@ -65,8 +64,8 @@ namespace GravityGame.Player
                 }
 
                 velocityChange = Vector3.ClampMagnitude(velocityChange, _maxAcceleration * _airMovementModifier);
-                _rigidbody.AddForce(velocityChange, ForceMode.VelocityChange);
             }
+            _rigidbody.AddForce(velocityChange, ForceMode.VelocityChange);
         }
 
         void Jump()
