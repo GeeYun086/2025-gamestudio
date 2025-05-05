@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Serialization;
 
 namespace GravityGame.Player
 {
@@ -10,15 +11,15 @@ namespace GravityGame.Player
     {
         [SerializeField] float _moveSpeedMps = 2.5f;
         [SerializeField] float _maxAcceleration = 2.5f;
-        [SerializeField] float _jumpSpeed = 3.0f;
+        [SerializeField] float _jumpForce = 5.0f;
         [SerializeField] float _airMovementModifier = 0.5f;
 
         [SerializeField] InputActionReference _moveInput;
         [SerializeField] InputActionReference _jumpInput;
+
         Rigidbody _rigidbody;
-        bool _jumping;
-        bool _isGrounded;
         CapsuleCollider _collider;
+        bool _isGrounded;
 
         void Awake()
         {
@@ -36,28 +37,33 @@ namespace GravityGame.Player
             var feetPosition = transform.position - (_collider.height * 0.5f + Margin) * transform.up;
             _isGrounded = Physics.Raycast(feetPosition, -transform.up, GroundDistance);
             Debug.DrawRay(feetPosition, -transform.up * GroundDistance, Color.red);
-            Move();
+
+            var inputDirection = _moveInput.action.ReadValue<Vector2>();
+            if (inputDirection != Vector2.zero)
+                Move(inputDirection);
+            if (_isGrounded && _jumpInput.action.IsPressed())
+                Jump();
         }
 
-        void Move()
+        void Move(Vector2 direction)
         {
-            var moveDirection = _moveInput.action.ReadValue<Vector2>();
-            moveDirection = moveDirection.normalized * _moveSpeedMps;
-            if (!_isGrounded) {
-                moveDirection *= _airMovementModifier;
-            }
-            var velocity = new Vector3(moveDirection.x, _rigidbody.linearVelocity.y, moveDirection.y);
+            if (!_isGrounded)
+                return;
+            var moveVector = direction.normalized * _moveSpeedMps;
+
+            var velocity = new Vector3(moveVector.x, 0, moveVector.y);
             velocity = transform.TransformDirection(velocity);
 
-            var velocityChange = velocity - _rigidbody.linearVelocity;
-            velocityChange = Vector3.ClampMagnitude(velocityChange, _maxAcceleration);
-
-            _jumping = _jumpInput.action.IsPressed();
-            if (_isGrounded && _jumping) {
-                velocityChange.y = _jumpSpeed;
-            }
+            var velocityChange = velocity - new Vector3(_rigidbody.linearVelocity.x, 0, _rigidbody.linearVelocity.z);
+            var maxVelocityChange = _isGrounded ? _maxAcceleration : _airMovementModifier;
+            velocityChange = Vector3.ClampMagnitude(velocityChange, maxVelocityChange);
 
             _rigidbody.AddForce(velocityChange, ForceMode.VelocityChange);
+        }
+
+        void Jump()
+        {
+            _rigidbody.AddForce(transform.up * _jumpForce, ForceMode.VelocityChange);
         }
     }
 }
