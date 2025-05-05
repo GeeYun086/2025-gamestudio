@@ -39,9 +39,7 @@ namespace GravityGame.Utils
         {
             if (Input.GetKeyDown(NoclipToggleKey) && playerObject && _playerCharacterController)
                 ToggleNoclip();
-
-            if (!Input.GetKeyDown(SpawnGravityObjectKey))
-                return;
+            
             if (debugGravityObject && _mainCamera) {
                 SpawnGravityObject();
             }
