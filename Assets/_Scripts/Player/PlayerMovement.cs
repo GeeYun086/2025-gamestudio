@@ -32,7 +32,7 @@ namespace GravityGame.Player
         void FixedUpdate()
         {
             const float Margin = -0.05f;
-            const float GroundDistance = 0.2f;
+            const float GroundDistance = 0.15f;
             var feetPosition = transform.position - (_collider.height * 0.5f + Margin) * transform.up;
             _isGrounded = Physics.Raycast(feetPosition, -transform.up, GroundDistance);
             Debug.DrawRay(feetPosition, -transform.up * GroundDistance, Color.red);
@@ -66,7 +66,7 @@ namespace GravityGame.Player
                 // In air: only apply acceleration if trying to steer in a new direction
                 if (Vector3.Dot(desiredVelocity.normalized, velocity.normalized) > 0.9f) {
                     if (desiredVelocity.magnitude < velocity.magnitude) {
-                        // velocityChange = Vector3.zero;
+                        velocityChange = Vector3.zero;
                     }
                 }
 
