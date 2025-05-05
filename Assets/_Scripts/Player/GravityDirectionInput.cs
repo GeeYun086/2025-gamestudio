@@ -77,7 +77,7 @@ namespace GravityGame.Player
             var ray = cam.ScreenPointToRay(screenCenter);
 
             // Note TG: other objects may block the hit, maybe need to ignore more layers in the future
-            int layerMask = ~LayerMask.GetMask("AxisGizmo");
+            int layerMask = ~LayerMask.GetMask("AxisGizmo", "Player");
             bool hit = Physics.Raycast(ray, out var hitResult, _maxObjectRange, layerMask);
             if (hit && hitResult.transform.gameObject.TryGetComponent<GravityModifier>(out var selectable))
                 return selectable;

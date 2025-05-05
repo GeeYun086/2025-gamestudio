@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.Serialization;
 
 namespace GravityGame.Player
 {
@@ -47,18 +46,33 @@ namespace GravityGame.Player
 
         void Move(Vector2 direction)
         {
-            if (!_isGrounded)
-                return;
-            var moveVector = direction.normalized * _moveSpeedMps;
+            float moveSpeed = _moveSpeedMps;
+            Vector3 inputDir = direction.normalized;
 
-            var velocity = new Vector3(moveVector.x, 0, moveVector.y);
-            velocity = transform.TransformDirection(velocity);
+            // Desired velocity in local space
+            var desiredVelocity = new Vector3(inputDir.x, 0, inputDir.y) * moveSpeed;
+            desiredVelocity = transform.TransformDirection(desiredVelocity);
 
-            var velocityChange = velocity - new Vector3(_rigidbody.linearVelocity.x, 0, _rigidbody.linearVelocity.z);
-            var maxVelocityChange = _isGrounded ? _maxAcceleration : _airMovementModifier;
-            velocityChange = Vector3.ClampMagnitude(velocityChange, maxVelocityChange);
+            // Current horizontal velocity
+            var velocity = new Vector3(_rigidbody.linearVelocity.x, 0, _rigidbody.linearVelocity.z);
 
-            _rigidbody.AddForce(velocityChange, ForceMode.VelocityChange);
+            // Calculate velocity difference
+            var velocityChange = desiredVelocity - velocity;
+
+            if (_isGrounded) {
+                velocityChange = Vector3.ClampMagnitude(velocityChange, _maxAcceleration);
+                _rigidbody.AddForce(velocityChange, ForceMode.VelocityChange);
+            } else {
+                // In air: only apply acceleration if trying to steer in a new direction
+                if (Vector3.Dot(desiredVelocity.normalized, velocity.normalized) > 0.9f) {
+                    if (desiredVelocity.magnitude < velocity.magnitude) {
+                        // velocityChange = Vector3.zero;
+                    }
+                }
+
+                velocityChange = Vector3.ClampMagnitude(velocityChange, _maxAcceleration * _airMovementModifier);
+                _rigidbody.AddForce(velocityChange, ForceMode.VelocityChange);
+            }
         }
 
         void Jump()
