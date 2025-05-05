@@ -25,7 +25,6 @@ namespace GravityGame.Player
             _rigidbody = GetComponent<Rigidbody>();
             _collider = GetComponent<CapsuleCollider>();
 
-            // ReSharper disable twice BitwiseOperatorOnEnumWithoutFlags
             _rigidbody.constraints |= RigidbodyConstraints.FreezeRotation;
         }
 
@@ -46,17 +45,12 @@ namespace GravityGame.Player
 
         void Move(Vector2 direction)
         {
-            float moveSpeed = _moveSpeedMps;
-            Vector3 inputDir = direction.normalized;
-
-            // Desired velocity in local space
-            var desiredVelocity = new Vector3(inputDir.x, 0, inputDir.y) * moveSpeed;
-            desiredVelocity = transform.TransformDirection(desiredVelocity);
-
-            // Current horizontal velocity
+            var inputDir = direction.normalized;
             var velocity = new Vector3(_rigidbody.linearVelocity.x, 0, _rigidbody.linearVelocity.z);
 
-            // Calculate velocity difference
+            var desiredVelocity = new Vector3(inputDir.x, 0, inputDir.y) * _moveSpeedMps;
+            desiredVelocity = transform.TransformDirection(desiredVelocity);
+
             var velocityChange = desiredVelocity - velocity;
 
             if (_isGrounded) {
