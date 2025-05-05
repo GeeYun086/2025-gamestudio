@@ -43,7 +43,7 @@ namespace GravityGame.Utils
             if (!Input.GetKeyDown(SpawnGravityObjectKey))
                 return;
             if (debugGravityObject && _mainCamera) {
-                SpawnDebugObject();
+                SpawnGravityObject();
             }
         }
 
@@ -72,11 +72,10 @@ namespace GravityGame.Utils
             playerObject.transform.Translate(moveDirection.normalized * (NoclipSpeed * Time.deltaTime), Space.World);
         }
 
-        void SpawnDebugObject()
+        void SpawnGravityObject()
         {
-            var camTransform = _mainCamera.transform;
-            var rayOrigin = camTransform.position;
-            var rayDirection = camTransform.forward;
+            var rayOrigin = _mainCamera.transform.position;
+            var rayDirection = _mainCamera.transform.forward;
             Vector3 spawnPos;
 
             if (Physics.Raycast(rayOrigin, rayDirection, out var hitInfo, 50.0f, ~0)) {
