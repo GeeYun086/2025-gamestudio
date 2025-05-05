@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace GravityGame.Player
 {
@@ -8,66 +9,55 @@ namespace GravityGame.Player
     public class PlayerMovement : MonoBehaviour
     {
         [SerializeField] float _moveSpeedMps = 2.5f;
-        [SerializeField] float _gravity = 20.0f;
+        [SerializeField] float _maxAcceleration = 2.5f;
         [SerializeField] float _jumpSpeed = 3.0f;
         [SerializeField] float _airMovementModifier = 0.5f;
-        [SerializeField] float _friction = 5f;
 
-        CharacterController _controller;
-        float _horizontalMoveInput;
-        float _verticalMoveInput;
+        [SerializeField] InputActionReference _moveInput;
+        [SerializeField] InputActionReference _jumpInput;
+        Rigidbody _rigidbody;
         bool _jumping;
         bool _isGrounded;
+        CapsuleCollider _collider;
 
         void Awake()
         {
-            _controller = GetComponent<CharacterController>();
+            _rigidbody = GetComponent<Rigidbody>();
+            _collider = GetComponent<CapsuleCollider>();
+
+            // ReSharper disable twice BitwiseOperatorOnEnumWithoutFlags
+            _rigidbody.constraints |= RigidbodyConstraints.FreezeRotation;
         }
 
-        void Update()
+        void FixedUpdate()
         {
-            var velocity = _controller.velocity;
-            _horizontalMoveInput = Input.GetAxisRaw("Horizontal");
-            _verticalMoveInput = Input.GetAxisRaw("Vertical");
-            _jumping = Input.GetButton("Jump");
-            _isGrounded = _controller.isGrounded;
+            const float Margin = -0.05f;
+            const float GroundDistance = 0.2f;
+            var feetPosition = transform.position - (_collider.height * 0.5f + Margin) * transform.up;
+            _isGrounded = Physics.Raycast(feetPosition, -transform.up, GroundDistance);
+            Debug.DrawRay(feetPosition, -transform.up * GroundDistance, Color.red);
+            Move();
+        }
 
-            var groundMoveDirection = new Vector3(_horizontalMoveInput, 0, _verticalMoveInput);
-            groundMoveDirection.Normalize();
-            groundMoveDirection = transform.TransformDirection(groundMoveDirection);
+        void Move()
+        {
+            var moveDirection = _moveInput.action.ReadValue<Vector2>();
+            moveDirection = moveDirection.normalized * _moveSpeedMps;
+            if (!_isGrounded) {
+                moveDirection *= _airMovementModifier;
+            }
+            var velocity = new Vector3(moveDirection.x, _rigidbody.linearVelocity.y, moveDirection.y);
+            velocity = transform.TransformDirection(velocity);
 
-            groundMoveDirection *= _moveSpeedMps * Time.deltaTime;
+            var velocityChange = velocity - _rigidbody.linearVelocity;
+            velocityChange = Vector3.ClampMagnitude(velocityChange, _maxAcceleration);
 
-            var velocityXZ = new Vector3(velocity.x, 0, velocity.z);
-
-            if (_isGrounded) {
-                velocityXZ += -velocityXZ * (Time.deltaTime * _friction);
-                velocityXZ += groundMoveDirection;
-
-                velocity.x = velocityXZ.x;
-                velocity.z = velocityXZ.z;
-
-                if (_jumping) {
-                    velocity.y = Mathf.Sqrt(_jumpSpeed * _gravity);
-                } else {
-                    velocity.y = -2f;
-                }
-            } else {
-                float airFriction = _friction * 0.5f;
-                velocityXZ += -velocityXZ * (Time.deltaTime * airFriction);
-                velocityXZ += groundMoveDirection * _airMovementModifier;
-                // var dirChangeFactor = Vector3.Angle(groundMoveDirection, velocityXZ) / 180f;
-                // var currentMag = velocityXZ.magnitude;
-                // var newMag = groundMoveDirection.magnitude;
-                // velocityXZ = groundMoveDirection * Math.Max(currentMag, newMag);
-
-                velocity.y -= _gravity * Time.deltaTime;
-
-                velocity.x = velocityXZ.x;
-                velocity.z = velocityXZ.z;
+            _jumping = _jumpInput.action.IsPressed();
+            if (_isGrounded && _jumping) {
+                velocityChange.y = _jumpSpeed;
             }
 
-            _controller.Move(velocity * Time.deltaTime);
+            _rigidbody.AddForce(velocityChange, ForceMode.VelocityChange);
         }
     }
 }
