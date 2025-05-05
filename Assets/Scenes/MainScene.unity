@@ -283,8 +283,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ff8d277d537483993363d9268bcde19, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerObject: {fileID: 894321223}
-  debugGravityObject: {fileID: 1817137667}
+  _playerObject: {fileID: 894321223}
+  _debugGravityObject: {fileID: 1817137667}
 --- !u!65 &355244352
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -583,6 +583,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Player
       objectReference: {fileID: 0}
+    - target: {fileID: 2847947673748998656, guid: 20f183c53d63e61429e2e4e099ccd34f, type: 3}
+      propertyPath: m_Radius
+      value: 0.25
+      objectReference: {fileID: 0}
     - target: {fileID: 3415188100231383341, guid: 20f183c53d63e61429e2e4e099ccd34f, type: 3}
       propertyPath: m_LocalPosition.x
       value: -3.2342954
@@ -597,7 +601,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3415188100231383341, guid: 20f183c53d63e61429e2e4e099ccd34f, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.28283405
+      value: 0.08210981
       objectReference: {fileID: 0}
     - target: {fileID: 3415188100231383341, guid: 20f183c53d63e61429e2e4e099ccd34f, type: 3}
       propertyPath: m_LocalRotation.x
@@ -605,7 +609,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3415188100231383341, guid: 20f183c53d63e61429e2e4e099ccd34f, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0.95916885
+      value: 0.99662334
       objectReference: {fileID: 0}
     - target: {fileID: 3415188100231383341, guid: 20f183c53d63e61429e2e4e099ccd34f, type: 3}
       propertyPath: m_LocalRotation.z
@@ -617,7 +621,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3415188100231383341, guid: 20f183c53d63e61429e2e4e099ccd34f, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
-      value: 147.141
+      value: 170.58
       objectReference: {fileID: 0}
     - target: {fileID: 3415188100231383341, guid: 20f183c53d63e61429e2e4e099ccd34f, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
@@ -625,27 +629,39 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3986208921051661403, guid: 20f183c53d63e61429e2e4e099ccd34f, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.28283405
+      value: 0.08210981
       objectReference: {fileID: 0}
     - target: {fileID: 3986208921051661403, guid: 20f183c53d63e61429e2e4e099ccd34f, type: 3}
       propertyPath: m_LocalRotation.y
-      value: -0.95916885
+      value: -0.99662334
       objectReference: {fileID: 0}
     - target: {fileID: 4459303878606845145, guid: 20f183c53d63e61429e2e4e099ccd34f, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.1999939
+      value: 0.0580604
       objectReference: {fileID: 0}
     - target: {fileID: 4459303878606845145, guid: 20f183c53d63e61429e2e4e099ccd34f, type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0.1999939
+      value: 0.0580604
       objectReference: {fileID: 0}
     - target: {fileID: 4459303878606845145, guid: 20f183c53d63e61429e2e4e099ccd34f, type: 3}
       propertyPath: m_LocalRotation.y
-      value: -0.6782348
+      value: -0.7047191
       objectReference: {fileID: 0}
     - target: {fileID: 4459303878606845145, guid: 20f183c53d63e61429e2e4e099ccd34f, type: 3}
       propertyPath: m_LocalRotation.z
-      value: -0.6782348
+      value: -0.7047191
+      objectReference: {fileID: 0}
+    - target: {fileID: 9064900344729855852, guid: 20f183c53d63e61429e2e4e099ccd34f, type: 3}
+      propertyPath: m_Height
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9064900344729855852, guid: 20f183c53d63e61429e2e4e099ccd34f, type: 3}
+      propertyPath: m_Radius
+      value: 0.24
+      objectReference: {fileID: 0}
+    - target: {fileID: 9064900344729855852, guid: 20f183c53d63e61429e2e4e099ccd34f, type: 3}
+      propertyPath: m_Center.y
+      value: -0.57
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1163,7 +1179,7 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1817137667}
   serializedVersion: 4
-  m_Mass: 1
+  m_Mass: 50
   m_Drag: 0.05
   m_AngularDrag: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
