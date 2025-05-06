@@ -13,9 +13,7 @@ namespace GravityGame.RespawnSystem
 
         public string CheckpointID {
             get {
-                if (string.IsNullOrEmpty(checkpointID)) {
-                    checkpointID = gameObject.name + "_" + GetInstanceID();
-                }
+                if (string.IsNullOrEmpty(checkpointID)) checkpointID = gameObject.name + "_" + GetInstanceID();
                 return checkpointID;
             }
         }
@@ -25,27 +23,13 @@ namespace GravityGame.RespawnSystem
             _ = CheckpointID;
 
             var tCollider = GetComponent<Collider>();
-
-            if (tCollider != null && !tCollider.isTrigger) {
-                tCollider.isTrigger = true;
-            }
+            if (tCollider && !tCollider.isTrigger) tCollider.isTrigger = true;
         }
 
         void OnTriggerEnter(Collider other)
         {
-            if (!other.GetComponent<FirstPersonCameraController>()) {
-                return;
-            }
-
-            Debug.Log($"Player entered Checkpoint: {name} (ID: {CheckpointID})");
-            switch (HasBeenReached) {
-                case true:
-                    return;
-                case false:
-                    RespawnController.Instance.SetCheckpointToActiveByID(CheckpointID);
-                    break;
-            }
-            HasBeenReached = true;
+            if (!other.GetComponent<PlayerMovement>()) return;
+            if (RespawnController.Instance) RespawnController.Instance.TrySetCheckpointToActiveByID(CheckpointID);
         }
     }
 }

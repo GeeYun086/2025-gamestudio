@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using GravityGame.Player;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -11,12 +12,12 @@ namespace GravityGame.RespawnSystem
 
         [SerializeField] GameObject playerObject;
         [SerializeField] List<GameObject> gameObjectCheckpoints = new List<GameObject>();
+        
+        readonly List<Checkpoint> _checkpoints = new List<Checkpoint>();
 
-        readonly List<Checkpoint> _managedCheckpoints = new List<Checkpoint>();
-
-        CharacterController _playerCharacterController;
-        public Checkpoint CurrentlyActiveRespawnPoint { get; private set; }
-        public IReadOnlyList<Checkpoint> Checkpoints => _managedCheckpoints.AsReadOnly();
+        PlayerMovement _playerMovementScript;
+        [field: SerializeField]
+        Checkpoint CurrentlyActiveRespawnPoint { get; set; }
 
         void Awake()
         {
@@ -24,7 +25,7 @@ namespace GravityGame.RespawnSystem
             DontDestroyOnLoad(gameObject);
             SceneManager.sceneLoaded += OnSceneLoaded;
 
-            _playerCharacterController = playerObject.GetComponent<CharacterController>();
+            _playerMovementScript = playerObject.GetComponent<PlayerMovement>();
         }
 
         void OnDestroy()
@@ -37,23 +38,22 @@ namespace GravityGame.RespawnSystem
             SetupCheckpointsFromGameObjects();
 
             if (CurrentlyActiveRespawnPoint) {
-                var newSceneInstance =
-                    _managedCheckpoints.FirstOrDefault(cp
-                        => cp && cp.CheckpointID == CurrentlyActiveRespawnPoint.CheckpointID);
+                string previousCheckpointID = CurrentlyActiveRespawnPoint.CheckpointID;
+                var newSceneInstance = _checkpoints.FirstOrDefault(cp => cp && cp.CheckpointID == previousCheckpointID);
                 if (newSceneInstance && newSceneInstance.gameObject.scene == scene) {
                     CurrentlyActiveRespawnPoint = newSceneInstance;
+                    CurrentlyActiveRespawnPoint.HasBeenReached = true;
                 } else {
                     CurrentlyActiveRespawnPoint = null;
                 }
             }
-            Debug.Log("Scene loaded with checkpoints, but no active respawn point. Player must reach a checkpoint.");
-            if (!CurrentlyActiveRespawnPoint && _managedCheckpoints.Count == 0)
+            if (!CurrentlyActiveRespawnPoint)
                 CreateAndSetInitialSpawnCheckpointAtPlayerPosition();
         }
 
         void SetupCheckpointsFromGameObjects()
         {
-            _managedCheckpoints.Clear();
+            _checkpoints.Clear();
             gameObjectCheckpoints ??= new List<GameObject>();
 
             foreach (var go in gameObjectCheckpoints) {
@@ -75,13 +75,13 @@ namespace GravityGame.RespawnSystem
                 if (!cp) {
                     cp = go.AddComponent<Checkpoint>();
                 }
-                _managedCheckpoints.Add(cp);
+                _checkpoints.Add(cp);
             }
         }
 
         void CreateAndSetInitialSpawnCheckpointAtPlayerPosition()
         {
-            var playerSpawnCheckpointObject = new GameObject("INITIAL_SPAWN_POINT_DYNAMIC") {
+            var playerSpawnCheckpointObject = new GameObject("INITIAL_SPAWN_POINT") {
                 transform = {
                     position = playerObject.transform.position,
                     rotation = playerObject.transform.rotation
@@ -96,35 +96,36 @@ namespace GravityGame.RespawnSystem
             var initialCheckpoint = playerSpawnCheckpointObject.AddComponent<Checkpoint>();
             initialCheckpoint.HasBeenReached = true;
 
-            if (!_managedCheckpoints.Contains(initialCheckpoint))
-                _managedCheckpoints.Add(initialCheckpoint);
+            if (!_checkpoints.Contains(initialCheckpoint))
+                _checkpoints.Add(initialCheckpoint);
 
-            SetCheckpointToActiveByID(initialCheckpoint.CheckpointID);
+            CurrentlyActiveRespawnPoint = initialCheckpoint;
+            Debug.Log($"RespawnController: Initial spawn point created and set as active. ID: {initialCheckpoint.CheckpointID}, Position: {initialCheckpoint.transform.position}", initialCheckpoint.gameObject);
         }
 
-        public void SetCheckpointToActiveByID(string checkpointID)
+        public void TrySetCheckpointToActiveByID(string checkpointID)
         {
             var targetCheckpoint = FindCheckpointByID(checkpointID);
-            if (targetCheckpoint && !targetCheckpoint.HasBeenReached) {
-                CurrentlyActiveRespawnPoint = targetCheckpoint;
-            } else {
-                Debug.LogWarning($"Checkpoint with ID '{checkpointID}' not found in checkpoints list.");
-            }
+            if (!targetCheckpoint || targetCheckpoint.HasBeenReached)
+                return;
+            CurrentlyActiveRespawnPoint = targetCheckpoint;
+            targetCheckpoint.HasBeenReached = true;
         }
 
         public void RespawnPlayer()
         {
-            if (!CurrentlyActiveRespawnPoint)
-                Debug.LogError("No active respawn point");
+            if (!CurrentlyActiveRespawnPoint) {
+                Debug.LogError("RespawnController: No active respawn point. Cannot respawn player.");
+                return; 
+            }
 
-            _playerCharacterController.enabled = false;
+            _playerMovementScript.enabled = false;
             playerObject.transform.position = CurrentlyActiveRespawnPoint.transform.position;
-            playerObject.transform.rotation = CurrentlyActiveRespawnPoint.transform.rotation;
-            _playerCharacterController.enabled = true;
+            _playerMovementScript.enabled = true;
         }
 
         Checkpoint FindCheckpointByID(string id) => string.IsNullOrEmpty(id)
             ? null
-            : _managedCheckpoints.FirstOrDefault(cp => cp != null && cp.CheckpointID == id);
+            : _checkpoints.FirstOrDefault(cp => cp != null && cp.CheckpointID == id);
     }
 }
