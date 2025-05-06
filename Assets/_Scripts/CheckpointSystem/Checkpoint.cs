@@ -1,15 +1,14 @@
 ﻿using GravityGame.Player;
 using UnityEngine;
 
-namespace GravityGame.RespawnSystem
+namespace GravityGame.CheckpointSystem
 {
     [RequireComponent(typeof(Collider))]
     public class Checkpoint : MonoBehaviour
     {
-        [SerializeField]
-        string checkpointID;
-
+        [SerializeField] string checkpointID;
         public bool HasBeenReached { get; set; }
+        public bool IsActiveCheckpoint { get; set; }
 
         public string CheckpointID {
             get {
@@ -21,6 +20,7 @@ namespace GravityGame.RespawnSystem
         void Awake()
         {
             _ = CheckpointID;
+            IsActiveCheckpoint = false;
 
             var tCollider = GetComponent<Collider>();
             if (tCollider && !tCollider.isTrigger) tCollider.isTrigger = true;
@@ -29,7 +29,7 @@ namespace GravityGame.RespawnSystem
         void OnTriggerEnter(Collider other)
         {
             if (!other.GetComponent<PlayerMovement>()) return;
-            if (RespawnController.Instance) RespawnController.Instance.TrySetCheckpointToActiveByID(CheckpointID);
+            if (CheckpointController.Instance) CheckpointController.Instance.TriggerCheckpointById(CheckpointID);
         }
     }
 }

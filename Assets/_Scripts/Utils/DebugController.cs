@@ -1,5 +1,5 @@
-﻿using GravityGame.Player;
-using GravityGame.RespawnSystem;
+﻿using GravityGame.CheckpointSystem;
+using GravityGame.Player;
 using UnityEngine;
 
 namespace GravityGame.Utils
@@ -92,6 +92,6 @@ namespace GravityGame.Utils
             Instantiate(_debugGravityObject, spawnPos, Quaternion.identity);
         }
 
-        static void TeleportPlayerToActiveCheckpoint() => RespawnController.Instance.RespawnPlayer();
+        static void TeleportPlayerToActiveCheckpoint() => CheckpointController.Instance.RespawnPlayer();
     }
 }
