@@ -11,8 +11,12 @@ namespace GravityGame.RespawnSystem
         [SerializeField]
         string checkpointID = DefaultCheckpointId;
 
-        public bool HasBeenReached { get; private set; }
-        public string CheckpointID => checkpointID;
+        public bool HasBeenReached { get; set; }
+
+        public string CheckpointID {
+            get => checkpointID;
+            set => checkpointID = value;
+        }
 
 
         void Awake()
@@ -20,12 +24,6 @@ namespace GravityGame.RespawnSystem
             var tCollider = GetComponent<Collider>();
             if (!tCollider.isTrigger)
                 tCollider.isTrigger = true;
-
-            if (string.IsNullOrEmpty(checkpointID) || checkpointID == DefaultCheckpointId) {
-                Debug.LogError(
-                    $"[{nameof(Checkpoint)}] '{gameObject.name}' has the default or an empty CheckpointID",
-                    gameObject);
-            }
         }
 
         void Start() => RespawnController.RegisterCheckpoint(this);
