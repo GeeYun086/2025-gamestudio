@@ -92,16 +92,6 @@ namespace GravityGame.Utils
             Instantiate(_debugGravityObject, spawnPos, Quaternion.identity);
         }
 
-        void TeleportPlayerToActiveCheckpoint()
-        {
-            var activeCheckpoint = RespawnController.Instance.CurrentlyActiveRespawnPoint;
-            var targetPosition = activeCheckpoint.transform.position;
-            var targetRotation = activeCheckpoint.transform.rotation;
-
-            _playerMovementScript.enabled = false;
-            _playerObject.transform.position = targetPosition;
-            _playerObject.transform.rotation = targetRotation;
-            _playerMovementScript.enabled = true;
-        }
+        static void TeleportPlayerToActiveCheckpoint() => RespawnController.Instance.RespawnPlayer();
     }
 }
