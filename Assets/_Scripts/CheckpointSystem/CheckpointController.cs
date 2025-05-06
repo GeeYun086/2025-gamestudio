@@ -12,6 +12,7 @@ namespace GravityGame.CheckpointSystem
 
         [SerializeField] GameObject playerObject;
         [SerializeField] List<GameObject> gameObjectCheckpoints = new();
+        [SerializeField] float respawnHeightOffset = 2.0f;
 
         readonly List<Checkpoint> _checkpoints = new();
         PlayerMovement _playerMovementScript;
@@ -90,7 +91,8 @@ namespace GravityGame.CheckpointSystem
         public void RespawnPlayer()
         {
             _playerMovementScript.enabled = false;
-            playerObject.transform.position = _checkpoints.First(cp => cp.IsActiveCheckpoint).transform.position;
+            playerObject.transform.position = _checkpoints.First(cp => cp.IsActiveCheckpoint).transform.position +
+                                              Vector3.up * respawnHeightOffset;
             _playerMovementScript.enabled = true;
         }
 

@@ -1,4 +1,5 @@
-﻿using GravityGame.Player;
+﻿using System;
+using GravityGame.Player;
 using UnityEngine;
 
 namespace GravityGame.CheckpointSystem
@@ -7,8 +8,29 @@ namespace GravityGame.CheckpointSystem
     public class Checkpoint : MonoBehaviour
     {
         [SerializeField] string checkpointID;
-        public bool HasBeenReached { get; set; }
-        public bool IsActiveCheckpoint { get; set; }
+
+        bool _hasBeenReached;
+        bool _isActiveCheckpoint;
+        public event Action<bool> OnHasBeenReachedChanged;
+        public event Action<bool> OnIsActiveCheckpointChanged;
+
+        public bool HasBeenReached {
+            get => _hasBeenReached;
+            set {
+                if (_hasBeenReached == value) return;
+                _hasBeenReached = value;
+                OnHasBeenReachedChanged?.Invoke(_hasBeenReached);
+            }
+        }
+
+        public bool IsActiveCheckpoint {
+            get => _isActiveCheckpoint;
+            set {
+                if (_isActiveCheckpoint == value) return;
+                _isActiveCheckpoint = value;
+                OnIsActiveCheckpointChanged?.Invoke(_isActiveCheckpoint);
+            }
+        }
 
         public string CheckpointID {
             get {
@@ -20,8 +42,6 @@ namespace GravityGame.CheckpointSystem
         void Awake()
         {
             _ = CheckpointID;
-            IsActiveCheckpoint = false;
-
             var tCollider = GetComponent<Collider>();
             if (tCollider && !tCollider.isTrigger) tCollider.isTrigger = true;
         }
