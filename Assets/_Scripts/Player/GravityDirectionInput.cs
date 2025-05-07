@@ -22,8 +22,14 @@ namespace GravityGame.Player
 
         [SerializeField] Axes _visualizationAxes;
         [SerializeField] float _maxObjectRange = 30;
+        [SerializeField] float _sphereSelectionRadius = 0.5f;
+        [SerializeField] float _aimBufferDuration = 0.25f;
 
         [CanBeNull] GravityModifier _selectedObject;
+        [CanBeNull] GravityModifier _aimedObject;
+        [CanBeNull] GravityModifier _lastAimedObject;
+        float _lastObjectAimedTime;
+
         Vector3 _selectedDirection;
         static GravityDirectionRadialMenu GravityChangeMenu => GameUI.Instance.Elements.GravityDirectionRadialMenu;
 
@@ -34,54 +40,67 @@ namespace GravityGame.Player
 
         void Update()
         {
-            bool hasSelectedObject = _selectedObject != null;
-
-            if (hasSelectedObject) {
-                // TODO TG: actually highlight object
-                DebugDraw.DrawSphere(_selectedObject.transform.position, 1.0f, Color.white);
+            _aimedObject = RaycastForSelectableObject();
+            if (_aimedObject) {
+                _lastAimedObject = _aimedObject;
+                _lastObjectAimedTime = Time.time;
             }
 
-            bool wasInteracting = GravityChangeMenu.visible;
-            bool isInteracting = Input.GetMouseButton(1) && hasSelectedObject;
+            if (Input.GetMouseButtonDown(1)) {
+                if (!_selectedObject) {
+                    GravityModifier objectToSelect = null;
+                    if (_aimedObject) objectToSelect = _aimedObject;
+                    else if (_lastAimedObject && (Time.time - _lastObjectAimedTime) < _aimBufferDuration)
+                        objectToSelect = _lastAimedObject;
 
-            if (isInteracting && !wasInteracting) {
-                // Start interaction
-                GravityChangeMenu.visible = true;
-                Cursor.lockState = CursorLockMode.None;
-                Cursor.visible = true;
-            } else if (!isInteracting && wasInteracting) {
-                // Stop interaction
-                var direction = GetRadialMenuGravityDirection();
-                if (_selectedObject && direction.HasValue) {
-                    _selectedObject.GravityDirection = direction.Value;
+                    if (objectToSelect) _selectedObject = objectToSelect;
                 }
-                SetVisualizedDirection(Vector3.zero);
+            }
+            
+            bool isInteracting = Input.GetMouseButton(1) && _selectedObject;
+            
+            switch (isInteracting) {
+                case true when !GravityChangeMenu.visible: {
+                    GravityChangeMenu.visible = true;
+                    Cursor.lockState = CursorLockMode.None;
+                    Cursor.visible = true;
+                    if (_selectedObject) SetVisualizedDirection(_selectedObject.GravityDirection);
+                    break;
+                }
+                case false when GravityChangeMenu.visible: {
+                    var direction = GetRadialMenuGravityDirection();
+                    if (_selectedObject && direction.HasValue) {
+                        _selectedObject.GravityDirection = direction.Value;
+                    }
+                    SetVisualizedDirection(Vector3.zero);
 
-                GravityChangeMenu.visible = false;
-                Cursor.lockState = CursorLockMode.Locked;
-                Cursor.visible = false;
+                    GravityChangeMenu.visible = false;
+                    Cursor.lockState = CursorLockMode.Locked;
+                    Cursor.visible = false;
+
+                    _selectedObject = null;
+                    break;
+                }
             }
 
             if (isInteracting) {
-                var direction = GetRadialMenuGravityDirection();
-                SetVisualizedDirection(direction ?? _selectedObject.GravityDirection);
-            } else {
-                _selectedObject = RaycastForSelectableObject();
+                if (!_selectedObject) return;
+                // TODO TG: actually highlight object
+                DebugDraw.DrawSphere(_selectedObject.transform.position, 1.0f, Color.white);
+                
+                SetVisualizedDirection(GetRadialMenuGravityDirection() ?? _selectedObject.GravityDirection);
             }
         }
 
-        [CanBeNull] GravityModifier RaycastForSelectableObject()
+        [CanBeNull]
+        GravityModifier RaycastForSelectableObject()
         {
             var cam = Camera.main!;
-            var screenCenter = cam.ViewportToScreenPoint(new Vector3(0.5f, 0.5f));
-            var ray = cam.ScreenPointToRay(screenCenter);
-
+            var ray = new Ray(cam.transform.position, cam.transform.forward);
             // Note TG: other objects may block the hit, maybe need to ignore more layers in the future
             int layerMask = ~LayerMask.GetMask("AxisGizmo", "Player");
-            bool hit = Physics.Raycast(ray, out var hitResult, _maxObjectRange, layerMask);
-            if (hit && hitResult.transform.gameObject.TryGetComponent<GravityModifier>(out var selectable))
-                return selectable;
-            return null;
+            if (!Physics.SphereCast(ray, _sphereSelectionRadius, out var hitResult, _maxObjectRange, layerMask)) return null;
+            return hitResult.transform.gameObject.TryGetComponent<GravityModifier>(out var selectable) ? selectable : null;
         }
 
         static Vector3? GetRadialMenuGravityDirection()
