@@ -6,13 +6,28 @@ using UnityEngine.SceneManagement;
 
 namespace GravityGame.CheckpointSystem
 {
+    /// <summary>
+    /// Manages all checkpoints in the scene and the player's respawn logic.
+    /// This component should be present in each scene that requires checkpoint functionality.
+    /// How to use:
+    /// 1. Populate the 'Game Object Checkpoints' list in the Inspector with GameObjects
+    ///    that represent checkpoints. These GameObjects should ideally have the
+    ///    <see cref="Checkpoint"/> component already, or it will be added automatically.
+    ///    Each checkpoint GameObject must have a Collider component (e.g., BoxCollider, SphereCollider)
+    /// 2. If no checkpoints are active when a scene loads (or on initial game start),
+    ///    an initial spawn point checkpoint will be created at the player's starting position.
+    /// 3. To make the player respawn, call the <see cref="RespawnPlayer"/> method.
+    ///
+    /// The controller ensures that only one checkpoint is active at any time.
+    /// When a player triggers a new, unreached checkpoint, that checkpoint becomes the active one.
+    /// </summary>
     public class CheckpointController : MonoBehaviour
     {
         public static CheckpointController Instance { get; private set; }
 
-        [SerializeField] GameObject playerObject;
-        [SerializeField] List<GameObject> gameObjectCheckpoints = new();
-        [SerializeField] float respawnHeightOffset = 2.0f;
+        [SerializeField] GameObject _playerObject;
+        [SerializeField] List<GameObject> _gameObjectCheckpoints = new();
+        [SerializeField] float _respawnHeightOffset = 2.0f;
 
         readonly List<Checkpoint> _checkpoints = new();
         PlayerMovement _playerMovementScript;
@@ -20,10 +35,9 @@ namespace GravityGame.CheckpointSystem
         void Awake()
         {
             Instance = this;
-            DontDestroyOnLoad(gameObject);
             SceneManager.sceneLoaded += OnSceneLoaded;
 
-            _playerMovementScript = playerObject.GetComponent<PlayerMovement>();
+            _playerMovementScript = _playerObject.GetComponent<PlayerMovement>();
         }
 
         void OnDestroy()
@@ -46,9 +60,9 @@ namespace GravityGame.CheckpointSystem
         void SetupCheckpointsFromGameObjects()
         {
             _checkpoints.Clear();
-            gameObjectCheckpoints ??= new List<GameObject>();
+            _gameObjectCheckpoints ??= new List<GameObject>();
 
-            foreach (var gObject in gameObjectCheckpoints) {
+            foreach (var gObject in _gameObjectCheckpoints) {
                 var checkpoint = gObject.GetComponent<Checkpoint>();
                 if (!checkpoint) checkpoint = gObject.AddComponent<Checkpoint>();
                 _checkpoints.Add(checkpoint);
@@ -59,8 +73,8 @@ namespace GravityGame.CheckpointSystem
         {
             var playerSpawnCheckpointObject = new GameObject("INITIAL_SPAWN_POINT") {
                 transform = {
-                    position = playerObject.transform.position,
-                    rotation = playerObject.transform.rotation
+                    position = _playerObject.transform.position,
+                    rotation = _playerObject.transform.rotation
                 }
             };
             playerSpawnCheckpointObject.transform.SetParent(transform);
@@ -91,8 +105,8 @@ namespace GravityGame.CheckpointSystem
         public void RespawnPlayer()
         {
             _playerMovementScript.enabled = false;
-            playerObject.transform.position = _checkpoints.First(cp => cp.IsActiveCheckpoint).transform.position +
-                                              Vector3.up * respawnHeightOffset;
+            _playerObject.transform.position = _checkpoints.First(cp => cp.IsActiveCheckpoint).transform.position +
+                                              Vector3.up * _respawnHeightOffset;
             _playerMovementScript.enabled = true;
         }
 

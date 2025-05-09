@@ -4,10 +4,18 @@ using UnityEngine;
 
 namespace GravityGame.CheckpointSystem
 {
+    /// <summary>
+    /// Represents an individual checkpoint in the game.
+    /// Attach this component to a GameObject with a Collider (set to trigger) to define a checkpoint.
+    /// When a Player (with a <see cref="PlayerMovement"/> component) enters its trigger,
+    /// it notifies the <see cref="CheckpointController"/>.
+    /// It tracks whether it has been reached and if it's currently the active respawn point.
+    /// A unique <see cref="CheckpointID"/> is automatically generated or can be pre-set for identification.
+    /// </summary>
     [RequireComponent(typeof(Collider))]
     public class Checkpoint : MonoBehaviour
     {
-        [SerializeField] string checkpointID;
+        [SerializeField] string _checkpointID;
 
         bool _hasBeenReached;
         bool _isActiveCheckpoint;
@@ -34,13 +42,15 @@ namespace GravityGame.CheckpointSystem
 
         public string CheckpointID {
             get {
-                if (string.IsNullOrEmpty(checkpointID)) checkpointID = gameObject.name + "_" + GetInstanceID();
-                return checkpointID;
+                if (string.IsNullOrEmpty(_checkpointID)) _checkpointID = gameObject.name + "_" + GetInstanceID();
+                return _checkpointID;
             }
         }
 
         void Awake()
         {
+            // Accessing the CheckpointID property here ensures it gets auto-generated if it's null or empty.
+            // The '_' discards the result, as we only care about the side effect of generation.
             _ = CheckpointID;
             var tCollider = GetComponent<Collider>();
             if (tCollider && !tCollider.isTrigger) tCollider.isTrigger = true;
