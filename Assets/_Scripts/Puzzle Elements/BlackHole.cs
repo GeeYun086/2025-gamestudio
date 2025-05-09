@@ -1,15 +1,21 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-namespace GravityGame.Mover
+namespace GravityGame.Puzzle_Elements
 {
+    /// <summary>
+    /// Creates a spherical area of effect that dampens the movement of dynamic Rigidbodies
+    /// entering its trigger zone. It gradually reduces their linear and angular velocities
+    /// based on the specified dampening factor.
+    /// Includes a visual representation of the effect radius.
+    /// </summary>
     [RequireComponent(typeof(SphereCollider))]
     public class BlackHole : MonoBehaviour
     {
-        [SerializeField] float effectRadius = 10f;
-        [SerializeField] LayerMask affectableLayers = ~0;
-        [SerializeField] [Range(0f, 1f)] float movementDampening = 0.1f;
-        [SerializeField] Material effectSphereMaterial;
+        [SerializeField] float _effectRadius = 10f;
+        [SerializeField] LayerMask _affectableLayers = ~0;
+        [SerializeField] [Range(0f, 1f)] float _movementDampening = 0.1f;
+        [SerializeField] Material _effectSphereMaterial;
 
         SphereCollider _triggerCollider;
         readonly List<Rigidbody> _affectedRigidbodies = new();
@@ -32,8 +38,8 @@ namespace GravityGame.Mover
                     _affectedRigidbodies.RemoveAt(i);
                     continue;
                 }
-                rb.linearVelocity = Vector3.Lerp(rb.linearVelocity, Vector3.zero, movementDampening);
-                rb.angularVelocity = Vector3.Lerp(rb.angularVelocity, Vector3.zero, movementDampening);
+                rb.linearVelocity = Vector3.Lerp(rb.linearVelocity, Vector3.zero, _movementDampening);
+                rb.angularVelocity = Vector3.Lerp(rb.angularVelocity, Vector3.zero, _movementDampening);
             }
         }
 
@@ -64,7 +70,7 @@ namespace GravityGame.Mover
                 // _triggerCollider = gameObject.AddComponent<SphereCollider>();
             }
             _triggerCollider.isTrigger = true;
-            _triggerCollider.radius = effectRadius;
+            _triggerCollider.radius = _effectRadius;
         }
 
         void InitializeVisualSphere()
@@ -87,11 +93,11 @@ namespace GravityGame.Mover
             if (_visualEffectSphereTransform) _visualEffectSphereTransform.gameObject.layer = _ignoreRaycastLayer;
 
             var visualRenderer = _visualEffectSphereTransform.GetComponent<MeshRenderer>();
-            if (visualRenderer) visualRenderer.sharedMaterial = effectSphereMaterial;
+            if (visualRenderer) visualRenderer.sharedMaterial = _effectSphereMaterial;
 
-            _visualEffectSphereTransform.localScale = Vector3.one * Mathf.Max(0f, effectRadius * 2f);
+            _visualEffectSphereTransform.localScale = Vector3.one * Mathf.Max(0f, _effectRadius * 2f);
         }
 
-        bool IsLayerAffectable(int layer) => (affectableLayers.value & 1 << layer) > 0;
+        bool IsLayerAffectable(int layer) => (_affectableLayers.value & 1 << layer) > 0;
     }
 }
