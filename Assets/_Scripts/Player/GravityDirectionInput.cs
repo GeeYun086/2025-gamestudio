@@ -99,7 +99,7 @@ namespace GravityGame.Player
             var ray = new Ray(cam.transform.position, cam.transform.forward);
             // Note TG: other objects may block the hit, maybe need to ignore more layers in the future
             int layerMask = ~LayerMask.GetMask("AxisGizmo", "Player");
-            if (!Physics.SphereCast(ray, _sphereSelectionRadius, out var hitResult, _maxObjectRange, layerMask)) return null;
+            if (!Physics.SphereCast(ray, _sphereSelectionRadius, out var hitResult, _maxObjectRange, layerMask, QueryTriggerInteraction.Ignore)) return null;
             return hitResult.transform.gameObject.TryGetComponent<GravityModifier>(out var selectable) ? selectable : null;
         }
 
