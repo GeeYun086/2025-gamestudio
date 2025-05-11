@@ -31,6 +31,13 @@ namespace GravityGame
                     component.IsPowered = IsPowered;
             }
         }
+
+        //Carl: To change state from other script
+        public void Toggle()
+        {
+            IsPowered = !IsPowered;
+        }
+        
 #if UNITY_EDITOR
         private void OnValidate()
         {
