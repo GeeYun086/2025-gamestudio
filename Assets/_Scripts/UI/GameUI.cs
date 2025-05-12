@@ -4,39 +4,56 @@ using UnityEngine.UIElements;
 namespace GravityGame.UI
 {
     /// <summary>
-    ///     This hosts the sub-elements that are queried from the root GameUI element centrally,
-    ///     so we can adjust whenever this whenever the layout of the GameUI document changes,
-    ///     and we need to query the elements differently.
+    /// Centralized access to all UI elements in the Game UI Document.
+    /// Helps manage changes to the UI layout from a single point.
     /// </summary>
     public record GameUIElements(VisualElement Root)
     {
+        // Existing HUD or debug tools
         public readonly GravityDirectionRadialMenu GravityDirectionRadialMenu = Root.Q<GravityDirectionRadialMenu>();
-        public readonly VisualElement DebugElement = Root.Q("Debug");
+        public readonly VisualElement DebugElement = Root.Q<VisualElement>("Debug");
+
+        // Pause menu panels
+        public readonly VisualElement PauseMenu     = Root.Q<VisualElement>("PauseMenu");
+        public readonly VisualElement MainPanel     = Root.Q<VisualElement>("MainPanel");
+        public readonly VisualElement SettingsPanel = Root.Q<VisualElement>("SettingsPanel");
+
+        // Buttons
+        public readonly Button ResumeButton   = Root.Q<Button>("ResumeButton");
+        public readonly Button SettingsButton = Root.Q<Button>("SettingsButton");
+        public readonly Button MainMenuButton = Root.Q<Button>("MainMenuButton");
+        public readonly Button QuitButton     = Root.Q<Button>("QuitButton");
+        public readonly Button BackButton     = Root.Q<Button>("BackButton");
+
+        // Volume slider
+        public readonly Slider VolumeSlider = Root.Q<Slider>("VolumeSlider");
     }
 
     /// <summary>
-    ///     Contains the UI document for the in-game player UI
-    ///     If you want to add any other in-game UI, add it to the attached UIDocument
-    ///     <remarks>
-    ///         Note TG: If that is possible, I think we should make the pause or main menu UI their own UIDocuments
-    ///     </remarks>
+    /// Singleton MonoBehaviour that manages the UI Document and element references.
+    /// Ensures that all UI logic is accessible from a central instance.
     /// </summary>
     [RequireComponent(typeof(UIDocument))]
     public class GameUI : MonoBehaviour
     {
         public static GameUI Instance { get; private set; }
-
         public UIDocument UIDocument { get; private set; }
         public GameUIElements Elements { get; private set; }
 
+        /// <summary>
+        /// Unity lifecycle method called when the GameObject is enabled.
+        /// Sets up the singleton instance and initializes UI element bindings.
+        /// </summary>
         void OnEnable()
         {
-            if (Instance != null && Instance != this) {
-                Destroy(Instance);
-                Debug.LogError("More than one singleton instance in the scene!");
+            if (Instance != null && Instance != this)
+            {
+                Destroy(Instance); // Prevent multiple instances
+                Debug.LogError("Multiple GameUI instances detected. Destroying the old one.");
             }
+
             Instance = this;
-            UIDocument = gameObject.GetComponent<UIDocument>();
+            UIDocument = GetComponent<UIDocument>();
             Elements = new GameUIElements(UIDocument.rootVisualElement);
         }
     }
