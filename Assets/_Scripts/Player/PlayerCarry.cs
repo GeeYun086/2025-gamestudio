@@ -12,29 +12,27 @@ namespace GravityGame.Player
     /// </summary>
     public class PlayerCarry : MonoBehaviour
     {
-        [SerializeField] private Transform playerCameraTransform;
-        [SerializeField] private Transform carryPointTransform;
-        [SerializeField] private LayerMask pickUpLayerMask;
+        [SerializeField] Transform _playerCameraTransform;
+        [SerializeField] Transform _carryPointTransform;
+        [SerializeField] LayerMask _pickUpLayerMask;
 
-        private Carryable _carrying;
+        Carryable _carrying;
 
         void Update()
         {
-            if (Input.GetKeyDown(KeyCode.E))
-            {
-                if (!_carrying)
-                {
-                    float maxPickUpDistance = 4f;
-                    if (!Physics.Raycast(playerCameraTransform.position, playerCameraTransform.forward,
-                            out RaycastHit hit, maxPickUpDistance, pickUpLayerMask)) return;
-                    if (hit.transform.TryGetComponent(out _carrying))
-                        _carrying.PickUp(carryPointTransform);
+            if (!Input.GetKeyDown(KeyCode.E))
+                return;
+            if (!_carrying) {
+                float maxPickUpDistance = 4f;
+                if (Physics.Raycast(
+                        _playerCameraTransform.position, _playerCameraTransform.forward,
+                        out var hit, maxPickUpDistance, _pickUpLayerMask
+                    ) && hit.transform.TryGetComponent(out _carrying)) {
+                    _carrying.PickUp(_carryPointTransform);
                 }
-                else
-                {
-                    _carrying.Release();
-                    _carrying = null;
-                }
+            } else {
+                _carrying.Release();
+                _carrying = null;
             }
         }
     }
