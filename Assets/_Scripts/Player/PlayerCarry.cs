@@ -12,11 +12,11 @@ namespace GravityGame.Player
     /// </summary>
     public class PlayerCarry : MonoBehaviour
     {
-        [SerializeField] private Transform playerCameraTransform;
-        [SerializeField] private Transform carryPointTransform;
-        [SerializeField] private LayerMask pickUpLayerMask;
+        [SerializeField] Transform playerCameraTransform;
+        [SerializeField] Transform carryPointTransform;
+        [SerializeField] LayerMask pickUpLayerMask;
 
-        private Carryable _carrying;
+        Carryable _carrying;
 
         void Update()
         {

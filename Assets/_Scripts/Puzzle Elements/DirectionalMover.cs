@@ -12,23 +12,23 @@ namespace GravityGame.Puzzle_Elements
     [RequireComponent(typeof(Collider))]
     public class DirectionalMover : MonoBehaviour
     {
-        [SerializeField] private Transform _targetPointTransform;
-        [SerializeField] private Vector3 _targetPointManual = new(0, 0, 0);
-        [SerializeField] private float _moveSpeed = 1f;
+        [SerializeField] Transform _targetPointTransform;
+        [SerializeField] Vector3 _targetPointManual = new(0, 0, 0);
+        [SerializeField] float _moveSpeed = 1f;
 
-        [SerializeField] private LayerMask _collisionLayers = ~0;
-        private const float ReachThreshold = 0.1f;
+        [SerializeField] LayerMask _collisionLayers = ~0;
+        const float ReachThreshold = 0.1f;
 
-        private Rigidbody _rigidbody;
-        private Vector3 _pathStartPoint;
-        private Vector3 _pathEndPoint;
-        private Vector3 _currentDestination;
-        private bool _isMovingTowardsPathEndPoint;
+        Rigidbody _rigidbody;
+        Vector3 _pathStartPoint;
+        Vector3 _pathEndPoint;
+        Vector3 _currentDestination;
+        bool _isMovingTowardsPathEndPoint;
 
-        private Collider _triggerCollider;
-        private GameObject _solidSurfaceChild;
+        Collider _triggerCollider;
+        GameObject _solidSurfaceChild;
 
-        private void Awake()
+        void Awake()
         {
             _rigidbody = GetComponent<Rigidbody>();
             _rigidbody.isKinematic = true;
@@ -46,7 +46,7 @@ namespace GravityGame.Puzzle_Elements
             CreateSolidSurfaceChild();
         }
 
-        private void CreateSolidSurfaceChild()
+        void CreateSolidSurfaceChild()
         {
             var existingChild = transform.Find(gameObject.name + "_SolidSurface");
             if (existingChild)
@@ -102,7 +102,7 @@ namespace GravityGame.Puzzle_Elements
             }
         }
 
-        private void Start()
+        void Start()
         {
             _pathStartPoint = transform.position;
             _pathEndPoint = _targetPointTransform ? _targetPointTransform.position : _targetPointManual;
@@ -111,7 +111,7 @@ namespace GravityGame.Puzzle_Elements
             _isMovingTowardsPathEndPoint = true;
         }
 
-        private void FixedUpdate()
+        void FixedUpdate()
         {
             if (!enabled) return;
 
@@ -120,7 +120,7 @@ namespace GravityGame.Puzzle_Elements
             if (Vector3.Distance(transform.position, _currentDestination) < ReachThreshold) SwitchDirection();
         }
 
-        private void OnTriggerEnter(Collider other)
+        void OnTriggerEnter(Collider other)
         {
             if (_solidSurfaceChild && other.gameObject == _solidSurfaceChild) return;
             if (other.GetComponent<PlayerMovement>()) return;
@@ -129,15 +129,15 @@ namespace GravityGame.Puzzle_Elements
             SwitchDirection();
         }
 
-        private void SwitchDirection()
+        void SwitchDirection()
         {
             _isMovingTowardsPathEndPoint = !_isMovingTowardsPathEndPoint;
             _currentDestination = _isMovingTowardsPathEndPoint ? _pathEndPoint : _pathStartPoint;
         }
 
-        private static bool IsLayerInMask(LayerMask layerMask, int layer) => layerMask == (layerMask | (1 << layer));
+        static bool IsLayerInMask(LayerMask layerMask, int layer) => layerMask == (layerMask | (1 << layer));
 
-        private void OnDrawGizmosSelected()
+        void OnDrawGizmosSelected()
         {
             Vector3 gizmoPathStart, gizmoPathEnd;
             var currentPosition = transform.position;
