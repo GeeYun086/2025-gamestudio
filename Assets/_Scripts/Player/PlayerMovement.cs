@@ -30,11 +30,11 @@ namespace GravityGame.Player
 
         void FixedUpdate()
         {
-            const float Margin = -0.05f;
-            const float GroundDistance = 0.15f;
-            var feetPosition = transform.position - (_collider.height * 0.5f + Margin) * transform.up;
-            _isGrounded = Physics.Raycast(feetPosition, -transform.up, GroundDistance);
-            Debug.DrawRay(feetPosition, -transform.up * GroundDistance, Color.red);
+            const float margin = -0.05f;
+            const float groundDistance = 0.15f;
+            var feetPosition = transform.position - (_collider.height * 0.5f + margin) * transform.up;
+            _isGrounded = Physics.Raycast(feetPosition, -transform.up, groundDistance);
+            Debug.DrawRay(feetPosition, -transform.up * groundDistance, Color.red);
 
             var inputDirection = _moveInput.action.ReadValue<Vector2>();
             if (inputDirection != Vector2.zero)

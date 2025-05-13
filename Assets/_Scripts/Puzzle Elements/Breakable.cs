@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace GravityGame
+namespace GravityGame.Puzzle_Elements
 {
     public class Breakable : MonoBehaviour
     {
