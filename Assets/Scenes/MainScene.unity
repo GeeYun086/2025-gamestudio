@@ -583,10 +583,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Player
       objectReference: {fileID: 0}
-    - target: {fileID: 2847947673748998656, guid: 20f183c53d63e61429e2e4e099ccd34f, type: 3}
-      propertyPath: m_Radius
-      value: 0.25
-      objectReference: {fileID: 0}
     - target: {fileID: 3415188100231383341, guid: 20f183c53d63e61429e2e4e099ccd34f, type: 3}
       propertyPath: m_LocalPosition.x
       value: -3.2342954
@@ -650,18 +646,6 @@ PrefabInstance:
     - target: {fileID: 4459303878606845145, guid: 20f183c53d63e61429e2e4e099ccd34f, type: 3}
       propertyPath: m_LocalRotation.z
       value: -0.7047191
-      objectReference: {fileID: 0}
-    - target: {fileID: 9064900344729855852, guid: 20f183c53d63e61429e2e4e099ccd34f, type: 3}
-      propertyPath: m_Height
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 9064900344729855852, guid: 20f183c53d63e61429e2e4e099ccd34f, type: 3}
-      propertyPath: m_Radius
-      value: 0.24
-      objectReference: {fileID: 0}
-    - target: {fileID: 9064900344729855852, guid: 20f183c53d63e61429e2e4e099ccd34f, type: 3}
-      propertyPath: m_Center.y
-      value: -0.57
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1054,7 +1038,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0ed827289dae4c2787bfe0d57e19e560, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  checkpointID: CheckPoint2_Id
+  _checkpointID: 
 --- !u!65 &1163297303
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1347,10 +1331,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0036f16028494bca8c80d6fdfd34a43f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerObject: {fileID: 894321223}
-  gameObjectCheckpoints:
-  - {fileID: 1871920529}
-  - {fileID: 1163297299}
+  _playerObject: {fileID: 894321223}
+  _gameObjectCheckpoints: []
+  _respawnHeightOffset: 2
 --- !u!4 &1717834592
 Transform:
   m_ObjectHideFlags: 0
@@ -1380,6 +1363,7 @@ GameObject:
   - component: {fileID: 1817137669}
   - component: {fileID: 1817137668}
   - component: {fileID: 1817137673}
+  - component: {fileID: 1817137674}
   m_Layer: 0
   m_Name: Cube
   m_TagString: Untagged
@@ -1411,7 +1395,7 @@ Rigidbody:
   m_ImplicitTensor: 1
   m_UseGravity: 1
   m_IsKinematic: 0
-  m_Interpolate: 0
+  m_Interpolate: 1
   m_Constraints: 0
   m_CollisionDetection: 0
 --- !u!65 &1817137669
@@ -1517,6 +1501,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   GravityDirection: {x: 0, y: -1, z: 0}
   GravityMagnitude: 9.81
+--- !u!114 &1817137674
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1817137667}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f555451c1a2fcbb48ae9d16f23635942, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1825333316
 GameObject:
   m_ObjectHideFlags: 0
@@ -1722,7 +1718,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0ed827289dae4c2787bfe0d57e19e560, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  checkpointID: CheckPoint1_Id
+  _checkpointID: 
 --- !u!1001 &1898205951
 PrefabInstance:
   m_ObjectHideFlags: 0
