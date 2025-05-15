@@ -9,7 +9,7 @@ namespace GravityGame.Puzzle_Elements
     /// </summary>
     public class ColorGroupHandler : MonoBehaviour
     {
-        public static ColorGroupHandler Instance;
+        public static ColorGroupHandler Instance { get; private set; }
         public delegate void OnColorGroupDirectionChangeDelegate(Vector3 newDirection);
 
         public event OnColorGroupDirectionChangeDelegate OnRedGroupGravityDirectionChange;
