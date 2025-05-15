@@ -6,7 +6,7 @@ namespace GravityGame.Gravity
     /// <summary>
     ///     GameObjects with this component have custom gravity
     ///     that can be manipulated by editing <see cref="GravityDirection" /> and <see cref="GravityMagnitude" />
-    ///     <see cref="GravityDirection" /> is shared between all objects with the same <see cref="Color" />
+    ///     <see cref="GravityDirection" /> is shared between all objects with the same <see cref="Group" />
     /// </summary>
     [RequireComponent(typeof(Rigidbody))]
     public class GravityModifier : MonoBehaviour
@@ -17,15 +17,15 @@ namespace GravityGame.Gravity
             set {
                 if (value == _gravityDirection)
                     return;
-                ColorGroupHandler.Instance.AlertColorGroup(Color, value);
+                GravityGroupHandler.Instance.AlertGravityGroup(Group, value);
                 _gravityDirection = value;
             }
         }
         Vector3 _gravityDirection = Vector3.down;
         public float GravityMagnitude = 9.81f;
-        public ColorGroup Color = ColorGroup.None;
+        public GravityGroup Group = GravityGroup.None;
 
-        public enum ColorGroup { None, Red, Blue, Green }
+        public enum GravityGroup { None, Red, Blue, Green }
 
         Rigidbody _rigidbody;
 
@@ -33,7 +33,7 @@ namespace GravityGame.Gravity
         {
             _rigidbody = GetComponent<Rigidbody>();
             _rigidbody.useGravity = false;
-            SubscribeToCubeGroup();
+            GravityGroupHandler.Instance.OnGravityGroupDirectionChange += SetGravityDirectionWithoutGroupAlert;
         }
 
         void FixedUpdate()
@@ -41,36 +41,15 @@ namespace GravityGame.Gravity
             _rigidbody.AddForce(GravityDirection.normalized * GravityMagnitude, ForceMode.Acceleration);
         }
 
-        void SetGravityDirectionWithoutGroupAlert(Vector3 gravityDirection)
+        void SetGravityDirectionWithoutGroupAlert(GravityGroup gravityGroup, Vector3 gravityDirection)
         {
-            _gravityDirection = gravityDirection;
-        }
-
-        void SubscribeToCubeGroup()
-        {
-            switch (Color) {
-                case ColorGroup.Red:
-                    ColorGroupHandler.Instance.OnRedGroupGravityDirectionChange += SetGravityDirectionWithoutGroupAlert;
-                    break;
-                case ColorGroup.Blue:
-                    ColorGroupHandler.Instance.OnBlueGroupGravityDirectionChange += SetGravityDirectionWithoutGroupAlert;
-                    break;
-                case ColorGroup.Green:
-                    ColorGroupHandler.Instance.OnGreenGroupGravityDirectionChange += SetGravityDirectionWithoutGroupAlert;
-                    break;
-            }
+            if (gravityGroup == this.Group)
+                _gravityDirection = gravityDirection;
         }
 
         void OnDestroy()
         {
-            UnsubscribeFromCubeGroups();
-        }
-
-        void UnsubscribeFromCubeGroups()
-        {
-            ColorGroupHandler.Instance.OnRedGroupGravityDirectionChange -= SetGravityDirectionWithoutGroupAlert;
-            ColorGroupHandler.Instance.OnBlueGroupGravityDirectionChange -= SetGravityDirectionWithoutGroupAlert;
-            ColorGroupHandler.Instance.OnGreenGroupGravityDirectionChange -= SetGravityDirectionWithoutGroupAlert;
+            GravityGroupHandler.Instance.OnGravityGroupDirectionChange -= SetGravityDirectionWithoutGroupAlert;
         }
     }
 }
