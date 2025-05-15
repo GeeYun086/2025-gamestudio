@@ -1,4 +1,5 @@
-﻿using GravityGame.Player;
+﻿using GravityGame.CheckpointSystem;
+using GravityGame.Player;
 using UnityEngine;
 
 namespace GravityGame.Utils
@@ -7,15 +8,17 @@ namespace GravityGame.Utils
     {
         const KeyCode NoclipToggleKey = KeyCode.F1;
         const KeyCode SpawnGravityObjectKey = KeyCode.F2;
+        const KeyCode TeleportToCheckpointKey = KeyCode.F3;
+
         const float NoclipSpeed = 15.0f;
 
         [SerializeField]
-        GameObject playerObject;
+        GameObject _playerObject;
 
         [SerializeField]
-        GameObject debugGravityObject;
+        GameObject _debugGravityObject;
 
-        CharacterController _playerCharacterController;
+        Rigidbody _playerCharacterController;
         PlayerMovement _playerMovementScript;
         Camera _mainCamera;
 
@@ -23,8 +26,8 @@ namespace GravityGame.Utils
 
         void Awake()
         {
-            _playerCharacterController = playerObject.GetComponent<CharacterController>();
-            _playerMovementScript = playerObject.GetComponent<PlayerMovement>();
+            _playerCharacterController = _playerObject.GetComponent<Rigidbody>();
+            _playerMovementScript = _playerObject.GetComponent<PlayerMovement>();
             _mainCamera = Camera.main;
         }
 
@@ -37,11 +40,15 @@ namespace GravityGame.Utils
 
         void HandleInput()
         {
-            if (Input.GetKeyDown(NoclipToggleKey) && playerObject && _playerCharacterController)
+            if (Input.GetKeyDown(NoclipToggleKey) && _playerObject && _playerCharacterController)
                 ToggleNoclip();
 
-            if (Input.GetKeyDown(SpawnGravityObjectKey) && debugGravityObject && _mainCamera)
+            if (Input.GetKeyDown(SpawnGravityObjectKey) && _debugGravityObject && _mainCamera)
                 SpawnGravityObject();
+
+            if (Input.GetKeyDown(TeleportToCheckpointKey) && _playerObject) {
+                TeleportPlayerToActiveCheckpoint();
+            }
         }
 
         void ToggleNoclip()
@@ -50,10 +57,12 @@ namespace GravityGame.Utils
 
             if (IsNoclipActive) {
                 _playerMovementScript.enabled = false;
-                _playerCharacterController.enabled = false;
+                _playerCharacterController.detectCollisions = false;
+                _playerCharacterController.isKinematic = true;
             } else {
-                _playerCharacterController.enabled = true;
                 _playerMovementScript.enabled = true;
+                _playerCharacterController.detectCollisions = true;
+                _playerCharacterController.isKinematic = false;
             }
         }
 
@@ -61,12 +70,12 @@ namespace GravityGame.Utils
         {
             float forwardInput = (Input.GetKey(KeyCode.W) ? 1f : 0f) - (Input.GetKey(KeyCode.S) ? 1f : 0f);
             float rightInput = (Input.GetKey(KeyCode.D) ? 1f : 0f) - (Input.GetKey(KeyCode.A) ? 1f : 0f);
-            float verticalInput = (Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.E) ? 1f : 0f) -
-                                  (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.Q) ? 1f : 0f);
+            float verticalInput = (Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.E) ? 1f : 0f)
+                                  - (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.Q) ? 1f : 0f);
 
-            var moveDirection = (_mainCamera.transform.forward * forwardInput) + (_mainCamera.transform.right * rightInput) +
-                                (Vector3.up * verticalInput);
-            playerObject.transform.Translate(moveDirection.normalized * (NoclipSpeed * Time.deltaTime), Space.World);
+            var moveDirection = (_mainCamera.transform.forward * forwardInput)
+                                + (_mainCamera.transform.right * rightInput) + (Vector3.up * verticalInput);
+            _playerObject.transform.Translate(moveDirection.normalized * (NoclipSpeed * Time.deltaTime), Space.World);
         }
 
         void SpawnGravityObject()
@@ -80,7 +89,9 @@ namespace GravityGame.Utils
             } else {
                 spawnPos = rayOrigin + rayDirection * 5.0f;
             }
-            Instantiate(debugGravityObject, spawnPos, Quaternion.identity);
+            Instantiate(_debugGravityObject, spawnPos, Quaternion.identity);
         }
+
+        static void TeleportPlayerToActiveCheckpoint() => CheckpointController.Instance.RespawnPlayer();
     }
 }
