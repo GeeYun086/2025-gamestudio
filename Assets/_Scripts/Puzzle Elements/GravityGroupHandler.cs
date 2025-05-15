@@ -10,21 +10,26 @@ namespace GravityGame.Puzzle_Elements
     public class GravityGroupHandler : MonoBehaviour
     {
         public static GravityGroupHandler Instance { get; private set; }
-        public delegate void OnGravityGroupDirectionChangeDelegate(GravityModifier.GravityGroup gravityGroup, Vector3 newDirection);
+
+        public delegate void OnGravityGroupDirectionChangeDelegate(
+            GravityModifier.GravityGroup gravityGroup,
+            Vector3 newDirection
+        );
+
         public event OnGravityGroupDirectionChangeDelegate OnGravityGroupDirectionChange;
 
         void Awake()
         {
-            if(!Instance)
-                Instance=this;
+            if (!Instance)
+                Instance = this;
             else
                 Destroy(this);
         }
 
         public void AlertGravityGroup(GravityModifier.GravityGroup gravityGroup, Vector3 newGravityDirection)
         {
-            if(gravityGroup != GravityModifier.GravityGroup.None)
-                OnGravityGroupDirectionChange?.Invoke(gravityGroup,newGravityDirection);
+            if (gravityGroup != GravityModifier.GravityGroup.None)
+                OnGravityGroupDirectionChange?.Invoke(gravityGroup, newGravityDirection);
         }
     }
 }

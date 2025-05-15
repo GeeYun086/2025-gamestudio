@@ -33,7 +33,8 @@ namespace GravityGame.Gravity
         {
             _rigidbody = GetComponent<Rigidbody>();
             _rigidbody.useGravity = false;
-            GravityGroupHandler.Instance.OnGravityGroupDirectionChange += SetGravityDirectionWithoutGroupAlert;
+            if(Group != GravityGroup.None)
+                GravityGroupHandler.Instance.OnGravityGroupDirectionChange += SetGravityDirectionWithoutGroupAlert;
         }
 
         void FixedUpdate()
