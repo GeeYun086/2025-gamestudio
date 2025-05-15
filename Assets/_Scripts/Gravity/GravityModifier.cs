@@ -43,7 +43,7 @@ namespace GravityGame.Gravity
 
         void SetGravityDirectionWithoutGroupAlert(GravityGroup gravityGroup, Vector3 gravityDirection)
         {
-            if (gravityGroup == this.Group)
+            if (gravityGroup == Group)
                 _gravityDirection = gravityDirection;
         }
 
