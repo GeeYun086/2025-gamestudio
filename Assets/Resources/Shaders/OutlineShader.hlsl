@@ -19,7 +19,7 @@ float4 _Color;
 
 VertexOutput Vertex(Attributes input){
     VertexOutput output = (VertexOutput)0;
-#ifdef VISIBLE
+#if VISIBLE
     float3 normalOS = input.normalOS;
 
     float3 normal= normalize(input.positionOS.xyz)*_Thickness;

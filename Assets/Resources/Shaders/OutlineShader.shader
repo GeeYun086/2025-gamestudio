@@ -4,7 +4,6 @@ Shader "Outlines/OutlineShader"
     {
         _Thickness("Thickness", float) =1
         [HDR]_Color("Color",Color) = (1,1,1,1)
-        [Toggle(VISIBLE)] _VISIBLE ("Draw Outline", Integer) = 0
     }
     SubShader
     {
