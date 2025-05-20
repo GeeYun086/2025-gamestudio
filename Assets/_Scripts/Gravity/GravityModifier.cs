@@ -17,7 +17,8 @@ namespace GravityGame.Gravity
             set {
                 if (value == _gravityDirection)
                     return;
-                GravityGroupHandler.Instance.AlertGravityGroup(Group, value);
+                if(Group != GravityGroup.None)
+                    GravityGroupHandler.Instance.AlertGravityGroup(Group, value);
                 _gravityDirection = value;
             }
         }

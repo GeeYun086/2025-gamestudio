@@ -18,7 +18,7 @@ namespace GravityGame.Puzzle_Elements
 
         public event OnGravityGroupDirectionChangeDelegate OnGravityGroupDirectionChange;
 
-        void Awake()
+        void OnEnable()
         {
             if (!Instance)
                 Instance = this;

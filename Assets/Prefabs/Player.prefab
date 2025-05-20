@@ -90,7 +90,7 @@ GameObject:
   - component: {fileID: 4446406959541147416}
   - component: {fileID: 1163891898892029019}
   - component: {fileID: 2847947673748998656}
-  - component: {fileID: 9064900344729855852}
+  - component: {fileID: 3291113726908820060}
   - component: {fileID: 359691680859113906}
   - component: {fileID: 2766821908369855471}
   m_Layer: 3
@@ -129,9 +129,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _moveSpeedMps: 8
-  _maxAcceleration: 1
-  _jumpForce: 5
-  _airMovementModifier: 0.5
+  _maxAcceleration: 2
+  _jumpForce: 9
+  _airMovementModifier: 0.3
   _accelerationCurve:
     serializedVersion: 2
     m_Curve:
@@ -156,6 +156,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  _jumpBufferTime: 0.15
   _moveInput: {fileID: -1680190386980627800, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   _jumpInput: {fileID: -2099379676528639254, guid: 052faaac586de48259a63d0c4782560b, type: 3}
 --- !u!54 &1163891898892029019
@@ -167,7 +168,7 @@ Rigidbody:
   m_GameObject: {fileID: 2446000720691385914}
   serializedVersion: 4
   m_Mass: 60
-  m_Drag: 0
+  m_Drag: 0.01
   m_AngularDrag: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
@@ -184,7 +185,7 @@ Rigidbody:
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 0
-  m_CollisionDetection: 0
+  m_CollisionDetection: 1
 --- !u!136 &2847947673748998656
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -208,8 +209,8 @@ CapsuleCollider:
   m_Height: 1.6
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
---- !u!136 &9064900344729855852
-CapsuleCollider:
+--- !u!135 &3291113726908820060
+SphereCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -226,10 +227,8 @@ CapsuleCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 2
+  serializedVersion: 3
   m_Radius: 0.24
-  m_Height: 0
-  m_Direction: 1
   m_Center: {x: 0, y: -0.57, z: 0}
 --- !u!114 &359691680859113906
 MonoBehaviour:
@@ -602,7 +601,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 73cef73d68804f50a6822337d9ee0413, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _mouseSensitivity: 20
+  _mouseSensitivity: 15
   _playerBody: {fileID: 3415188100231383341}
   _lookAction: {fileID: -5630151704836100654, guid: 052faaac586de48259a63d0c4782560b, type: 3}
 --- !u!20 &6900899572408050767
