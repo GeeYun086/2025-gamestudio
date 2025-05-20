@@ -53,31 +53,32 @@ namespace GravityGame.Player
 
         void Move(Vector2 direction)
         {
-            var velocity = new Vector3(_rigidbody.linearVelocity.x, 0, _rigidbody.linearVelocity.z);
+            direction = direction.normalized;
             var groundNormal = GetGroundNormal();
 
-            if (_isGrounded) {
-                const float maxSlopeAngle = 25f;
+            var velocity = new Vector3(_rigidbody.linearVelocity.x, 0, _rigidbody.linearVelocity.z);
+            var desiredVelocity = new Vector3(direction.x, 0, direction.y) * _moveSpeedMps;
+            desiredVelocity = transform.transform.TransformDirection(desiredVelocity);
+            // project to enable walking on slopes
+            desiredVelocity = Vector3.ProjectOnPlane(desiredVelocity, groundNormal);
+            var velocityChange = desiredVelocity - velocity;
+
+            // Stay one slope logic
+            // Note TG: I have a feeling this might cause weird issues when standing on non-static objects. Needs to be tested in real puzzles
+            {
                 var gravity = GetComponent<GravityModifier>();
-                if (Vector3.Angle(groundNormal, transform.up) > maxSlopeAngle) {
-                    groundNormal = transform.up;
-                }                     
-                // stay on slope
+                if (_isGrounded && direction == Vector2.zero) {
+                    const float maxSlopeAngle = 35;
+                    if (Vector3.Angle(groundNormal, transform.up) > maxSlopeAngle) {
+                        groundNormal = transform.up; // stay on slope
+                    }
+                }
                 gravity.GravityDirection = -groundNormal;
             }
 
             if (direction == Vector2.zero) {
                 return;
             }
-            var inputDir = direction.normalized;
-
-            var desiredVelocity = new Vector3(inputDir.x, 0, inputDir.y) * _moveSpeedMps;
-            desiredVelocity = transform.TransformDirection(desiredVelocity);
-
-            // walking on slope
-            desiredVelocity = Vector3.ProjectOnPlane(desiredVelocity, groundNormal);
-
-            var velocityChange = desiredVelocity - velocity;
 
             if (_isGrounded) {
                 float diff = velocityChange.magnitude / _moveSpeedMps;
