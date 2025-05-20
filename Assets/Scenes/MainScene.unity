@@ -1499,8 +1499,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1390bb0118c849048dad3280a9f58cd9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GravityDirection: {x: 0, y: -1, z: 0}
   GravityMagnitude: 9.81
+  Group: 0
 --- !u!114 &1817137674
 MonoBehaviour:
   m_ObjectHideFlags: 0
