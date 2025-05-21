@@ -1,3 +1,4 @@
+using GravityGame.Gravity;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -8,8 +9,8 @@ namespace GravityGame.Player
     /// </summary>
     public class PlayerMovement : MonoBehaviour
     {
-        [SerializeField] float _moveSpeedMps = 2.5f;
-        [SerializeField] float _maxAcceleration = 2.5f;
+        [SerializeField] float _moveSpeedMps = 8f;
+        [SerializeField] float _maxAcceleration = 1f;
         [SerializeField] float _jumpForce = 5.0f;
         [SerializeField] float _airMovementModifier = 0.5f;
         [SerializeField] AnimationCurve _accelerationCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
@@ -22,13 +23,15 @@ namespace GravityGame.Player
         CapsuleCollider _collider;
         bool _isGrounded;
         float _jumpBufferTimer;
+        bool _isJumping;
 
-        void Awake()
+        void OnEnable()
         {
             _rigidbody = GetComponent<Rigidbody>();
             _collider = GetComponent<CapsuleCollider>();
 
             _rigidbody.constraints |= RigidbodyConstraints.FreezeRotation;
+            _jumpInput.action.performed += _ => _jumpBufferTimer = 0;
         }
 
         void FixedUpdate()
@@ -40,35 +43,42 @@ namespace GravityGame.Player
             Debug.DrawRay(feetPosition, -transform.up * groundDistance, Color.red);
 
             var inputDirection = _moveInput.action.ReadValue<Vector2>();
-            if (inputDirection != Vector2.zero)
-                Move(inputDirection);
+            Move(inputDirection);
+
             if (_jumpBufferTimer < _jumpBufferTime)
                 _jumpBufferTimer += Time.fixedDeltaTime;
-            if (_jumpInput.action.IsPressed())
-                _jumpBufferTimer = 0;
             if (_isGrounded && _jumpBufferTimer < _jumpBufferTime)
                 Jump();
         }
 
         void Move(Vector2 direction)
         {
-            var inputDir = direction.normalized;
+            direction = direction.normalized;
+            var groundNormal = GetGroundNormal();
+
             var velocity = new Vector3(_rigidbody.linearVelocity.x, 0, _rigidbody.linearVelocity.z);
-
-            var desiredVelocity = new Vector3(inputDir.x, 0, inputDir.y) * _moveSpeedMps;
-            desiredVelocity = transform.TransformDirection(desiredVelocity);
-            
-            // Determine angle of the ground, and project the desired velocity onto the ground plane (For movement on slopes)
-            const int groundLayerMask = 1 << 0;
-            RaycastHit hit;
-            Vector3 groundNormal = Vector3.up;
-            if (Physics.Raycast(transform.position, -transform.up, out hit, _collider.height * 0.5f + 0.3f, groundLayerMask))
-            {
-                groundNormal = hit.normal;
-            }
+            var desiredVelocity = new Vector3(direction.x, 0, direction.y) * _moveSpeedMps;
+            desiredVelocity = transform.transform.TransformDirection(desiredVelocity);
+            // project to enable walking on slopes
             desiredVelocity = Vector3.ProjectOnPlane(desiredVelocity, groundNormal);
-
             var velocityChange = desiredVelocity - velocity;
+
+            // Stay one slope logic
+            // Note TG: I have a feeling this might cause weird issues when standing on non-static objects. Needs to be tested in real puzzles
+            {
+                var gravity = GetComponent<GravityModifier>();
+                if (_isGrounded && direction == Vector2.zero) {
+                    const float maxSlopeAngle = 35;
+                    if (Vector3.Angle(groundNormal, transform.up) > maxSlopeAngle) {
+                        groundNormal = transform.up; // stay on slope
+                    }
+                }
+                gravity.GravityDirection = -groundNormal;
+            }
+
+            if (direction == Vector2.zero) {
+                return;
+            }
 
             if (_isGrounded) {
                 float diff = velocityChange.magnitude / _moveSpeedMps;
@@ -88,9 +98,20 @@ namespace GravityGame.Player
             _rigidbody.AddForce(velocityChange, ForceMode.VelocityChange);
         }
 
+        Vector3 GetGroundNormal()
+        {
+            // Determine angle of the ground, and project the desired velocity onto the ground plane (For movement on slopes)
+            const int groundLayerMask = 1 << 0;
+            var ray = new Ray(transform.position, -transform.up);
+            if (Physics.Raycast(ray, out var hit, _collider.height * 0.5f + 0.3f, groundLayerMask)) {
+                return hit.normal;
+            }
+            return transform.up;
+        }
+
         void Jump()
         {
-            _rigidbody.AddForce(transform.up * _jumpForce, ForceMode.VelocityChange);
+            _rigidbody.AddForce(new Vector3(0, _jumpForce - _rigidbody.linearVelocity.y, 0), ForceMode.VelocityChange);
         }
     }
 }
