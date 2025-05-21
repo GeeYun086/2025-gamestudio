@@ -2,15 +2,25 @@ using UnityEngine;
 
 namespace GravityGame.Audio
 {
+    [RequireComponent(typeof(Rigidbody))]
     public class CubeCollisionSound : MonoBehaviour
     {
-        public AudioSource CubeCollide; // cube collision sound
-        public AudioSource DragSound; // cube dragging friction sound
+        public AudioSource CubeSound; // cube collision sound
         
+        public AudioClip CollisionSound;
+        public AudioClip DragSound;
         // note: maxCollisionVelocity will be used to set at what speed the music volume will be max
         public int MaxCollisionVelocity = 10;
+        private float MinSpeed = 0.1f;
         private int _frameCounter = 1;
         private const int CheckEveryNFrames = 4;
+
+
+        [SerializeField] const float min_volume = 0.4f;
+        [SerializeField] const float max_volume = 1f;
+        [SerializeField] const float minRelativeVelocity = 1f;
+
+        
 
 
         private Rigidbody _rB;
@@ -25,11 +35,18 @@ namespace GravityGame.Audio
         // Note: linear interpolation to get volume from different height
         void OnCollisionEnter(Collision collision)
         {
-            
-            if (collision.relativeVelocity.magnitude >= 1f)
+            float velocity = collision.relativeVelocity.magnitude;
+            if (velocity >= minRelativeVelocity)
             {
-                CubeCollide.volume = Mathf.Clamp(collision.relativeVelocity.magnitude / MaxCollisionVelocity, 0.5f, 1f) * 1f;
-                CubeCollide.PlayOneShot(CubeCollide.clip);
+                // Stop dragging sound if it's playing
+                if (CubeSound.isPlaying && CubeSound.clip == DragSound)
+                {
+                    CubeSound.Stop();
+                }
+
+                // Set volume and play collision sound
+                CubeSound.volume = Mathf.Clamp(velocity / MaxCollisionVelocity, min_volume, max_volume);
+                CubeSound.PlayOneShot(CollisionSound);
             }
         }
 
@@ -40,31 +57,32 @@ namespace GravityGame.Audio
             _frameCounter++;
             if (_frameCounter % CheckEveryNFrames != 0) return;
 
-            if (_rB.linearVelocity.magnitude > 0.1f && IsGroundContact(collision))
+            if (_rB.linearVelocity.magnitude > MinSpeed && IsGroundContact(collision))
             {
                 
 
-                if (!DragSound.isPlaying)
+                if (!CubeSound.isPlaying || CubeSound.clip != DragSound)
                 {
-                    DragSound.pitch = Random.Range(0.3f, 0.8f);
-                    DragSound.Play();
+                    CubeSound.clip = DragSound;
+                    CubeSound.pitch = Random.Range(0.3f, 0.9f);
+                    CubeSound.loop = false;
+                    CubeSound.Play();
                 }
             }
             else
             {
-                if (DragSound.isPlaying)
+                if (CubeSound.isPlaying && CubeSound.clip == DragSound)
                 {
-                    DragSound.Stop();
-                    CubeCollide.PlayOneShot(CubeCollide.clip);
+                    CubeSound.Stop();
                 }
             }
         }
 
         void OnCollisionExit()
         {
-            if (DragSound.isPlaying)
+            if (CubeSound.isPlaying && CubeSound.clip == DragSound)
             {
-                DragSound.Stop();
+                CubeSound.Stop();
             }
         }
 
@@ -72,15 +90,7 @@ namespace GravityGame.Audio
         // only collision first value are used to reduce calculation load
         bool IsGroundContact(Collision collision)
         {
-            if (collision.contactCount > 0)
-            {
-                return true;
-            }
-
-            else
-            {
-                return false;
-            }
+            return collision.contactCount > 0;
         } 
     } 
 }
