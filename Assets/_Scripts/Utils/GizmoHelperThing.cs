@@ -1,0 +1,26 @@
+using System;
+using UnityEngine;
+
+namespace GravityGame
+{
+    public class GizmoHelperThing : MonoBehaviour
+    {
+        /// <summary>
+        /// This script draws a yellow sphere around the attached object and if the object has children, it will draw a line between them
+        /// </summary>
+        void OnDrawGizmos()
+        {
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawSphere(transform.position, 0.2f);
+            
+            int count  = transform.childCount;
+            if (count < 2) return;
+            
+            for (int i = 0; i < count - 1; i++) {
+                Transform a = transform.GetChild(i);
+                Transform b = transform.GetChild(i + 1);
+                Gizmos.DrawLine(a.position, b.position);
+            }
+        }
+    }
+}
