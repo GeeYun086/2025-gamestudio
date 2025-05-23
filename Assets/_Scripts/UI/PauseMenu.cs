@@ -8,34 +8,30 @@ using UnityEditor;
 
 namespace GravityGame.UI
 {
-    /// <summary>
-    /// Controls the Pause Menu functionality: toggling pause state,
-    /// switching between menu panels, and handling settings like volume.
-    /// </summary>
     [RequireComponent(typeof(GameUI))]
     public class PauseMenu : MonoBehaviour
     {
-        // UI elements
         private VisualElement _pauseMenu, _mainPanel, _settingsPanel;
         private Button _resumeButton, _settingsButton, _mainMenuButton, _quitButton, _backButton;
         private Slider _volumeSlider;
 
         private bool _initialized;
-        private const string PREF_VOLUME = "MasterVolume";
+        private const string PrefVolume = "MasterVolume";
 
-        /// <summary>
-        /// Unity method called when the GameObject is enabled.
-        /// Tries to initialize UI references and bindings.
-        /// </summary>
-        void OnEnable()
+        private void Awake()
+        {
+            if (SceneManager.GetActiveScene().name != "MainScene")
+            {
+                Destroy(gameObject);
+            }
+        }
+
+        private void OnEnable()
         {
             TryInitialize();
         }
 
-        /// <summary>
-        /// Monitors pause toggle input and manages cursor behavior when paused.
-        /// </summary>
-        void Update()
+        private void Update()
         {
             if (!_initialized) TryInitialize();
 
@@ -49,10 +45,6 @@ namespace GravityGame.UI
             }
         }
 
-        /// <summary>
-        /// Initializes all UI elements and sets up event callbacks.
-        /// Called once when the GameUI is ready.
-        /// </summary>
         private void TryInitialize()
         {
             if (_initialized || GameUI.Instance == null) return;
@@ -69,37 +61,30 @@ namespace GravityGame.UI
             _backButton = e.BackButton;
             _volumeSlider = e.VolumeSlider;
 
-            // Hide all pause menu panels initially
             _pauseMenu.style.display = DisplayStyle.None;
             _mainPanel.style.display = DisplayStyle.None;
             _settingsPanel.style.display = DisplayStyle.None;
 
-            // Button click handlers
             _resumeButton.clicked += ResumeGame;
             _settingsButton.clicked += ShowSettings;
             _mainMenuButton.clicked += GoToMainMenu;
-            _quitButton.clicked += QuitGame;
+            _quitButton.clicked += QuitToMainMenu;
             _backButton.clicked += ShowMain;
 
-            // Volume slider handling
             _volumeSlider.RegisterValueChangedCallback(evt =>
             {
                 AudioListener.volume = evt.newValue;
-                PlayerPrefs.SetFloat(PREF_VOLUME, evt.newValue);
+                PlayerPrefs.SetFloat(PrefVolume, evt.newValue);
             });
 
-            // Load and apply saved volume
-            var saved = PlayerPrefs.GetFloat(PREF_VOLUME, 1f);
+            var saved = PlayerPrefs.GetFloat(PrefVolume, 1f);
             AudioListener.volume = saved;
             _volumeSlider.value = saved;
 
             _initialized = true;
         }
 
-        /// <summary>
-        /// Toggles pause/resume state based on current time scale.
-        /// </summary>
-        public void TogglePause()
+        private void TogglePause()
         {
             if (!_initialized) return;
 
@@ -109,9 +94,6 @@ namespace GravityGame.UI
                 PauseGame();
         }
 
-        /// <summary>
-        /// Pauses the game, shows pause menu, and enables cursor.
-        /// </summary>
         private void PauseGame()
         {
             Time.timeScale = 0f;
@@ -122,9 +104,6 @@ namespace GravityGame.UI
             UnityEngine.Cursor.visible = true;
         }
 
-        /// <summary>
-        /// Resumes gameplay and hides pause menu, cursor locked again.
-        /// </summary>
         private void ResumeGame()
         {
             Time.timeScale = 1f;
@@ -134,9 +113,6 @@ namespace GravityGame.UI
             UnityEngine.Cursor.visible = false;
         }
 
-        /// <summary>
-        /// Displays the settings panel inside the pause menu.
-        /// </summary>
         private void ShowSettings()
         {
             _mainPanel.style.display = DisplayStyle.None;
@@ -146,9 +122,6 @@ namespace GravityGame.UI
             UnityEngine.Cursor.visible = true;
         }
 
-        /// <summary>
-        /// Displays the main panel of the pause menu.
-        /// </summary>
         private void ShowMain()
         {
             _settingsPanel.style.display = DisplayStyle.None;
@@ -158,25 +131,16 @@ namespace GravityGame.UI
             UnityEngine.Cursor.visible = true;
         }
 
-        /// <summary>
-        /// Loads the Main Menu scene.
-        /// </summary>
-        private void GoToMainMenu()
+        private void QuitToMainMenu()
         {
             Time.timeScale = 1f;
             SceneManager.LoadScene("MainMenu");
         }
 
-        /// <summary>
-        /// Quits the game or stops play mode in editor.
-        /// </summary>
-        private void QuitGame()
+        private void GoToMainMenu()
         {
-#if UNITY_EDITOR
-            EditorApplication.isPlaying = false;
-#else
-            Application.Quit();
-#endif
+            Time.timeScale = 1f;
+            SceneManager.LoadScene("MainMenu");
         }
     }
 }
