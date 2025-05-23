@@ -10,8 +10,8 @@ namespace GravityGame.Puzzle_Elements
     [RequireComponent(typeof(Rigidbody))]
     public class Carryable : MonoBehaviour
     {
-        private Rigidbody _rigidbody;
-        private Transform _carryPointTransform;
+        Rigidbody _rigidbody;
+        Transform _carryPointTransform;
 
         void Awake()
         {
@@ -36,7 +36,7 @@ namespace GravityGame.Puzzle_Elements
                 MoveToCarryPoint();
         }
 
-        private void MoveToCarryPoint()
+        void MoveToCarryPoint()
         {
             float followSpeed = 6f;
             float velocitySmoothing = 12f;
@@ -65,7 +65,7 @@ namespace GravityGame.Puzzle_Elements
             _rigidbody.linearVelocity = smoothedVelocity;
         }
 
-        private void DisableGravity()
+        void DisableGravity()
         {
             if (transform.TryGetComponent(out GravityModifier gravityModifier))
                 gravityModifier.enabled = false;
@@ -73,7 +73,7 @@ namespace GravityGame.Puzzle_Elements
                 _rigidbody.useGravity = false;
         }
 
-        private void ReactivateGravity()
+        void ReactivateGravity()
         {
             if (transform.TryGetComponent(out GravityModifier gravityModifier))
                 gravityModifier.enabled = true;
