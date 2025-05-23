@@ -7,7 +7,7 @@
     <ui:VisualElement name="MainRoot" class="main-root">
         <ui:Label name="Title" text="Game title" class="game-title" />
 
-        <ui:VisualElement name="MenuPanel" class="menu-panel polygon-panel">
+        <ui:VisualElement name="MenuPanel" class="menu-panel">
             <ui:Button name="NewGameButton" text="> New game" class="menu-button" />
             <ui:Button name="ContinueButton" text="> Continue" class="menu-button" />
             <ui:Button name="SettingsButton" text="> Settings" class="menu-button" />
