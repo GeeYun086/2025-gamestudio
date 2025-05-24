@@ -1,3 +1,4 @@
+using System;
 using GravityGame.Gravity;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -12,6 +13,7 @@ namespace GravityGame.Player
         [SerializeField] float _moveSpeedMps = 8f;
         [SerializeField] float _maxAcceleration = 1f;
         [SerializeField] float _jumpForce = 5.0f;
+        [SerializeField] float _jumpForward = 0.5f;
         [SerializeField] float _airMovementModifier = 0.5f;
         [SerializeField] AnimationCurve _accelerationCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
         [SerializeField] float _jumpBufferTime = 0.15f;
@@ -32,6 +34,7 @@ namespace GravityGame.Player
 
             _rigidbody.constraints |= RigidbodyConstraints.FreezeRotation;
             _jumpInput.action.performed += _ => _jumpBufferTimer = 0;
+            _rigidbody.interpolation = RigidbodyInterpolation.Interpolate;
         }
 
         void FixedUpdate()
@@ -58,10 +61,9 @@ namespace GravityGame.Player
 
             var velocity = new Vector3(_rigidbody.linearVelocity.x, 0, _rigidbody.linearVelocity.z);
             var desiredVelocity = new Vector3(direction.x, 0, direction.y) * _moveSpeedMps;
-            desiredVelocity = transform.transform.TransformDirection(desiredVelocity);
+            desiredVelocity = Quaternion.Euler(0, Camera.main.transform.eulerAngles.y, 0) * desiredVelocity;
             // project to enable walking on slopes
             desiredVelocity = Vector3.ProjectOnPlane(desiredVelocity, groundNormal);
-            var velocityChange = desiredVelocity - velocity;
 
             // Stay one slope logic
             // Note TG: I have a feeling this might cause weird issues when standing on non-static objects. Needs to be tested in real puzzles
@@ -80,21 +82,29 @@ namespace GravityGame.Player
                 return;
             }
 
-            if (_isGrounded) {
-                float diff = velocityChange.magnitude / _moveSpeedMps;
-                float curveValue = _accelerationCurve.Evaluate(diff);
-                float clampedAccel = _maxAcceleration * curveValue;
-                velocityChange = Vector3.ClampMagnitude(velocityChange, clampedAccel);
-            } else {
-                // In air: only apply acceleration if trying to steer in a new direction
-                if (Vector3.Dot(desiredVelocity.normalized, velocity.normalized) > 0.9f) {
-                    if (desiredVelocity.magnitude < velocity.magnitude) {
-                        velocityChange = Vector3.zero;
-                    }
-                }
+            var velocityChange = new Vector3();
+            for (int i = 0; i < 3; i++) {
+                var desired = desiredVelocity[i];
+                var current = velocity[i];
 
-                velocityChange = Vector3.ClampMagnitude(velocityChange, _maxAcceleration * _airMovementModifier);
+                if (desired == 0) continue;
+                var div = current / desired;
+                var sign = Math.Sign(desired);
+                Debug.Log(div);
+
+                velocityChange[i] = div switch {
+                    < 0 => desired - current,
+                    < 1 => desired - current,
+                    _ => 0
+                };
             }
+
+            var airModifier = _isGrounded ? 1f : _airMovementModifier;
+            velocityChange = Vector3.ClampMagnitude(
+                velocityChange,
+                airModifier * _maxAcceleration * Time.fixedDeltaTime
+            );
+
             _rigidbody.AddForce(velocityChange, ForceMode.VelocityChange);
         }
 
@@ -111,7 +121,11 @@ namespace GravityGame.Player
 
         void Jump()
         {
-            _rigidbody.AddForce(new Vector3(0, _jumpForce - _rigidbody.linearVelocity.y, 0), ForceMode.VelocityChange);
+            var input = _moveInput.action.ReadValue<Vector2>();
+            var input3 = new Vector3(input.x, 0, input.y);
+            var jumpFwd = Quaternion.Euler(0, Camera.main.transform.eulerAngles.y, 0) * input3 * _jumpForward;
+            var jumpUp = new Vector3(0, _jumpForce - _rigidbody.linearVelocity.y);
+            _rigidbody.AddForce(jumpFwd + jumpUp, ForceMode.VelocityChange);
         }
     }
 }
