@@ -17,7 +17,6 @@ namespace GravityGame.Player
     {
         [SerializeField] Axes _visualizationAxes;
         [SerializeField] float _maxObjectRange = 30;
-        [SerializeField] float _sphereSelectionRadius = 0.1f;
         [SerializeField] float _aimBufferDuration = 0.25f;
         [CanBeNull] GravityModifier _aimedObject;
         [CanBeNull] GravityModifier _lastAimedObject;
@@ -28,11 +27,7 @@ namespace GravityGame.Player
 
         [CanBeNull] GravityModifier _selectedObject;
 
-        RaycastHit[] _hitsCache;
-
         static GravityDirectionRadialMenu GravityChangeMenu => GameUI.Instance.Elements.GravityDirectionRadialMenu;
-
-        void Awake() => _hitsCache = new RaycastHit[10];
 
         void Update()
         {
@@ -51,7 +46,11 @@ namespace GravityGame.Player
                 _lastAimedObject = _aimedObject;
                 _lastObjectAimedTime = Time.time;
             } else {
-                ToggleOutlineOnObject(_lastSelectedObject, 0);
+                _aimedObject = null;
+                if (_lastSelectedObject && Time.time - _lastObjectAimedTime > _aimBufferDuration) {
+                    ToggleOutlineOnObject(_lastSelectedObject, 0);
+                    _lastSelectedObject = null;
+                }
             }
 
             if (Input.GetMouseButtonDown(1))
@@ -61,7 +60,14 @@ namespace GravityGame.Player
                     else if (_lastAimedObject && Time.time - _lastObjectAimedTime < _aimBufferDuration)
                         objectToSelect = _lastAimedObject;
 
-                    if (objectToSelect) _selectedObject = objectToSelect;
+                    if (objectToSelect) {
+                        _selectedObject = objectToSelect;
+                        if (_selectedObject.gameObject != _lastSelectedObject) {
+                            ToggleOutlineOnObject(_lastSelectedObject, 0);
+                            ToggleOutlineOnObject(_selectedObject.gameObject, 1);
+                            _lastSelectedObject = _selectedObject.gameObject;
+                        }
+                    }
                 }
 
             bool isInteracting = Input.GetMouseButton(1) && _selectedObject;
@@ -72,6 +78,11 @@ namespace GravityGame.Player
                     Cursor.lockState = CursorLockMode.None;
                     Cursor.visible = true;
                     if (_selectedObject) SetVisualizedDirection(_selectedObject.GravityDirection);
+                    if (_selectedObject && _selectedObject.gameObject != _lastSelectedObject) {
+                        ToggleOutlineOnObject(_lastSelectedObject, 0);
+                        ToggleOutlineOnObject(_selectedObject.gameObject, 1);
+                        _lastSelectedObject = _selectedObject.gameObject;
+                    }
                     break;
                 }
                 case false when GravityChangeMenu.visible: {
@@ -108,33 +119,12 @@ namespace GravityGame.Player
         {
             var cam = Camera.main!;
             var ray = new Ray(cam.transform.position, cam.transform.forward);
-            // Note TG: other objects may block the hit, maybe need to ignore more layers in the future
             int layerMask = ~LayerMask.GetMask("AxisGizmo", "Player");
-            int numHits = Physics.SphereCastNonAlloc(
-                ray,
-                _sphereSelectionRadius,
-                _hitsCache,
-                _maxObjectRange,
-                layerMask,
-                QueryTriggerInteraction.Ignore
-            );
 
-            if (numHits == 0) return null;
-
-            GravityModifier bestGravityModifierHit = null;
-            float minGravityModifierDistance = float.MaxValue;
-
-            for (int i = 0; i < numHits; i++) {
-                var hit = _hitsCache[i];
-                if (hit.transform.gameObject.TryGetComponent<GravityModifier>(out var gm)) {
-                    if (hit.distance < minGravityModifierDistance) {
-                        minGravityModifierDistance = hit.distance;
-                        bestGravityModifierHit = gm;
-                    }
-                }
+            if (Physics.Raycast(ray, out var hitInfo, _maxObjectRange, layerMask, QueryTriggerInteraction.Ignore)) {
+                if (hitInfo.transform.gameObject.TryGetComponent<GravityModifier>(out _)) return hitInfo.transform.gameObject;
             }
-
-            return bestGravityModifierHit ? bestGravityModifierHit.gameObject : null;
+            return null;
         }
 
         static Vector3? GetRadialMenuGravityDirection()
