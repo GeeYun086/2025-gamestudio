@@ -31,7 +31,7 @@ namespace GravityGame.Player
 
         void Update()
         {
-            var hitObject = FindBestSelectableGravityCube();
+            var hitObject = RaycastForSelectableObject();
 
             if (hitObject) {
                 _aimedObject = hitObject.GetComponent<GravityModifier>();
@@ -115,7 +115,7 @@ namespace GravityGame.Player
         }
 
         [CanBeNull]
-        GameObject FindBestSelectableGravityCube()
+        GameObject RaycastForSelectableObject()
         {
             var cam = Camera.main!;
             var ray = new Ray(cam.transform.position, cam.transform.forward);
