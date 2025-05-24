@@ -2,6 +2,15 @@ using UnityEngine;
 
 namespace GravityGame.Audio
 {
+    /// <summary>
+    /// Plays collision and drag sounds for a cube with a Rigidbody.
+    /// - Plays impact sound on collisions with volume based on collision intensity.
+    /// - Plays looping drag sound when the cube slides on the ground.
+    /// - Plays a soft "thump" sound when the cube stops moving after sliding.
+    /// Attach this script to any cube GameObject with a Rigidbody and assign the appropriate AudioClips and AudioSource.
+    /// </summary>
+    
+    
     // Ensures the object this script is attached to has a Rigidbody
     [RequireComponent(typeof(Rigidbody))]
     public class CubeCollisionSound : MonoBehaviour
