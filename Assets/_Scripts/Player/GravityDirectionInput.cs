@@ -17,7 +17,7 @@ namespace GravityGame.Player
     {
         [SerializeField] Axes _visualizationAxes;
         [SerializeField] float _maxObjectRange = 30;
-        [SerializeField] float _sphereSelectionRadius = 0.5f;
+        [SerializeField] float _sphereSelectionRadius = 0.1f;
         [SerializeField] float _aimBufferDuration = 0.25f;
         [CanBeNull] GravityModifier _aimedObject;
         [CanBeNull] GravityModifier _lastAimedObject;
@@ -28,11 +28,15 @@ namespace GravityGame.Player
 
         [CanBeNull] GravityModifier _selectedObject;
 
+        RaycastHit[] _hitsCache;
+
         static GravityDirectionRadialMenu GravityChangeMenu => GameUI.Instance.Elements.GravityDirectionRadialMenu;
+
+        void Awake() => _hitsCache = new RaycastHit[10];
 
         void Update()
         {
-            var hitObject = RaycastForSelectableObject();
+            var hitObject = FindBestSelectableGravityCube();
 
             if (hitObject) {
                 _aimedObject = hitObject.GetComponent<GravityModifier>();
@@ -100,19 +104,37 @@ namespace GravityGame.Player
         }
 
         [CanBeNull]
-        GameObject RaycastForSelectableObject()
+        GameObject FindBestSelectableGravityCube()
         {
             var cam = Camera.main!;
             var ray = new Ray(cam.transform.position, cam.transform.forward);
             // Note TG: other objects may block the hit, maybe need to ignore more layers in the future
             int layerMask = ~LayerMask.GetMask("AxisGizmo", "Player");
-            if (!Physics.SphereCast(
-                    ray, _sphereSelectionRadius, out var hitResult, _maxObjectRange, layerMask,
-                    QueryTriggerInteraction.Ignore
-                )) return null;
-            return hitResult.transform.gameObject.TryGetComponent<GravityModifier>(out var selectable)
-                ? hitResult.transform.gameObject
-                : null;
+            int numHits = Physics.SphereCastNonAlloc(
+                ray,
+                _sphereSelectionRadius,
+                _hitsCache,
+                _maxObjectRange,
+                layerMask,
+                QueryTriggerInteraction.Ignore
+            );
+
+            if (numHits == 0) return null;
+
+            GravityModifier bestGravityModifierHit = null;
+            float minGravityModifierDistance = float.MaxValue;
+
+            for (int i = 0; i < numHits; i++) {
+                var hit = _hitsCache[i];
+                if (hit.transform.gameObject.TryGetComponent<GravityModifier>(out var gm)) {
+                    if (hit.distance < minGravityModifierDistance) {
+                        minGravityModifierDistance = hit.distance;
+                        bestGravityModifierHit = gm;
+                    }
+                }
+            }
+
+            return bestGravityModifierHit ? bestGravityModifierHit.gameObject : null;
         }
 
         static Vector3? GetRadialMenuGravityDirection()
