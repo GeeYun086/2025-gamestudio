@@ -87,17 +87,17 @@ namespace GravityGame.Utils
 
         public static void DrawUICross(MeshGenerationContext ctx, Vector2 center, Color? lineColor = null)
         {
-            const int LineWidth = 4;
-            const int LineLength = 10;
+            const int lineWidth = 4;
+            const int lineLength = 10;
             var painter = ctx.painter2D;
             painter.strokeColor = lineColor ?? Color.white;
-            painter.lineWidth = LineWidth;
+            painter.lineWidth = lineWidth;
 
             // Calculate horizontal and vertical line endpoints
-            var left = new Vector2(center.x - LineLength * 0.5f, center.y);
-            var right = new Vector2(center.x + LineLength * 0.5f, center.y);
-            var top = new Vector2(center.x, center.y - LineLength * 0.5f);
-            var bottom = new Vector2(center.x, center.y + LineLength * 0.5f);
+            var left = new Vector2(center.x - lineLength * 0.5f, center.y);
+            var right = new Vector2(center.x + lineLength * 0.5f, center.y);
+            var top = new Vector2(center.x, center.y - lineLength * 0.5f);
+            var bottom = new Vector2(center.x, center.y + lineLength * 0.5f);
 
             // Draw horizontal line
             painter.BeginPath();

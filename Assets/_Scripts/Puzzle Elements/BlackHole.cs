@@ -12,24 +12,24 @@ namespace GravityGame.Puzzle_Elements
     [RequireComponent(typeof(SphereCollider))]
     public class BlackHole : MonoBehaviour
     {
-        [SerializeField] private float _effectRadius = 10f;
-        [SerializeField] private LayerMask _affectableLayers = ~0;
-        [SerializeField] [Range(0f, 1f)] private float _movementDampening = 0.1f;
-        [SerializeField] private Material _effectSphereMaterial;
+        [SerializeField] float _effectRadius = 10f;
+        [SerializeField] LayerMask _affectableLayers = ~0;
+        [SerializeField] [Range(0f, 1f)] float _movementDampening = 0.1f;
+        [SerializeField] Material _effectSphereMaterial;
 
-        private SphereCollider _triggerCollider;
-        private readonly List<Rigidbody> _affectedRigidbodies = new();
-        private Transform _visualEffectSphereTransform;
+        SphereCollider _triggerCollider;
+        readonly List<Rigidbody> _affectedRigidbodies = new();
+        Transform _visualEffectSphereTransform;
 
-        private const string VisualSphereName = "BlackHoleEffectSphere";
+        const string VisualSphereName = "BlackHoleEffectSphere";
 
-        private void Awake()
+        void Awake()
         {
             InitializeTriggerCollider();
             InitializeVisualSphere();
         }
 
-        private void FixedUpdate()
+        void FixedUpdate()
         {
             for (var i = _affectedRigidbodies.Count - 1; i >= 0; i--)
             {
@@ -45,27 +45,27 @@ namespace GravityGame.Puzzle_Elements
             }
         }
 
-        private void OnTriggerEnter(Collider other)
+        void OnTriggerEnter(Collider other)
         {
             if (!IsLayerAffectable(other.gameObject.layer)) return;
             var rb = other.GetComponentInParent<Rigidbody>();
             if (rb && !rb.isKinematic && !_affectedRigidbodies.Contains(rb)) _affectedRigidbodies.Add(rb);
         }
 
-        private void OnTriggerExit(Collider other)
+        void OnTriggerExit(Collider other)
         {
             if (!IsLayerAffectable(other.gameObject.layer)) return;
             var rb = other.GetComponentInParent<Rigidbody>();
             if (rb) _affectedRigidbodies.Remove(rb);
         }
 
-        private void OnValidate()
+        void OnValidate()
         {
             InitializeTriggerCollider();
             if (gameObject.scene.isLoaded || transform.Find(VisualSphereName)) InitializeVisualSphere();
         }
 
-        private void InitializeTriggerCollider()
+        void InitializeTriggerCollider()
         {
             if (!_triggerCollider)
             {
@@ -76,7 +76,7 @@ namespace GravityGame.Puzzle_Elements
             _triggerCollider.radius = _effectRadius;
         }
 
-        private void InitializeVisualSphere()
+        void InitializeVisualSphere()
         {
             _visualEffectSphereTransform = transform.Find(VisualSphereName);
 
@@ -99,6 +99,6 @@ namespace GravityGame.Puzzle_Elements
             _visualEffectSphereTransform.localScale = Vector3.one * Mathf.Max(0f, _effectRadius * 2f);
         }
 
-        private bool IsLayerAffectable(int layer) => (_affectableLayers.value & 1 << layer) > 0;
+        bool IsLayerAffectable(int layer) => (_affectableLayers.value & 1 << layer) > 0;
     }
 }
