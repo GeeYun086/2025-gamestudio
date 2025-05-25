@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.Serialization;
 
 namespace GravityGame.Puzzle_Elements
 {
@@ -11,21 +12,21 @@ namespace GravityGame.Puzzle_Elements
     public class InteractableObject : MonoBehaviour, IInteractable
     {
         [Header("Interaction Settings")]
-        [SerializeField] private string interactionPrompt = "Press [E] to interact";
-        [SerializeField] private bool isInteractable = true;
+        [SerializeField]  string _interactionPrompt = "Press [E] to interact";
+        [SerializeField]  bool _isInteractable = true;
         
         [Header("Events")]
-        public UnityEvent onInteract;
+        public UnityEvent OnInteract;
         
-        public string InteractionPrompt => interactionPrompt;
-        public bool IsInteractable => isInteractable;
+        public string InteractionPrompt => _interactionPrompt;
+        public bool IsInteractable => _isInteractable;
         
         public virtual void Interact()
         {
-            if (!isInteractable) return;
-            onInteract.Invoke();
+            if (!_isInteractable) return;
+            OnInteract.Invoke();
         }
         
-        public void SetInteractable(bool state) => isInteractable = state;
+        public void SetInteractable(bool state) => _isInteractable = state;
     }
 }

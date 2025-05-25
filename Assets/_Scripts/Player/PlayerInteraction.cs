@@ -1,5 +1,6 @@
 using UnityEngine;
 using GravityGame.Puzzle_Elements;
+using UnityEngine.Serialization;
 
 namespace GravityGame.Player
 {
@@ -9,41 +10,43 @@ namespace GravityGame.Player
     /// </summary>
     public class PlayerInteraction : MonoBehaviour
     {
+        
         [Header("Settings")]
-        [SerializeField] private float interactDistance = 3f;
-        [SerializeField] private KeyCode interactKey = KeyCode.E;
-        [SerializeField] private LayerMask interactableLayer;
+        [SerializeField]  float _interactDistance = 3f; 
+        [SerializeField]  KeyCode _interactKey = KeyCode.E;
+        [SerializeField]  LayerMask _interactableLayer;
+        
         
         [Header("References")]
-        [SerializeField] private Camera playerCamera;
-        [SerializeField] private bool showDebugRays = true;
+        [SerializeField]  Camera _playerCamera;
+        [SerializeField]  bool _showDebugRays = true;
         
-        private IInteractable currentInteractable;
+         IInteractable _currentInteractable;
 
-        private void Update()
+         void Update()
         {
             CheckForInteractables();
             
-            if (Input.GetKeyDown(interactKey) && currentInteractable != null && currentInteractable.IsInteractable)
+            if (Input.GetKeyDown(_interactKey) && _currentInteractable != null && _currentInteractable.IsInteractable)
             {
-                currentInteractable.Interact();
+                _currentInteractable.Interact();
             }
         }
         
-        private void CheckForInteractables()
+         void CheckForInteractables()
         {
-            if (playerCamera == null) return;
+            if (_playerCamera == null) return;
             
-            Ray ray = new Ray(playerCamera.transform.position, playerCamera.transform.forward);
-            bool hitSomething = Physics.Raycast(ray, out RaycastHit hit, interactDistance, interactableLayer);
+            Ray ray = new Ray(_playerCamera.transform.position, _playerCamera.transform.forward);
+            bool hitSomething = Physics.Raycast(ray, out RaycastHit hit, _interactDistance, _interactableLayer);
             
-            if (showDebugRays)
+            if (_showDebugRays)
             {
-                Debug.DrawRay(ray.origin, ray.direction * interactDistance, 
+                Debug.DrawRay(ray.origin, ray.direction * _interactDistance, 
                     hitSomething ? Color.green : Color.red, 0.1f);
             }
 
-            currentInteractable = hitSomething ? hit.collider.GetComponent<IInteractable>() : null;
+            _currentInteractable = hitSomething ? hit.collider.GetComponent<IInteractable>() : null;
         }
     }
 }
