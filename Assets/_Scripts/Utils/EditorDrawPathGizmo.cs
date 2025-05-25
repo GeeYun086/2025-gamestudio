@@ -3,11 +3,11 @@ using UnityEngine;
 
 namespace GravityGame
 {
+    /// <summary>
+    /// This script draws a yellow sphere around the attached object and if the object has children, it will draw a line between them
+    /// </summary>
     public class GizmoHelperThing : MonoBehaviour
     {
-        /// <summary>
-        /// This script draws a yellow sphere around the attached object and if the object has children, it will draw a line between them
-        /// </summary>
         void OnDrawGizmos()
         {
             Gizmos.color = Color.yellow;

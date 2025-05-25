@@ -1,92 +1,93 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.Serialization;
 
 namespace GravityGame
 {
     /// <summary>
-    /// Moves a NavMeshAgent back and forth through a list of waypoints,
-    /// reversing direction when it reaches either end
+    ///     Moves a NavMeshAgent back and forth through a list of waypoints,
+    ///     reversing direction when it reaches either end
     /// </summary>
-    public class PingPongNavMeshPatrol : MonoBehaviour
+    public class NavMeshPatrol : MonoBehaviour
     {
         public enum PatrolMode { PingPong, Loop }
-
+        
         [Header("Path definition")]
         [Tooltip("Waypoint parent")]
-        public Transform waypointsRoot;
+        public Transform WaypointsRoot;
 
         [Header("Patrol behaviour")]
-        public PatrolMode patrolMode = PatrolMode.PingPong;
-        public float waitAtEnds = 0.5f;
-        public float waitAtPoints = 0f;
+        public PatrolMode SelectedMode = PatrolMode.PingPong;
+        public float WaitAtEnds = 0.5f;
+        public float WaitAtPoints;
 
-        NavMeshAgent agent;
-        Transform[] pts;
-        int index = 0;
-        int dir = 1; // +1 forward, –1 backward
-        bool waiting;
+        NavMeshAgent _agent;
+        int _dir = 1; // +1 forward, –1 backward
+        int _index;
+        Transform[] _pts;
+        bool _waiting;
 
         void Awake()
         {
-            agent = GetComponent<NavMeshAgent>();
-            if (waypointsRoot == null) {
+            _agent = GetComponent<NavMeshAgent>();
+            if (WaypointsRoot == null) {
                 Debug.LogError($"{name}: Patrol script needs a waypoints root!");
                 enabled = false;
                 return;
             }
 
-            pts = new Transform[waypointsRoot.childCount];
-            for (int i = 0; i < pts.Length; i++) pts[i] = waypointsRoot.GetChild(i);
+            _pts = new Transform[WaypointsRoot.childCount];
+            for (int i = 0; i < _pts.Length; i++) _pts[i] = WaypointsRoot.GetChild(i);
         }
 
-        void Start() => GoTo(index);
+        void Start() => GoTo(_index);
 
         void Update()
         {
-            if (waiting || pts.Length == 0) return;
+            if (_waiting || _pts.Length == 0) return;
 
-            if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance)
+            if (!_agent.pathPending && _agent.remainingDistance <= _agent.stoppingDistance)
                 StartCoroutine(NextTarget());
         }
 
         IEnumerator NextTarget()
         {
-            waiting = true;
+            _waiting = true;
 
-            if (waitAtPoints > 0) yield return new WaitForSeconds(waitAtPoints);
+            if (WaitAtPoints > 0) yield return new WaitForSeconds(WaitAtPoints);
 
-            switch (patrolMode) {
+            switch (SelectedMode) {
                 case PatrolMode.PingPong:
-                    index += dir;
-                    if (index >= pts.Length) {
-                        dir = -1;
-                        index = pts.Length - 2;
-                    } else if (index < 0) {
-                        dir = 1;
-                        index = 1;
+                    _index += _dir;
+                    if (_index >= _pts.Length) {
+                        _dir = -1;
+                        _index = _pts.Length - 2;
+                    } else if (_index < 0) {
+                        _dir = 1;
+                        _index = 1;
                     }
-                    if ((index == 0 || index == pts.Length - 1) && waitAtEnds > 0)
-                        yield return new WaitForSeconds(waitAtEnds);
+                    if ((_index == 0 || _index == _pts.Length - 1) && WaitAtEnds > 0)
+                        yield return new WaitForSeconds(WaitAtEnds);
                     break;
 
                 case PatrolMode.Loop:
-                    index = (index + 1) % pts.Length;
-                    if (index == 0 && waitAtEnds > 0)
-                        yield return new WaitForSeconds(waitAtEnds);
+                    _index = (_index + 1) % _pts.Length;
+                    if (_index == 0 && WaitAtEnds > 0)
+                        yield return new WaitForSeconds(WaitAtEnds);
                     break;
             }
 
-            GoTo(index);
-            waiting = false;
+            GoTo(_index);
+            _waiting = false;
         }
 
         void GoTo(int i)
         {
-            if (!NavMesh.SamplePosition(pts[i].position, out var hit, 1f, NavMesh.AllAreas))
-                Debug.LogWarning($"Waypoint {pts[i].name} is off the NavMesh!");
+            if (!NavMesh.SamplePosition(_pts[i].position, out var hit, 1f, NavMesh.AllAreas))
+                Debug.LogWarning($"Waypoint {_pts[i].name} is off the NavMesh!");
             else
-                agent.SetDestination(hit.position);
+                _agent.SetDestination(hit.position);
         }
     }
 }
