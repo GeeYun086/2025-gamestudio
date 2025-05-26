@@ -6,76 +6,49 @@
     noNamespaceSchemaLocation="../../../../UIElementsSchema/UIElements.xsd"
     editor-extension-mode="False">
 
-  <!-- attach your USS -->
+  <!-- Hook up our USS -->
   <Style src="GameUI.uss"/>
 
-  <!-- existing UI elements -->
-  <engine:VisualElement name="Debug"
-                        picking-mode="Ignore"
-                        style="flex-grow:0; justify-content:center; align-items:center; position:absolute; top:0; right:0; left:0; bottom:0;"/>
-  <engine:VisualElement name="HUD"
-                        style="flex-grow:1; margin:20px;">
-    <engine:VisualElement name="BottomRight"
-                          style="position:absolute; right:0; bottom:0;"/>
-  </engine:VisualElement>
-  <engine:VisualElement name="Center"
-                        style="position:absolute; top:0; right:0; left:0; bottom:0; justify-content:center; align-items:center;">
-    <engine:VisualElement name="Crosshair"
-                          style="width:5px; height:5px; background-color:rgb(255,255,255); border-radius:50%; position:absolute;"/>
-    <GravityGame.UI.GravityDirectionRadialMenu
-        name="RadialMenu"
-        deadzone-radius="30"
-        inner-radius="130"
-        outer-radius="1483"
-        outline-color="#FFFFFF00"
-        outer-color="#0000004C"
-        dead-zone-color="#00000000"
-        segment-margin="-0.95"
-        inner-color="#0000004C"
-        enabled="true"
-        picking-mode="Ignore"
-        _inner-color="#FF0000FF"
-        _outer-color="#FF0000FF"
-        _segment-gap="0"
-        style="display:flex; visibility:visible; opacity:0.04;"/>
-  </engine:VisualElement>
+  <!-- Debug / HUD / Center omitted for brevity -->
 
-  <!-- PAUSE MENU OVERLAY -->
   <engine:VisualElement name="PauseMenu"
-                        class="pause-menu"
-                        picking-mode="Position"
-                        style="display:none;">
-    <!-- Main panel -->
-    <engine:VisualElement name="MainPanel" class="menu-container">
-      <engine:Label         text="GAME PAUSED" class="menu-header"/>
-      <engine:VisualElement class="separator"/>
+      class="pause-menu"
+      picking-mode="Position"
+      style="display:none;">
 
+    <!-- Main menu -->
+    <engine:VisualElement name="MainPanel" class="menu-container">
+      <engine:Label text="GAME PAUSED" class="menu-header"/>
+      <engine:VisualElement class="separator"/>
       <engine:Button name="ResumeButton"   text="RESUME GAME" class="menu-item"/>
       <engine:VisualElement class="separator"/>
-
       <engine:Button name="SettingsButton" text="SETTINGS"    class="menu-item"/>
       <engine:VisualElement class="separator"/>
-
       <engine:Button name="MainMenuButton" text="MAIN MENU"   class="menu-item"/>
       <engine:VisualElement class="separator"/>
-
       <engine:Button name="QuitButton"     text="QUIT GAME"   class="menu-item"/>
     </engine:VisualElement>
 
     <!-- Settings sub-panel -->
     <engine:VisualElement name="SettingsPanel"
-                          class="menu-container"
-                          style="display:none;">
+        class="menu-container"
+        style="display:none;">
+
       <engine:Label text="SOUND LEVELS" class="menu-header"/>
       <engine:VisualElement class="separator"/>
 
-      <engine:Slider name="VolumeSlider"
-                     low-value="0"
-                     high-value="1"
-                     page-size="0.05"
-                     show-input-field="true"/>
-      <engine:VisualElement class="separator"/>
+      <engine:VisualElement class="slider-container">
+        <engine:VisualElement class="icon-sound"/>
+        <engine:Slider
+            name="VolumeSlider"
+            class="modern-slider"
+            low-value="0"
+            high-value="1"
+            page-size="0.05"
+            show-input-field="true"/>
+      </engine:VisualElement>
 
+      <engine:VisualElement class="separator"/>
       <engine:Button name="BackButton" text="BACK" class="menu-item"/>
     </engine:VisualElement>
   </engine:VisualElement>

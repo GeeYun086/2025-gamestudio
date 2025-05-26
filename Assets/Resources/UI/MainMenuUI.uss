@@ -2,7 +2,7 @@
 
 .main-root {
     /* background-image only accepts resource("nameWithoutExtension") */
-    background-image: resource("UI/main_menubg");
+    background-image: resource("UI/Images/main_menubg");
     background-size: cover;
     background-position: center;
     width: 100%;

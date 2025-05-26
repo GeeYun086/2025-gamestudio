@@ -1,81 +1,175 @@
-/* Resident Evil Style Pause Menu (Unity-compatible) */
+﻿/* GameUI.uss */
+
+/*------------------------------------------------*/
+/* 1. Font Face                                   */
+/*------------------------------------------------*/
+@font-face {
+    src: resource("UI/Fonts/OCRA.ttf");
+    font-family: OCRA;
+}
+
+/*------------------------------------------------*/
+/* 2. Pause-Menu Overlay w/ Background Image      */
+/*------------------------------------------------*/
 .pause-menu {
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
+
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: rgba(0, 0, 0, 0.95);
+
+    /* make sure your file is at Assets/UI/Images/bg_pausemenu.png */
+    background-image: resource("UI/Images/bg_pausemenu");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
 }
 
-/* CRT Overlay Element */
-.crt-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-image: resource("CRT_Texture");
-    opacity: 0.12;
-    pointer-events: none;
-}
-
+/*------------------------------------------------*/
+/* 3. Panel Containers                            */
+/*------------------------------------------------*/
 .menu-container {
     width: 420px;
-    padding: 40px 30px;
+    padding-top: 40px;
+    padding-bottom: 40px;
+    padding-left: 30px;
+    padding-right: 30px;
+
     background-color: rgba(10, 2, 2, 0.98);
-    border: 3px solid rgba(120, 8, 8, 0.7);
-    box-shadow: 0 0 25px rgba(150, 0, 0, 0.3);
-    z-index: 1;
+
+    border-color: rgba(120, 8, 8, 0.7);
+    border-width: 3px;
+    border-radius: 8px;
 }
 
-/* Biohazard Watermark */
-.biohazard-watermark {
-    position: absolute;
-    width: 150px;
-    height: 150px;
-    background-image: resource("Biohazard_Symbol");
-    opacity: 0.08;
-    right: -30px;
-    bottom: -30px;
-    pointer-events: none;
-}
-
+/*------------------------------------------------*/
+/* 4. Headers & Separators                        */
+/*------------------------------------------------*/
 .menu-header {
+    font-family: OCRA;
     font-size: 32px;
     color: #6DFF6D;
-    unity-font: bold 32px 'Consolas';
-    unity-text-align: middle-center;
+
     padding-bottom: 20px;
-    border-bottom: 2px solid rgba(150, 0, 0, 0.5);
-    text-transform: uppercase;
-    letter-spacing: 3px;
 }
 
+.separator {
+    height: 1px;
+    background-color: rgba(120, 8, 8, 0.7);
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+/*------------------------------------------------*/
+/* 5. Menu Items                                  */
+/*------------------------------------------------*/
 .menu-item {
-    padding: 14px 25px;
+    padding-top: 14px;
+    padding-bottom: 14px;
+    padding-left: 25px;
+    padding-right: 25px;
+
+    font-family: Consolas;
     font-size: 20px;
     color: #E0E0E0;
-    unity-font: 20px 'System';
+
     background-color: transparent;
-    transition: all 0.25s ease-in-out;
-    border-left: 3px solid transparent;
+    border-left-width: 3px;
+    border-left-color: transparent;
 }
 
 .menu-item:hover {
     background-color: rgba(80, 0, 0, 0.3);
     color: #FF4A4A;
     border-left-color: #FF4A4A;
-    padding-left: 35px;
     cursor: link;
 }
 
-.slider-container {
-    padding: 15px 25px;
-    border-top: 1px solid rgba(100, 0, 0, 0.3);
+/*------------------------------------------------*/
+/* 6. Volume Icon                                 */
+/*------------------------------------------------*/
+.icon-sound {
+    width: 24px;
+    height: 24px;
+
+    background-image: resource("UI/Images/icon_sound");
+    background-size: contain;
+    background-repeat: no-repeat;
+    margin-right: 12px;
 }
 
-Slider > Thumb {
-    background-color: #B00;
-    border: 2px solid #800;
+/*------------------------------------------------*/
+/* 7. Modern Slider Container & Slider Overrides  */
+/*------------------------------------------------*/
+.slider-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    padding-top: 12px;
+    padding-bottom: 12px;
+    padding-left: 20px;
+    padding-right: 20px;
+
+    background-color: rgba(20, 20, 20, 0.8);
+
+    border-color: rgba(255, 255, 255, 0.1);
+    border-width: 1px;
+    border-radius: 8px;
+
+    margin-bottom: 16px;
+}
+
+.modern-slider {
+    flex-grow: 1;
+    height: 16px;
+    margin: 0;
+}
+
+/* Track */
+.modern-slider .unity-slider-track {
+    background-color: #333;
+    height: 8px;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+/* Progress fill */
+.modern-slider .unity-slider-progress {
+    background-color: #1E90FF;
+    height: 8px;
+    border-radius: 4px;
+}
+
+/* Thumb */
+.modern-slider .unity-slider-dragger {
+    width: 24px;
+    height: 24px;
+    background-color: #1E90FF;
+    border-color: #FFFFFF;
+    border-width: 2px;
+    border-radius: 50%;
+}
+
+/*------------------------------------------------*/
+/* 8. Slider Input Field                          */
+/*------------------------------------------------*/
+.modern-slider .unity-input--text {
+    width: 48px;
+    margin-left: 10px;
+
+    padding-top: 2px;
+    padding-bottom: 2px;
+    padding-left: 4px;
+    padding-right: 4px;
+
+    background-color: #222;
+    color: #FFFFFF;
+
+    border-color: rgba(255,255,255,0.2);
+    border-width: 1px;
+    border-radius: 4px;
+
+    font-size: 14px;
 }

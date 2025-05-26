@@ -1,10 +1,8 @@
-﻿using UnityEngine;
-using UnityEngine.UIElements;
+﻿using UnityEditor;
+using UnityEngine;
 using UnityEngine.SceneManagement;
-
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
+using UnityEngine.UIElements;
+using Cursor = UnityEngine.Cursor;
 
 namespace GravityGame.UI
 {
@@ -12,8 +10,8 @@ namespace GravityGame.UI
     public class PauseMenu : MonoBehaviour
     {
         private VisualElement _pauseMenu, _mainPanel, _settingsPanel;
-        private Button _resumeButton, _settingsButton, _mainMenuButton, _quitButton, _backButton;
-        private Slider _volumeSlider;
+        private Button        _resumeButton, _settingsButton, _mainMenuButton, _quitButton, _backButton;
+        private Slider        _volumeSlider;
 
         private bool _initialized;
         private const string PrefVolume = "MasterVolume";
@@ -21,9 +19,7 @@ namespace GravityGame.UI
         private void Awake()
         {
             if (SceneManager.GetActiveScene().name != "MainScene")
-            {
                 Destroy(gameObject);
-            }
         }
 
         private void OnEnable()
@@ -40,8 +36,8 @@ namespace GravityGame.UI
 
             if (Time.timeScale == 0f)
             {
-                UnityEngine.Cursor.lockState = CursorLockMode.None;
-                UnityEngine.Cursor.visible = true;
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible   = true;
             }
         }
 
@@ -50,36 +46,40 @@ namespace GravityGame.UI
             if (_initialized || GameUI.Instance == null) return;
 
             var e = GameUI.Instance.Elements;
-            _pauseMenu = e.PauseMenu;
-            _mainPanel = e.MainPanel;
+
+            _pauseMenu     = e.PauseMenu;
+            _mainPanel     = e.MainPanel;
             _settingsPanel = e.SettingsPanel;
 
-            _resumeButton = e.ResumeButton;
+            _resumeButton   = e.ResumeButton;
             _settingsButton = e.SettingsButton;
             _mainMenuButton = e.MainMenuButton;
-            _quitButton = e.QuitButton;
-            _backButton = e.BackButton;
-            _volumeSlider = e.VolumeSlider;
+            _quitButton     = e.QuitButton;
+            _backButton     = e.BackButton;
+            _volumeSlider   = e.VolumeSlider;
 
-            _pauseMenu.style.display = DisplayStyle.None;
-            _mainPanel.style.display = DisplayStyle.None;
+            // Start hidden
+            _pauseMenu.style.display     = DisplayStyle.None;
+            _mainPanel.style.display     = DisplayStyle.None;
             _settingsPanel.style.display = DisplayStyle.None;
 
-            _resumeButton.clicked += ResumeGame;
+            // Button wiring
+            _resumeButton.clicked   += ResumeGame;
             _settingsButton.clicked += ShowSettings;
             _mainMenuButton.clicked += GoToMainMenu;
-            _quitButton.clicked += QuitToMainMenu;
-            _backButton.clicked += ShowMain;
+            _quitButton.clicked     += QuitToMainMenu;
+            _backButton.clicked     += ShowMain;
 
+            // Volume slider
             _volumeSlider.RegisterValueChangedCallback(evt =>
             {
                 AudioListener.volume = evt.newValue;
                 PlayerPrefs.SetFloat(PrefVolume, evt.newValue);
             });
 
-            var saved = PlayerPrefs.GetFloat(PrefVolume, 1f);
+            float saved = PlayerPrefs.GetFloat(PrefVolume, 1f);
             AudioListener.volume = saved;
-            _volumeSlider.value = saved;
+            _volumeSlider.value  = saved;
 
             _initialized = true;
         }
@@ -96,51 +96,50 @@ namespace GravityGame.UI
 
         private void PauseGame()
         {
-            Time.timeScale = 0f;
+            Time.timeScale           = 0f;
             _pauseMenu.style.display = DisplayStyle.Flex;
             ShowMain();
-
-            UnityEngine.Cursor.lockState = CursorLockMode.None;
-            UnityEngine.Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible   = true;
         }
 
         private void ResumeGame()
         {
-            Time.timeScale = 1f;
+            Time.timeScale           = 1f;
             _pauseMenu.style.display = DisplayStyle.None;
-
-            UnityEngine.Cursor.lockState = CursorLockMode.Locked;
-            UnityEngine.Cursor.visible = false;
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible   = false;
         }
 
         private void ShowSettings()
         {
-            _mainPanel.style.display = DisplayStyle.None;
+            _mainPanel.style.display     = DisplayStyle.None;
             _settingsPanel.style.display = DisplayStyle.Flex;
-
-            UnityEngine.Cursor.lockState = CursorLockMode.None;
-            UnityEngine.Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible   = true;
         }
 
         private void ShowMain()
         {
             _settingsPanel.style.display = DisplayStyle.None;
-            _mainPanel.style.display = DisplayStyle.Flex;
-
-            UnityEngine.Cursor.lockState = CursorLockMode.None;
-            UnityEngine.Cursor.visible = true;
-        }
-
-        private void QuitToMainMenu()
-        {
-            Time.timeScale = 1f;
-            SceneManager.LoadScene("MainMenu");
+            _mainPanel.style.display     = DisplayStyle.Flex;
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible   = true;
         }
 
         private void GoToMainMenu()
         {
             Time.timeScale = 1f;
             SceneManager.LoadScene("MainMenu");
+        }
+
+        private void QuitToMainMenu()
+        {
+#if UNITY_EDITOR
+            EditorApplication.isPlaying = false;
+#else
+            Application.Quit();
+#endif
         }
     }
 }

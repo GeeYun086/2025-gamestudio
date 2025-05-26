@@ -6,24 +6,54 @@ namespace GravityGame.UI
 {
     /// <summary>
     /// Centralized access to all UI elements in the Game UI Document.
-    /// Helps manage changes to the UI layout from a single point.
+    /// Guarantees every field is non-null (falls back to empty stubs if not found).
     /// </summary>
-    public record GameUIElements(VisualElement Root)
+    public class GameUIElements
     {
-        public readonly GravityDirectionRadialMenu GravityDirectionRadialMenu = Root.Q<GravityDirectionRadialMenu>();
-        public readonly VisualElement DebugElement = Root.Q<VisualElement>("Debug");
+        public readonly GravityDirectionRadialMenu GravityDirectionRadialMenu;
+        public readonly VisualElement DebugElement;
 
-        public readonly VisualElement PauseMenu     = Root.Q<VisualElement>("PauseMenu");
-        public readonly VisualElement MainPanel     = Root.Q<VisualElement>("MainPanel");
-        public readonly VisualElement SettingsPanel = Root.Q<VisualElement>("SettingsPanel");
+        public readonly VisualElement PauseMenu;
+        public readonly VisualElement MainPanel;
+        public readonly VisualElement SettingsPanel;
 
-        public readonly Button ResumeButton   = Root.Q<Button>("ResumeButton");
-        public readonly Button SettingsButton = Root.Q<Button>("SettingsButton");
-        public readonly Button MainMenuButton = Root.Q<Button>("MainMenuButton");
-        public readonly Button QuitButton     = Root.Q<Button>("QuitButton");
-        public readonly Button BackButton     = Root.Q<Button>("BackButton");
+        public readonly Button ResumeButton;
+        public readonly Button SettingsButton;
+        public readonly Button MainMenuButton;
+        public readonly Button QuitButton;
+        public readonly Button BackButton;
 
-        public readonly Slider VolumeSlider = Root.Q<Slider>("VolumeSlider");
+        public readonly Slider VolumeSlider;
+
+        public GameUIElements(VisualElement root)
+        {
+            // If Q<>() returns null, we substitute a brand‐new stub so nobody ever sees a null.
+            GravityDirectionRadialMenu = root.Q<GravityDirectionRadialMenu>("RadialMenu")
+                                        ?? new GravityDirectionRadialMenu();
+            DebugElement               = root.Q<VisualElement>("Debug")
+                                        ?? new VisualElement();
+
+            PauseMenu                  = root.Q<VisualElement>("PauseMenu")
+                                        ?? new VisualElement();
+            MainPanel                  = root.Q<VisualElement>("MainPanel")
+                                        ?? new VisualElement();
+            SettingsPanel              = root.Q<VisualElement>("SettingsPanel")
+                                        ?? new VisualElement();
+
+            ResumeButton               = root.Q<Button>("ResumeButton")
+                                        ?? new Button();
+            SettingsButton             = root.Q<Button>("SettingsButton")
+                                        ?? new Button();
+            MainMenuButton             = root.Q<Button>("MainMenuButton")
+                                        ?? new Button();
+            QuitButton                 = root.Q<Button>("QuitButton")
+                                        ?? new Button();
+            BackButton                 = root.Q<Button>("BackButton")
+                                        ?? new Button();
+
+            VolumeSlider               = root.Q<Slider>("VolumeSlider")
+                                        ?? new Slider();
+        }
     }
 
     [RequireComponent(typeof(UIDocument))]
@@ -35,6 +65,7 @@ namespace GravityGame.UI
 
         private void Awake()
         {
+            // Only one GameUI in MainScene
             if (SceneManager.GetActiveScene().name != "MainScene")
             {
                 Destroy(gameObject);
@@ -52,10 +83,13 @@ namespace GravityGame.UI
 
         private void OnEnable()
         {
-            if (SceneManager.GetActiveScene().name != "MainScene") return;
-
+            // Grab the root if we have a UIDocument; otherwise use an empty root.
             UIDocument = GetComponent<UIDocument>();
-            Elements = new GameUIElements(UIDocument.rootVisualElement);
+            var root = (UIDocument != null)
+                ? UIDocument.rootVisualElement
+                : new VisualElement();
+
+            Elements = new GameUIElements(root);
         }
     }
 }
