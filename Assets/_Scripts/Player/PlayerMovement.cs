@@ -82,28 +82,48 @@ namespace GravityGame.Player
                 return;
             }
 
-            var velocityChange = new Vector3();
-            for (int i = 0; i < 3; i++) {
-                var desired = desiredVelocity[i];
-                var current = velocity[i];
-
-                if (desired == 0) continue;
-                var div = current / desired;
-                var sign = Math.Sign(desired);
-                Debug.Log(div);
-
-                velocityChange[i] = div switch {
-                    < 0 => desired - current,
-                    < 1 => desired - current,
-                    _ => 0
-                };
+            var angle = Vector3.Angle(velocity, desiredVelocity);
+            const float lostSpeedPerAngle = 0.01f;
+            const float anglePerSecond = 360;
+            var interpolatedVelocity = Vector3.Slerp(velocity, desiredVelocity, Time.fixedDeltaTime * anglePerSecond / angle);
+            var speed = interpolatedVelocity.magnitude;
+            if (angle < 90) {
+                var changedAngle = Vector3.Angle(velocity, interpolatedVelocity);
+                var steeredSpeed = velocity.magnitude * (1 - lostSpeedPerAngle * changedAngle);
+                speed = Math.Max(speed, steeredSpeed);
+                if (speed < _moveSpeedMps) {
+                    var airModifier = _isGrounded ? 1f : _airMovementModifier;
+                    speed = Math.Min(_moveSpeedMps, speed + _maxAcceleration * Time.fixedDeltaTime * airModifier);
+                }
             }
+            
+            var newVelocity = interpolatedVelocity.normalized * speed;
+            var velocityChange = newVelocity - velocity;
 
-            var airModifier = _isGrounded ? 1f : _airMovementModifier;
-            velocityChange = Vector3.ClampMagnitude(
-                velocityChange,
-                airModifier * _maxAcceleration * Time.fixedDeltaTime
-            );
+            
+            
+            
+            // for (int i = 0; i < 3; i++) {
+            //     var desired = desiredVelocity[i];
+            //     var current = velocity[i];
+            //
+            //     if (desired == 0) continue;
+            //     var div = current / desired;
+            //     var sign = Math.Sign(desired);
+            //     Debug.Log(div);
+            //
+            //     velocityChange[i] = div switch {
+            //         < 0 => desired - current,
+            //         < 1 => desired - current,
+            //         _ => 0
+            //     };
+            // }
+            //
+            // var airModifier = _isGrounded ? 1f : _airMovementModifier;
+            // velocityChange = Vector3.ClampMagnitude(
+            //     velocityChange,
+            //     airModifier * _maxAcceleration * Time.fixedDeltaTime
+            // );
 
             _rigidbody.AddForce(velocityChange, ForceMode.VelocityChange);
         }
