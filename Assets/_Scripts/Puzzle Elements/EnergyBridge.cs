@@ -2,6 +2,10 @@ using UnityEngine;
 
 namespace GravityGame.Puzzle_Elements
 {
+    /// <summary>
+    /// IsActive controls wether the bridge is extended or not.
+    /// Changing that value will cause the bridge to extend or retract smoothly.
+    /// </summary>
     public class EnergyBridge : MonoBehaviour
     {
         float _bridgeLength;
