@@ -15,6 +15,7 @@ namespace GravityGame.Player
         [SerializeField] float _airMovementModifier = 0.5f;
         [SerializeField] AnimationCurve _accelerationCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
         [SerializeField] float _jumpBufferTime = 0.15f;
+        [SerializeField] float _coyoteTime = 0.2f;
 
         [SerializeField] InputActionReference _moveInput;
         [SerializeField] InputActionReference _jumpInput;
@@ -24,6 +25,7 @@ namespace GravityGame.Player
         bool _isGrounded;
         float _jumpBufferTimer;
         bool _isJumping;
+        float _coyoteTimer;
 
         void OnEnable()
         {
@@ -40,6 +42,12 @@ namespace GravityGame.Player
             const float groundDistance = 0.15f;
             var feetPosition = transform.position - (_collider.height * 0.5f + margin) * transform.up;
             _isGrounded = Physics.Raycast(feetPosition, -transform.up, groundDistance);
+            
+            if (_isGrounded)
+                _coyoteTimer = 0f;
+            else
+                _coyoteTimer += Time.fixedDeltaTime;
+            
             Debug.DrawRay(feetPosition, -transform.up * groundDistance, Color.red);
 
             var inputDirection = _moveInput.action.ReadValue<Vector2>();
@@ -47,7 +55,7 @@ namespace GravityGame.Player
 
             if (_jumpBufferTimer < _jumpBufferTime)
                 _jumpBufferTimer += Time.fixedDeltaTime;
-            if (_isGrounded && _jumpBufferTimer < _jumpBufferTime)
+            if (_coyoteTimer < _coyoteTime && _jumpBufferTimer < _jumpBufferTime)
                 Jump();
         }
 
