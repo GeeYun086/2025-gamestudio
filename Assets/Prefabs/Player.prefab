@@ -129,9 +129,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _moveSpeedMps: 8
-  _maxAcceleration: 2
+  _maxAcceleration: 70
   _jumpForce: 9
-  _airMovementModifier: 0.3
+  _jumpForward: 0.3
+  _airMovementModifier: 0.5
   _accelerationCurve:
     serializedVersion: 2
     m_Curve:

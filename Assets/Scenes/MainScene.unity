@@ -750,14 +750,6 @@ PrefabInstance:
       propertyPath: m_LocalRotation.y
       value: -0.99662334
       objectReference: {fileID: 0}
-    - target: {fileID: 4446406959541147416, guid: 20f183c53d63e61429e2e4e099ccd34f, type: 3}
-      propertyPath: _maxAcceleration
-      value: 80
-      objectReference: {fileID: 0}
-    - target: {fileID: 4446406959541147416, guid: 20f183c53d63e61429e2e4e099ccd34f, type: 3}
-      propertyPath: _airMovementModifier
-      value: 0.6
-      objectReference: {fileID: 0}
     - target: {fileID: 4459303878606845145, guid: 20f183c53d63e61429e2e4e099ccd34f, type: 3}
       propertyPath: m_LocalRotation.w
       value: 0.0580604
