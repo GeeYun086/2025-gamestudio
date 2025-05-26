@@ -57,59 +57,69 @@ namespace GravityGame.Player
         void Move(Vector2 direction)
         {
             direction = direction.normalized;
-            var groundNormal = GetGroundNormal();
-
             var velocity = new Vector3(_rigidbody.linearVelocity.x, 0, _rigidbody.linearVelocity.z);
             var desiredVelocity = new Vector3(direction.x, 0, direction.y) * _moveSpeedMps;
             desiredVelocity = Quaternion.Euler(0, Camera.main.transform.eulerAngles.y, 0) * desiredVelocity;
-            // project to enable walking on slopes
-            desiredVelocity = Vector3.ProjectOnPlane(desiredVelocity, groundNormal);
 
-            // Stay one slope logic
-            // Note TG: I have a feeling this might cause weird issues when standing on non-static objects. Needs to be tested in real puzzles
-            {
-                var gravity = GetComponent<GravityModifier>();
-                if (_isGrounded && direction == Vector2.zero) {
-                    const float maxSlopeAngle = 35;
-                    if (Vector3.Angle(groundNormal, transform.up) > maxSlopeAngle) {
-                        groundNormal = transform.up; // stay on slope
-                    }
-                }
-                gravity.GravityDirection = -groundNormal;
-            }
-
+            // Need to set this for stay on slop logic afterwards
+            var gravity = GetComponent<GravityModifier>();
+            gravity.GravityDirection = Vector3.down;
+            
             if (direction == Vector2.zero) {
                 return;
             }
 
             var workingVelocity = new Vector3();
-            
+
             for (int i = 0; i < 3; i++) {
                 var v = desiredVelocity[i];
                 var d = velocity[i];
                 workingVelocity[i] = Math.Abs(v) > Math.Abs(d) ? v : d;
             }
-            // var speed = workingVelocity.magnitude;
-            // speed = Math.Max(speed, velocity.magnitude);
-            // speed = Math.Max(speed, _moveSpeedMps);
-            // workingVelocity = workingVelocity.normalized * speed;
 
-            var angle = Vector3.Angle(velocity, desiredVelocity);
-            const float lostSpeedPerAngle = 0.01f;
-            const float anglePerSecond = 360;
-            
-            if (angle < 90 && velocity.magnitude > _moveSpeedMps * 0.75f) {
-                var interpolatedVelocity = Vector3.Lerp(velocity, desiredVelocity, Time.fixedDeltaTime * anglePerSecond / angle);
-                var speed = interpolatedVelocity.magnitude;
-                var changedAngle = Vector3.Angle(velocity, interpolatedVelocity);
-                var steeredSpeed = velocity.magnitude * (1 - lostSpeedPerAngle * changedAngle);
-                speed = Math.Max(speed, steeredSpeed);
-                speed = Math.Max(speed, _moveSpeedMps);
-                workingVelocity = interpolatedVelocity.normalized * speed;
+            const float maxSlopeAngle = 40;
+            const int groundLayerMask = 1 << 0;
+            var ray = new Ray(transform.position, -transform.up);
+            if (Physics.Raycast(ray, out var ground, _collider.height * 0.5f + 0.3f, groundLayerMask)) {
+                if (Vector3.Angle(ground.normal, transform.up) > maxSlopeAngle) {
+                    // Project to enable walking on slopes
+                    desiredVelocity = Vector3.ProjectOnPlane(desiredVelocity, ground.normal);
+                    // Stay one slope logic
+                    // Note TG: I have a feeling this might cause weird issues when standing on non-static objects. Needs to be tested in real puzzles
+                    if (direction == Vector2.zero) {
+                        gravity = GetComponent<GravityModifier>();
+                        gravity.GravityDirection = -ground.normal;
+                    }
+                }
+
+                // Make velocity relative to moving ground
+                if (ground.rigidbody) {
+                    var groundVelocity = new Vector3(ground.rigidbody.linearVelocity.x, 0, ground.rigidbody.linearVelocity.z);
+                    desiredVelocity += groundVelocity; // relative to moving ground
+                }
+            } 
+
+            // Steer current velocity towards move direction
+            {
+                var angle = Vector3.Angle(velocity, desiredVelocity);
+                const float lostSpeedPerAngle = 0.01f;
+                const float anglePerSecond = 360;
+
+                if (angle < 90 && velocity.magnitude > _moveSpeedMps * 0.75f) {
+                    var interpolatedVelocity = Vector3.Lerp(velocity, desiredVelocity, Time.fixedDeltaTime * anglePerSecond / angle);
+                    var speed = interpolatedVelocity.magnitude;
+                    var changedAngle = Vector3.Angle(velocity, interpolatedVelocity);
+                    var steeredSpeed = velocity.magnitude * (1 - lostSpeedPerAngle * changedAngle);
+                    speed = Math.Max(speed, steeredSpeed);
+                    speed = Math.Max(speed, _moveSpeedMps);
+                    workingVelocity = interpolatedVelocity.normalized * speed;
+                    Debug.Log(changedAngle);
+
+                }
             }
-            
+
             var velocityChange = workingVelocity - velocity;
-            
+
             var airModifier = _isGrounded ? 1f : _airMovementModifier;
             velocityChange = Vector3.ClampMagnitude(
                 velocityChange,
