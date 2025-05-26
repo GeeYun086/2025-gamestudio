@@ -173,6 +173,7 @@ namespace GravityGame.Player
         {
             if (go) {
                 var materialsCopy = go.GetComponent<Renderer>().materials;
+                if (materialsCopy.Length < 2) return;
                 var shader = materialsCopy[1].shader;
                 var keywords = shader.keywordSpace;
                 foreach (var keyword in keywords.keywords)
