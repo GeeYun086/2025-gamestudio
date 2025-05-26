@@ -65,16 +65,17 @@ namespace GravityGame.Player
             // Need to set this for stay on slop logic afterwards
             var gravity = GetComponent<GravityModifier>();
             gravity.GravityDirection = Vector3.down;
-            
+
             if (direction == Vector2.zero) {
                 return;
             }
 
             var workingVelocity = new Vector3();
 
+            // Take max velocity of each axis
             for (int i = 0; i < 3; i++) {
-                var v = desiredVelocity[i];
-                var d = velocity[i];
+                float d = desiredVelocity[i];
+                float v = velocity[i];
                 workingVelocity[i] = Math.Abs(v) > Math.Abs(d) ? v : d;
             }
 
@@ -98,46 +99,34 @@ namespace GravityGame.Player
                     var groundVelocity = new Vector3(ground.rigidbody.linearVelocity.x, 0, ground.rigidbody.linearVelocity.z);
                     desiredVelocity += groundVelocity; // relative to moving ground
                 }
-            } 
+            }
 
             // Steer current velocity towards move direction
             {
-                var angle = Vector3.Angle(velocity, desiredVelocity);
+                float angle = Vector3.Angle(velocity, desiredVelocity);
                 const float lostSpeedPerAngle = 0.01f;
                 const float anglePerSecond = 360;
 
                 if (angle < 90 && velocity.magnitude > _moveSpeedMps * 0.75f) {
                     var interpolatedVelocity = Vector3.Lerp(velocity, desiredVelocity, Time.fixedDeltaTime * anglePerSecond / angle);
-                    var speed = interpolatedVelocity.magnitude;
-                    var changedAngle = Vector3.Angle(velocity, interpolatedVelocity);
-                    var steeredSpeed = velocity.magnitude * (1 - lostSpeedPerAngle * changedAngle);
+                    float speed = interpolatedVelocity.magnitude;
+                    float changedAngle = Vector3.Angle(velocity, interpolatedVelocity);
+                    float steeredSpeed = velocity.magnitude * (1 - lostSpeedPerAngle * changedAngle);
                     speed = Math.Max(speed, steeredSpeed);
                     speed = Math.Max(speed, _moveSpeedMps);
                     workingVelocity = interpolatedVelocity.normalized * speed;
                     Debug.Log(changedAngle);
-
                 }
             }
 
+            // Clamp Velocity Change
             var velocityChange = workingVelocity - velocity;
+            float airModifier = _isGrounded ? 1f : _airMovementModifier;
+            float maxVelocityChange = airModifier * _maxAcceleration * Time.fixedDeltaTime;
+            velocityChange = Vector3.ClampMagnitude(velocityChange, maxVelocityChange);
 
-            var airModifier = _isGrounded ? 1f : _airMovementModifier;
-            velocityChange = Vector3.ClampMagnitude(
-                velocityChange,
-                airModifier * _maxAcceleration * Time.fixedDeltaTime
-            );
+            // Change Velocity
             _rigidbody.AddForce(velocityChange, ForceMode.VelocityChange);
-        }
-
-        Vector3 GetGroundNormal()
-        {
-            // Determine angle of the ground, and project the desired velocity onto the ground plane (For movement on slopes)
-            const int groundLayerMask = 1 << 0;
-            var ray = new Ray(transform.position, -transform.up);
-            if (Physics.Raycast(ray, out var hit, _collider.height * 0.5f + 0.3f, groundLayerMask)) {
-                return hit.normal;
-            }
-            return transform.up;
         }
 
         void Jump()
