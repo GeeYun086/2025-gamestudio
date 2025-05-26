@@ -26,6 +26,7 @@ namespace GravityGame.Player
         bool _isGrounded;
         float _jumpBufferTimer;
         bool _isJumping;
+        float _lastJumpTime;
 
         void OnEnable()
         {
@@ -141,10 +142,12 @@ namespace GravityGame.Player
 
         void Jump()
         {
+            if (_lastJumpTime + 0.1f > Time.time) return; // cooldown to jump triggering multiple jumps in two consecutive frames
+            _lastJumpTime = Time.time;
             var input = _moveInput.action.ReadValue<Vector2>();
             var input3 = new Vector3(input.x, 0, input.y);
             var jumpFwd = Quaternion.Euler(0, Camera.main.transform.eulerAngles.y, 0) * input3 * _jumpForward;
-            var jumpUp = new Vector3(0, _jumpForce - _rigidbody.linearVelocity.y);
+            var jumpUp = new Vector3(0, _jumpForce - Math.Min(0, _rigidbody.linearVelocity.y));
             _rigidbody.AddForce(jumpFwd + jumpUp, ForceMode.VelocityChange);
         }
     }
