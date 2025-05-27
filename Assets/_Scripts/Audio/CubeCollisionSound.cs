@@ -68,8 +68,9 @@ namespace GravityGame.Audio
 
                 // Adjust volume based on collision intensity and play impact sound
                 // Changing MaxCollisionVelocity can change the loudness of the sound
-                _audioSource.volume = Mathf.Clamp(velocity / MaxCollisionVelocity, MinVolume, MaxVolume);
-                _audioSource.PlayOneShot(CollisionSound);
+                var volume = Mathf.Clamp(velocity / MaxCollisionVelocity, MinVolume, MaxVolume);
+                AudioSource.PlayClipAtPoint(CollisionSound, transform.position, volume);
+
             } else {
                 // If the collision is too soft, stop any sound (optional: may be removed)
                 _audioSource.Stop();
@@ -95,10 +96,9 @@ namespace GravityGame.Audio
                 // If drag sound isn't playing or wrong clip is assigned, start dragging sound
                 if (!_audioSource.isPlaying || _audioSource.clip != DragSound) {
                     _audioSource.clip = DragSound;
-                    _audioSource.pitch = Random.Range(0.3f, 0.9f); // Add natural variation
+                    _audioSource.pitch = Random.Range(0.8f, 1); // Add natural variation
                     _audioSource.loop = true;
                     _audioSource.Play();
-                    //Debug.Log("dragging");
                 }
 
                 _wasMoving = true;
@@ -110,10 +110,7 @@ namespace GravityGame.Audio
                 }
 
                 // Play a soft "thump" sound indicating cube has come to rest
-                _audioSource.pitch = Random.Range(0.3f, 0.9f);
-                _audioSource.volume = MinVolume;
-                _audioSource.PlayOneShot(CollisionSound);
-                //Debug.Log("thump at stop");
+                AudioSource.PlayClipAtPoint(CollisionSound, transform.position, MinVolume);
 
                 _wasMoving = false;
             }

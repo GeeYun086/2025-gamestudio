@@ -166,7 +166,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 05bf65bade941984ba6821b755991029, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  CubeSound: {fileID: 0}
   CollisionSound: {fileID: 8300000, guid: 28856fe864c95a64fbf3e793b63ed7d6, type: 3}
   DragSound: {fileID: 8300000, guid: f66a93e1ad7782b458044ebed2f9bd91, type: 3}
   MaxCollisionVelocity: 5
@@ -186,7 +185,7 @@ AudioSource:
   m_Volume: 1
   m_Pitch: 1
   Loop: 0
-  Mute: 0
+  Mute: 1
   Spatialize: 0
   SpatializePostEffects: 0
   Priority: 128
