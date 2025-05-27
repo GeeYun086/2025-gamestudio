@@ -35,11 +35,13 @@ namespace GravityGame.Player
 
             if (hitObject) {
                 _aimedObject = hitObject.GetComponent<GravityModifier>();
-                if (hitObject != _lastSelectedObject) {
-                    ToggleOutlineOnObject(hitObject, 1);
-                    ToggleOutlineOnObject(_lastSelectedObject, 0);
-                } else {
-                    ToggleOutlineOnObject(hitObject, 1);
+                if (!_selectedObject || hitObject != _selectedObject.gameObject) {
+                    if (hitObject != _lastSelectedObject) {
+                        ToggleOutlineOnObject(hitObject, 1);
+                        ToggleOutlineOnObject(_lastSelectedObject, 0);
+                    } else {
+                        ToggleOutlineOnObject(hitObject, 1);
+                    }
                 }
 
                 _lastSelectedObject = hitObject;
@@ -47,7 +49,9 @@ namespace GravityGame.Player
                 _lastObjectAimedTime = Time.time;
             } else {
                 _aimedObject = null;
-                if (_lastSelectedObject && Time.time - _lastObjectAimedTime > _aimBufferDuration) {
+                if (_lastSelectedObject &&
+                    Time.time - _lastObjectAimedTime > _aimBufferDuration &&
+                    (!_selectedObject || _lastSelectedObject != _selectedObject.gameObject)) {
                     ToggleOutlineOnObject(_lastSelectedObject, 0);
                     _lastSelectedObject = null;
                 }
@@ -78,8 +82,7 @@ namespace GravityGame.Player
                     Cursor.lockState = CursorLockMode.None;
                     Cursor.visible = true;
                     if (_selectedObject) SetVisualizedDirection(_selectedObject.GravityDirection);
-                    if (_selectedObject && _selectedObject.gameObject != _lastSelectedObject) {
-                        ToggleOutlineOnObject(_lastSelectedObject, 0);
+                    if (_selectedObject) {
                         ToggleOutlineOnObject(_selectedObject.gameObject, 1);
                         _lastSelectedObject = _selectedObject.gameObject;
                     }
@@ -102,6 +105,8 @@ namespace GravityGame.Player
 
             if (isInteracting) {
                 if (!_selectedObject) return;
+                ToggleOutlineOnObject(_selectedObject.gameObject, 1);
+                
                 // TODO TG: actually highlight object
                 DebugDraw.DrawSphere(_selectedObject.transform.position, 1.0f, Color.white);
 
