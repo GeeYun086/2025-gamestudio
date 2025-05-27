@@ -1340,10 +1340,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Cube
       objectReference: {fileID: 0}
-    - target: {fileID: 8030090321904850059, guid: 64e97b85a4f90c348a6daf19eecade02, type: 3}
-      propertyPath: CubeSound
-      value: 
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
