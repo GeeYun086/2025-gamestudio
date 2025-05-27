@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Linq;
 using GravityGame.Gravity;
 using GravityGame.Player;
 using UnityEngine;
@@ -21,13 +22,12 @@ namespace GravityGame.Puzzle_Elements
         [SerializeField] float _playerPushbackForce = 1000f;
 
         [Header("Interaction")]
-        [SerializeField] bool _explodeOnGravityChange = true;
-        [SerializeField] bool _explodeOnPlayerCollision = true;
-        [SerializeField] float _fuseTime = 2f;
+        [SerializeField] float _fuseTime = 5f;
         [SerializeField] AudioClip _fuseSound;
 
         bool _isPrimed;
         AudioSource _audioSource;
+        Collider[] _hitColliders;
 
         void OnValidate()
         {
@@ -43,23 +43,24 @@ namespace GravityGame.Puzzle_Elements
                 _audioSource = gameObject.AddComponent<AudioSource>();
             }
             _audioSource.playOnAwake = false;
+            _hitColliders = new Collider[50];
         }
 
         public override Vector3 GravityDirection
         {
             get => base.GravityDirection;
             set {
-                if (base.GravityDirection != value) {
-                    base.GravityDirection = value;
-                    if (_explodeOnGravityChange) PrimeForExplosion();
-                }
+                if (base.GravityDirection != value) base.GravityDirection = value;
             }
         }
 
         void OnCollisionEnter(Collision collision)
         {
-            if (_isPrimed || !_explodeOnPlayerCollision) return;
-            if (collision.gameObject.GetComponentInParent<PlayerMovement>()) PrimeForExplosion();
+            if (_isPrimed) return;
+            if (collision.transform.IsChildOf(transform) || collision.gameObject == gameObject) return;
+
+            if (collision.contacts.Select(contact => contact.thisCollider.transform)
+                .Any(contactColliderTransform => contactColliderTransform.parent == transform)) PrimeForExplosion();
         }
 
         void PrimeForExplosion()
@@ -83,47 +84,44 @@ namespace GravityGame.Puzzle_Elements
 
         void Detonate()
         {
-            Instantiate(_explosionVFX, transform.position, Quaternion.identity);
-            AudioSource.PlayClipAtPoint(_explosionSound, transform.position, _audioSource.volume);
+            if (_explosionVFX) Instantiate(_explosionVFX, transform.position, Quaternion.identity);
+            if (_explosionSound) AudioSource.PlayClipAtPoint(_explosionSound, transform.position, _audioSource.volume);
 
-            var hitColliders = Physics.OverlapSphere(transform.position, _pushback ? Mathf.Max(_explosionRadius, _pushbackRadius) : _explosionRadius);
+            PlayerMovement playerRef = null;
 
-            PlayerMovement uniquePlayerReference = null;
+            float currentOverlapRadius = _pushback ? Mathf.Max(_explosionRadius, _pushbackRadius) : _explosionRadius;
+            int numCollidersFound = Physics.OverlapSphereNonAlloc(transform.position, currentOverlapRadius, _hitColliders);
 
-            foreach (var hitCollider in hitColliders) {
-                var pm = hitCollider.GetComponentInParent<PlayerMovement>();
-                if (pm) {
-                    if (!uniquePlayerReference) {
-                        uniquePlayerReference = pm;
-                    }
+            for (int i = 0; i < numCollidersFound; i++) {
+                if (!_hitColliders[i]) continue;
+
+                if (_hitColliders[i].GetComponentInParent<PlayerMovement>()) {
+                    if (!playerRef) playerRef = _hitColliders[i].GetComponentInParent<PlayerMovement>();
                     continue;
                 }
 
                 if (!_pushbackPlayerOnly) {
-                    var otherRb = hitCollider.GetComponent<Rigidbody>();
-                    if (otherRb) {
-                        float distanceToHit = Vector3.Distance(transform.position, hitCollider.transform.position);
-                        if (distanceToHit <= _explosionRadius) {
-                            otherRb.AddExplosionForce(_playerPushbackForce, transform.position, _explosionRadius, 0f, ForceMode.Impulse);
-                        }
+                    if (_hitColliders[i].GetComponent<Rigidbody>()) {
+                        if (Vector3.Distance(transform.position, _hitColliders[i].transform.position) <= _explosionRadius)
+                            _hitColliders[i].GetComponent<Rigidbody>().AddExplosionForce(
+                                _playerPushbackForce, transform.position, _explosionRadius, 0f, ForceMode.Impulse
+                            );
                     }
                 }
             }
 
-            if (uniquePlayerReference) {
-                var playerRigidbody = uniquePlayerReference.GetComponent<Rigidbody>();
-                float distanceToPlayer = Vector3.Distance(transform.position, uniquePlayerReference.transform.position);
+            if (playerRef) {
+                var playerRb = playerRef.GetComponent<Rigidbody>();
+                float distanceToPlayer = Vector3.Distance(transform.position, playerRef.transform.position);
 
                 if (_killPlayerInRange && distanceToPlayer <= _explosionRadius) {
-                    Debug.LogWarning($"{uniquePlayerReference.name} was KILLED by the explosion from {name}!");
+                    Debug.LogWarning($"{playerRef.name} killed by {name}");
                 }
 
-                if (playerRigidbody) {
-                    if (distanceToPlayer <= _explosionRadius) {
-                        playerRigidbody.AddExplosionForce(_playerPushbackForce, transform.position, _explosionRadius, 0f, ForceMode.Impulse);
-                    } else if (_pushback && distanceToPlayer <= _pushbackRadius) {
-                        playerRigidbody.AddExplosionForce(_playerPushbackForce, transform.position, _pushbackRadius, 0f, ForceMode.Impulse);
-                    }
+                if (distanceToPlayer <= _explosionRadius) {
+                    playerRb.AddExplosionForce(_playerPushbackForce, transform.position, _explosionRadius, 0f, ForceMode.Impulse);
+                } else if (_pushback && distanceToPlayer <= _pushbackRadius) {
+                    playerRb.AddExplosionForce(_playerPushbackForce, transform.position, _pushbackRadius, 0f, ForceMode.Impulse);
                 }
             }
 
