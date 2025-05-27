@@ -25,7 +25,7 @@ namespace GravityGame.Puzzle_Elements
         [SerializeField] float _fuseTime = 5f;
         [SerializeField] AudioClip _fuseSound;
 
-        bool _isPrimed;
+        bool _isArmed;
         AudioSource _audioSource;
         Collider[] _hitColliders;
 
@@ -46,27 +46,19 @@ namespace GravityGame.Puzzle_Elements
             _hitColliders = new Collider[50];
         }
 
-        public override Vector3 GravityDirection
-        {
-            get => base.GravityDirection;
-            set {
-                if (base.GravityDirection != value) base.GravityDirection = value;
-            }
-        }
-
         void OnCollisionEnter(Collision collision)
         {
-            if (_isPrimed) return;
+            if (_isArmed) return;
             if (collision.transform.IsChildOf(transform) || collision.gameObject == gameObject) return;
 
             if (collision.contacts.Select(contact => contact.thisCollider.transform)
-                .Any(contactColliderTransform => contactColliderTransform.parent == transform)) PrimeForExplosion();
+                .Any(contactColliderTransform => contactColliderTransform.parent == transform)) ArmForExplosion();
         }
 
-        void PrimeForExplosion()
+        void ArmForExplosion()
         {
-            if (_isPrimed) return;
-            _isPrimed = true;
+            if (_isArmed) return;
+            _isArmed = true;
 
             if (_fuseTime > 0f) {
                 StartCoroutine(ExplosionSequenceCoroutine());
@@ -89,10 +81,9 @@ namespace GravityGame.Puzzle_Elements
 
             PlayerMovement playerRef = null;
 
-            float currentOverlapRadius = _pushback ? Mathf.Max(_explosionRadius, _pushbackRadius) : _explosionRadius;
-            int numCollidersFound = Physics.OverlapSphereNonAlloc(transform.position, currentOverlapRadius, _hitColliders);
+            float overlapRadius = _pushback ? Mathf.Max(_explosionRadius, _pushbackRadius) : _explosionRadius;
 
-            for (int i = 0; i < numCollidersFound; i++) {
+            for (int i = 0; i < Physics.OverlapSphereNonAlloc(transform.position, overlapRadius, _hitColliders); i++) {
                 if (!_hitColliders[i]) continue;
 
                 if (_hitColliders[i].GetComponentInParent<PlayerMovement>()) {
