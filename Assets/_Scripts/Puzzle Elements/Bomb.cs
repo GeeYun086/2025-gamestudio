@@ -9,19 +9,21 @@ namespace GravityGame.Puzzle_Elements
     public class Bomb : GravityModifier
     {
         [Header("Explosion")]
-        [SerializeField] bool _killPlayerInRange = true;
         [SerializeField] float _explosionRadius = 5f;
         [SerializeField] GameObject _explosionVFX;
         [SerializeField] AudioClip _explosionSound;
+        [SerializeField] bool _killPlayerInRange = true;
 
-        [Header("Pushback")]
-        [SerializeField] bool _pushbackPlayer = true;
+        [Header("Player Pushback")]
+        [SerializeField] bool _pushback = true;
+        [SerializeField] bool _pushbackPlayerOnly = true;
         [SerializeField] float _pushbackRadius = 8.5f;
+        [SerializeField] float _playerPushbackForce = 1000f;
 
         [Header("Interaction")]
         [SerializeField] bool _explodeOnGravityChange = true;
         [SerializeField] bool _explodeOnPlayerCollision = true;
-        [SerializeField] float _fuseTime = 0.5f;
+        [SerializeField] float _fuseTime = 2f;
         [SerializeField] AudioClip _fuseSound;
 
         bool _isPrimed;
@@ -36,40 +38,36 @@ namespace GravityGame.Puzzle_Elements
         {
             base.Awake();
 
-            if (_fuseSound || _explosionSound) {
-                _audioSource = GetComponent<AudioSource>();
-                if (!_audioSource) _audioSource = gameObject.AddComponent<AudioSource>();
+            _audioSource = GetComponent<AudioSource>();
+            if (!_audioSource) {
+                _audioSource = gameObject.AddComponent<AudioSource>();
             }
+            _audioSource.playOnAwake = false;
         }
 
         public override Vector3 GravityDirection
         {
             get => base.GravityDirection;
             set {
-                if (_isPrimed) return;
-
-                if (_explodeOnGravityChange) {
-                    PrimeForExplosion();
-                } else {
+                if (base.GravityDirection != value) {
                     base.GravityDirection = value;
+                    if (_explodeOnGravityChange) PrimeForExplosion();
                 }
             }
         }
 
         void OnCollisionEnter(Collision collision)
         {
-            if (!_explodeOnPlayerCollision || _isPrimed) return;
-
-            if (collision.gameObject.CompareTag("Player") || collision.gameObject.GetComponent<PlayerMovement>()) PrimeForExplosion();
+            if (_isPrimed || !_explodeOnPlayerCollision) return;
+            if (collision.gameObject.GetComponentInParent<PlayerMovement>()) PrimeForExplosion();
         }
 
         void PrimeForExplosion()
         {
             if (_isPrimed) return;
-
             _isPrimed = true;
 
-            if (_fuseTime > 0) {
+            if (_fuseTime > 0f) {
                 StartCoroutine(ExplosionSequenceCoroutine());
             } else {
                 Detonate();
@@ -78,32 +76,67 @@ namespace GravityGame.Puzzle_Elements
 
         IEnumerator ExplosionSequenceCoroutine()
         {
-            if (_audioSource && _fuseSound) _audioSource.PlayOneShot(_fuseSound);
+            _audioSource.PlayOneShot(_fuseSound);
             yield return new WaitForSeconds(_fuseTime);
             Detonate();
         }
 
         void Detonate()
         {
-            if (_explosionVFX) Instantiate(_explosionVFX, transform.position, Quaternion.identity);
+            Instantiate(_explosionVFX, transform.position, Quaternion.identity);
+            AudioSource.PlayClipAtPoint(_explosionSound, transform.position, _audioSource.volume);
 
-            if (_explosionSound) AudioSource.PlayClipAtPoint(_explosionSound, transform.position, _audioSource ? _audioSource.volume : 1.0f);
+            var hitColliders = Physics.OverlapSphere(transform.position, _pushback ? Mathf.Max(_explosionRadius, _pushbackRadius) : _explosionRadius);
 
-            var collidersInRange = Physics.OverlapSphere(transform.position, _explosionRadius, 0);
-            foreach (var hitCollider in collidersInRange) {
-                var rb = hitCollider.GetComponent<Rigidbody>();
-                if (rb) rb.AddExplosionForce(1000, transform.position, _explosionRadius, 0, ForceMode.Impulse);
+            PlayerMovement uniquePlayerReference = null;
+
+            foreach (var hitCollider in hitColliders) {
+                var pm = hitCollider.GetComponentInParent<PlayerMovement>();
+                if (pm) {
+                    if (!uniquePlayerReference) {
+                        uniquePlayerReference = pm;
+                    }
+                    continue;
+                }
+
+                if (!_pushbackPlayerOnly) {
+                    var otherRb = hitCollider.GetComponent<Rigidbody>();
+                    if (otherRb) {
+                        float distanceToHit = Vector3.Distance(transform.position, hitCollider.transform.position);
+                        if (distanceToHit <= _explosionRadius) {
+                            otherRb.AddExplosionForce(_playerPushbackForce, transform.position, _explosionRadius, 0f, ForceMode.Impulse);
+                        }
+                    }
+                }
             }
+
+            if (uniquePlayerReference) {
+                var playerRigidbody = uniquePlayerReference.GetComponent<Rigidbody>();
+                float distanceToPlayer = Vector3.Distance(transform.position, uniquePlayerReference.transform.position);
+
+                if (_killPlayerInRange && distanceToPlayer <= _explosionRadius) {
+                    Debug.LogWarning($"{uniquePlayerReference.name} was KILLED by the explosion from {name}!");
+                }
+
+                if (playerRigidbody) {
+                    if (distanceToPlayer <= _explosionRadius) {
+                        playerRigidbody.AddExplosionForce(_playerPushbackForce, transform.position, _explosionRadius, 0f, ForceMode.Impulse);
+                    } else if (_pushback && distanceToPlayer <= _pushbackRadius) {
+                        playerRigidbody.AddExplosionForce(_playerPushbackForce, transform.position, _pushbackRadius, 0f, ForceMode.Impulse);
+                    }
+                }
+            }
+
             Destroy(gameObject);
         }
 
         void OnDrawGizmosSelected()
         {
-            Gizmos.color = new Color(1f, 0.5f, 0f, 0.5f);
-            Gizmos.DrawWireSphere(transform.position, _explosionRadius);
+            Gizmos.color = new Color(1f, 0.5f, 0f, 0.35f);
+            Gizmos.DrawSphere(transform.position, _explosionRadius);
 
-            Gizmos.color = new Color(0f, 1f, 0.24f, 0.5f);
-            Gizmos.DrawWireSphere(transform.position, _pushbackRadius);
+            Gizmos.color = new Color(0f, 1f, 0.25f, 0.25f);
+            Gizmos.DrawSphere(transform.position, _pushbackRadius);
         }
     }
 }
