@@ -24,6 +24,7 @@ namespace GravityGame.Player
 
         void Update()
         {
+            
             // Note TG: Debug functionality to lock / unlock mouse when pressing escape to tab out of the Unity game window.
             // We might need to do this differently in the future or disable this in the build.
             if (Input.GetButtonDown("Cancel")) {
