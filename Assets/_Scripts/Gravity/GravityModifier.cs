@@ -11,13 +11,13 @@ namespace GravityGame.Gravity
     [RequireComponent(typeof(Rigidbody))]
     public class GravityModifier : MonoBehaviour
     {
-        public virtual Vector3 GravityDirection
+        public Vector3 GravityDirection
         {
             get => _gravityDirection;
             set {
                 if (value == _gravityDirection)
                     return;
-                if(Group != GravityGroup.None && GravityGroupHandler.Instance != null) // Added null check for Instance
+                if(Group != GravityGroup.None)
                     GravityGroupHandler.Instance.AlertGravityGroup(Group, value);
                 _gravityDirection = value;
             }
