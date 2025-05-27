@@ -34,13 +34,10 @@ namespace GravityGame.Puzzle_Elements
 
         void FixedUpdate()
         {
-            var moveDirection = transform.TransformDirection(_direction);
             _rigidbodiesOnBelt.RemoveAll(rb => !rb || !rb.gameObject.activeInHierarchy);
 
-            foreach (var rb in _rigidbodiesOnBelt) {
-                var movementDelta = moveDirection * (_moveSpeed * Time.fixedDeltaTime);
-                rb.MovePosition(rb.position + movementDelta);
-            }
+            foreach (var rb in _rigidbodiesOnBelt) rb.linearVelocity = _direction * _moveSpeed;
+            ;
 
             if (_material && _moveSpeed != 0) {
                 float scrollSpeed = _moveSpeed * Time.fixedDeltaTime;
