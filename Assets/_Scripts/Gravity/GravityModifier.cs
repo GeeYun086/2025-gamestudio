@@ -11,17 +11,18 @@ namespace GravityGame.Gravity
     [RequireComponent(typeof(Rigidbody))]
     public class GravityModifier : MonoBehaviour
     {
-        public Vector3 GravityDirection
+        public virtual Vector3 GravityDirection
         {
             get => _gravityDirection;
             set {
                 if (value == _gravityDirection)
                     return;
-                if(Group != GravityGroup.None)
+                if(Group != GravityGroup.None && GravityGroupHandler.Instance != null) // Added null check for Instance
                     GravityGroupHandler.Instance.AlertGravityGroup(Group, value);
                 _gravityDirection = value;
             }
         }
+        
         Vector3 _gravityDirection = Vector3.down;
         public float GravityMagnitude = 9.81f;
         public GravityGroup Group = GravityGroup.None;
@@ -30,7 +31,7 @@ namespace GravityGame.Gravity
 
         Rigidbody _rigidbody;
 
-        void Awake()
+        protected virtual void Awake()
         {
             _rigidbody = GetComponent<Rigidbody>();
             _rigidbody.useGravity = false;
@@ -38,7 +39,7 @@ namespace GravityGame.Gravity
                 GravityGroupHandler.Instance.OnGravityGroupDirectionChange += SetGravityDirectionWithoutGroupAlert;
         }
 
-        void FixedUpdate()
+        protected virtual void FixedUpdate()
         {
             _rigidbody.AddForce(GravityDirection.normalized * GravityMagnitude, ForceMode.Acceleration);
         }
@@ -49,7 +50,7 @@ namespace GravityGame.Gravity
                 _gravityDirection = gravityDirection;
         }
 
-        void OnDestroy()
+        protected virtual void OnDestroy()
         {
             GravityGroupHandler.Instance.OnGravityGroupDirectionChange -= SetGravityDirectionWithoutGroupAlert;
         }
