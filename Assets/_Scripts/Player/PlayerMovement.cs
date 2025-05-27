@@ -10,67 +10,79 @@ namespace GravityGame.Player
     /// </summary>
     public class PlayerMovement : MonoBehaviour
     {
-        [SerializeField] float _moveSpeedMps = 8f;
+        [Header("Movement")]
+        [SerializeField] float _maxMoveSpeed = 8f;
         [SerializeField] float _maxAcceleration = 1f;
-        [SerializeField] float _jumpForce = 5.0f;
-        [SerializeField] float _jumpForward = 0.5f;
         [SerializeField] float _airMovementModifier = 0.5f;
-        [SerializeField] AnimationCurve _accelerationCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
+        [SerializeField] float _maxSlopeAngle = 40;
+
+        [Header("Jumping")]
+        [SerializeField] float _jumpUpwardSpeed = 9;
+        [SerializeField] float _jumpForwardSpeed = 0.3f;
         [SerializeField] float _jumpBufferTime = 0.15f;
         [SerializeField] float _coyoteTime = 0.2f;
 
+        [Header("Input")]
         [SerializeField] InputActionReference _moveInput;
         [SerializeField] InputActionReference _jumpInput;
 
         Rigidbody _rigidbody;
         CapsuleCollider _collider;
-        bool _isGrounded;
-        float _jumpBufferTimer;
-        bool _isJumping;
+        Camera _camera;
+        RaycastHit? _ground;
+        float _lastJumpInputTime;
         float _lastJumpTime;
-        float _coyoteTimer;
+        float _coyoteLastGroundedTime;
 
         void OnEnable()
         {
-            _rigidbody = GetComponent<Rigidbody>();
             _collider = GetComponent<CapsuleCollider>();
+            _rigidbody = GetComponent<Rigidbody>();
+            _camera = GetComponentInChildren<Camera>();
 
             _rigidbody.constraints |= RigidbodyConstraints.FreezeRotation;
-            _jumpInput.action.performed += _ => _jumpBufferTimer = 0;
             _rigidbody.interpolation = RigidbodyInterpolation.Interpolate;
+
+            _jumpInput.action.performed += _ => _lastJumpInputTime = Time.time;
         }
 
         void FixedUpdate()
         {
-            const float margin = -0.05f;
-            const float groundDistance = 0.15f;
-            var feetPosition = transform.position - (_collider.height * 0.5f + margin) * transform.up;
-            _isGrounded = Physics.Raycast(feetPosition, -transform.up, groundDistance);
-            
-            if (_isGrounded)
-                _coyoteTimer = 0f;
-            else
-                _coyoteTimer += Time.fixedDeltaTime;
-            
-            Debug.DrawRay(feetPosition, -transform.up * groundDistance, Color.red);
+            _ground = CheckGround();
+            if (_ground is not null) _coyoteLastGroundedTime = Time.time;
 
             var inputDirection = _moveInput.action.ReadValue<Vector2>();
             Move(inputDirection);
 
-            if (_jumpBufferTimer < _jumpBufferTime)
-                _jumpBufferTimer += Time.fixedDeltaTime;
-            if (_coyoteTimer < _coyoteTime && _jumpBufferTimer < _jumpBufferTime)
+            bool hasJumpInput = _lastJumpInputTime + _jumpBufferTime > Time.time;
+            bool canJump = _coyoteLastGroundedTime + _coyoteTime > Time.time;
+            if (hasJumpInput && canJump) {
+                _coyoteLastGroundedTime = 0;
                 Jump();
+            }
+        }
+
+        RaycastHit? CheckGround()
+        {
+            const float margin = -0.05f;
+            const float groundDistance = 0.15f;
+            const int groundLayerMask = 1 << 0;
+            var feetPosition = transform.position - (_collider.height * 0.5f + margin) * transform.up;
+            var down = -transform.up;
+            bool hit = Physics.Raycast(feetPosition, down, out var ground, groundDistance, groundLayerMask);
+
+            Debug.DrawRay(feetPosition, down * groundDistance, hit ? Color.green : Color.red);
+            return hit ? ground : null;
         }
 
         void Move(Vector2 direction)
         {
             direction = direction.normalized;
             var velocity = new Vector3(_rigidbody.linearVelocity.x, 0, _rigidbody.linearVelocity.z);
-            var desiredVelocity = new Vector3(direction.x, 0, direction.y) * _moveSpeedMps;
-            desiredVelocity = Quaternion.Euler(0, Camera.main.transform.eulerAngles.y, 0) * desiredVelocity;
+            var desiredVelocity = new Vector3(direction.x, 0, direction.y) * _maxMoveSpeed;
+            desiredVelocity = Quaternion.Euler(0, _camera.transform.eulerAngles.y, 0) * desiredVelocity;
 
-            // Need to set this for stay on slop logic afterwards
+            // Need to reset this incase this was changed by stay on slope logic
             var gravity = GetComponent<GravityModifier>();
             gravity.GravityDirection = Vector3.down;
 
@@ -87,11 +99,8 @@ namespace GravityGame.Player
                 workingVelocity[i] = Math.Abs(v) > Math.Abs(d) ? v : d;
             }
 
-            const float maxSlopeAngle = 40;
-            const int groundLayerMask = 1 << 0;
-            var ray = new Ray(transform.position, -transform.up);
-            if (Physics.Raycast(ray, out var ground, _collider.height * 0.5f + 0.3f, groundLayerMask)) {
-                if (Vector3.Angle(ground.normal, transform.up) > maxSlopeAngle) {
+            if (_ground is { } ground) {
+                if (Vector3.Angle(ground.normal, transform.up) > _maxSlopeAngle) {
                     // Project to enable walking on slopes
                     desiredVelocity = Vector3.ProjectOnPlane(desiredVelocity, ground.normal);
                     // Stay one slope logic
@@ -111,17 +120,17 @@ namespace GravityGame.Player
 
             // Steer current velocity towards move direction
             {
-                float angle = Vector3.Angle(velocity, desiredVelocity);
                 const float lostSpeedPerAngle = 0.01f;
                 const float anglePerSecond = 360;
+                float angle = Vector3.Angle(velocity, desiredVelocity);
 
-                if (angle < 90 && velocity.magnitude > _moveSpeedMps * 0.75f) {
+                if (angle < 90 && velocity.magnitude > _maxMoveSpeed * 0.75f) {
                     var interpolatedVelocity = Vector3.Lerp(velocity, desiredVelocity, Time.fixedDeltaTime * anglePerSecond / angle);
                     float speed = interpolatedVelocity.magnitude;
                     float changedAngle = Vector3.Angle(velocity, interpolatedVelocity);
                     float steeredSpeed = velocity.magnitude * (1 - lostSpeedPerAngle * changedAngle);
                     speed = Math.Max(speed, steeredSpeed);
-                    speed = Math.Max(speed, _moveSpeedMps);
+                    speed = Math.Max(speed, _maxMoveSpeed);
                     workingVelocity = interpolatedVelocity.normalized * speed;
                     Debug.Log(changedAngle);
                 }
@@ -129,7 +138,7 @@ namespace GravityGame.Player
 
             // Clamp Velocity Change
             var velocityChange = workingVelocity - velocity;
-            float airModifier = _isGrounded ? 1f : _airMovementModifier;
+            float airModifier = _ground is not null ? 1f : _airMovementModifier;
             float maxVelocityChange = airModifier * _maxAcceleration * Time.fixedDeltaTime;
             velocityChange = Vector3.ClampMagnitude(velocityChange, maxVelocityChange);
 
@@ -141,10 +150,13 @@ namespace GravityGame.Player
         {
             if (_lastJumpTime + 0.1f > Time.time) return; // cooldown to jump triggering multiple jumps in two consecutive frames
             _lastJumpTime = Time.time;
-            var input = _moveInput.action.ReadValue<Vector2>();
-            var input3 = new Vector3(input.x, 0, input.y);
-            var jumpFwd = Quaternion.Euler(0, Camera.main.transform.eulerAngles.y, 0) * input3 * _jumpForward;
-            var jumpUp = new Vector3(0, _jumpForce - Math.Min(0, _rigidbody.linearVelocity.y));
+            var moveInput = _moveInput.action.ReadValue<Vector2>();
+            var moveDirection = new Vector3(moveInput.x, 0, moveInput.y);
+            var fwd = Quaternion.Euler(0, _camera.transform.eulerAngles.y, 0) * moveDirection;
+
+            var jumpFwd = fwd * _jumpForwardSpeed;
+            float downwardsVelocity = Math.Min(0, _rigidbody.linearVelocity.y); // cancel downwards velocity
+            var jumpUp = transform.up * (_jumpUpwardSpeed - downwardsVelocity);
             _rigidbody.AddForce(jumpFwd + jumpUp, ForceMode.VelocityChange);
         }
     }
