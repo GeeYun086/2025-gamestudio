@@ -131,10 +131,10 @@ MonoBehaviour:
   _maxAcceleration: 70
   _airMovementModifier: 0.5
   _maxSlopeAngle: 40
-  _jumpUpwardSpeed: 9
+  _jumpUpwardSpeed: 10
   _jumpForwardSpeed: 0.3
   _jumpBufferTime: 0.15
-  _coyoteTime: 0.2
+  _coyoteTime: 0.15
   _moveInput: {fileID: -1680190386980627800, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   _jumpInput: {fileID: -2099379676528639254, guid: 052faaac586de48259a63d0c4782560b, type: 3}
 --- !u!54 &1163891898892029019
