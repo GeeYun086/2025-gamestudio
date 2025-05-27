@@ -1,7 +1,6 @@
 ﻿using UnityEngine;
-using UnityEngine.UIElements;
 using UnityEngine.SceneManagement;
-
+using UnityEngine.UIElements;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -11,10 +10,10 @@ namespace GravityGame.UI
     [RequireComponent(typeof(UIDocument))]
     public class MainMenu : MonoBehaviour
     {
-        private Label _titleLabel;
-        private Button _newGameButton, _continueButton, _settingsButton, _creditsButton, _quitButton;
+        Label _titleLabel;
+        Button _newGameButton, _continueButton, _settingsButton, _creditsButton, _quitButton;
 
-        private void OnEnable()
+        void OnEnable()
         {
             var root = GetComponent<UIDocument>().rootVisualElement;
 
@@ -37,28 +36,28 @@ namespace GravityGame.UI
             _quitButton.clicked += OnQuitClicked;
         }
 
-        private void OnNewGameClicked()
+        void OnNewGameClicked()
         {
             // Load the gameplay scene
             SceneManager.LoadScene("MainScene");
         }
 
-        private void OnContinueClicked()
+        void OnContinueClicked()
         {
             // TODO: Load save system
         }
 
-        private void OnSettingsClicked()
+        void OnSettingsClicked()
         {
             // TODO: Open settings panel or scene
         }
 
-        private void OnCreditsClicked()
+        void OnCreditsClicked()
         {
             // TODO: Show credits panel or scene
         }
 
-        private void OnQuitClicked()
+        void OnQuitClicked()
         {
 #if UNITY_EDITOR
             EditorApplication.isPlaying = false;

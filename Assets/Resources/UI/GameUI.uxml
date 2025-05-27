@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <engine:UXML
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:engine="UnityEngine.UIElements"
@@ -6,50 +7,50 @@
     noNamespaceSchemaLocation="../../../../UIElementsSchema/UIElements.xsd"
     editor-extension-mode="False">
 
-  <!-- Hook up our USS -->
-  <Style src="GameUI.uss"/>
+    <!-- Hook up our USS -->
+    <Style src="GameUI.uss" />
 
-  <!-- Debug / HUD / Center omitted for brevity -->
+    <!-- Debug / HUD / Center omitted for brevity -->
 
-  <engine:VisualElement name="PauseMenu"
-      class="pause-menu"
-      picking-mode="Position"
-      style="display:none;">
+    <engine:VisualElement name="PauseMenu"
+                          class="pause-menu"
+                          picking-mode="Position"
+                          style="display:none;">
 
-    <!-- Main menu -->
-    <engine:VisualElement name="MainPanel" class="menu-container">
-      <engine:Label text="GAME PAUSED" class="menu-header"/>
-      <engine:VisualElement class="separator"/>
-      <engine:Button name="ResumeButton"   text="RESUME GAME" class="menu-item"/>
-      <engine:VisualElement class="separator"/>
-      <engine:Button name="SettingsButton" text="SETTINGS"    class="menu-item"/>
-      <engine:VisualElement class="separator"/>
-      <engine:Button name="MainMenuButton" text="MAIN MENU"   class="menu-item"/>
-      <engine:VisualElement class="separator"/>
-      <engine:Button name="QuitButton"     text="QUIT GAME"   class="menu-item"/>
+        <!-- Main menu -->
+        <engine:VisualElement name="MainPanel" class="menu-container">
+            <engine:Label text="GAME PAUSED" class="menu-header" />
+            <engine:VisualElement class="separator" />
+            <engine:Button name="ResumeButton" text="RESUME GAME" class="menu-item" />
+            <engine:VisualElement class="separator" />
+            <engine:Button name="SettingsButton" text="SETTINGS" class="menu-item" />
+            <engine:VisualElement class="separator" />
+            <engine:Button name="MainMenuButton" text="MAIN MENU" class="menu-item" />
+            <engine:VisualElement class="separator" />
+            <engine:Button name="QuitButton" text="QUIT GAME" class="menu-item" />
+        </engine:VisualElement>
+
+        <!-- Settings sub-panel -->
+        <engine:VisualElement name="SettingsPanel"
+                              class="menu-container"
+                              style="display:none;">
+
+            <engine:Label text="SOUND LEVELS" class="menu-header" />
+            <engine:VisualElement class="separator" />
+
+            <engine:VisualElement class="slider-container">
+                <engine:VisualElement class="icon-sound" />
+                <engine:Slider
+                    name="VolumeSlider"
+                    class="modern-slider"
+                    low-value="0"
+                    high-value="1"
+                    page-size="0.05"
+                    show-input-field="true" />
+            </engine:VisualElement>
+
+            <engine:VisualElement class="separator" />
+            <engine:Button name="BackButton" text="BACK" class="menu-item" />
+        </engine:VisualElement>
     </engine:VisualElement>
-
-    <!-- Settings sub-panel -->
-    <engine:VisualElement name="SettingsPanel"
-        class="menu-container"
-        style="display:none;">
-
-      <engine:Label text="SOUND LEVELS" class="menu-header"/>
-      <engine:VisualElement class="separator"/>
-
-      <engine:VisualElement class="slider-container">
-        <engine:VisualElement class="icon-sound"/>
-        <engine:Slider
-            name="VolumeSlider"
-            class="modern-slider"
-            low-value="0"
-            high-value="1"
-            page-size="0.05"
-            show-input-field="true"/>
-      </engine:VisualElement>
-
-      <engine:VisualElement class="separator"/>
-      <engine:Button name="BackButton" text="BACK" class="menu-item"/>
-    </engine:VisualElement>
-  </engine:VisualElement>
 </engine:UXML>
