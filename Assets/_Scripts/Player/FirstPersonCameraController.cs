@@ -15,6 +15,7 @@ namespace GravityGame.Player
         [SerializeField] InputActionReference _lookAction;
 
         float _lookDownRotation;
+        float _lookRightRotation;
 
         void Start()
         {
@@ -40,12 +41,13 @@ namespace GravityGame.Player
 
             var lookInput = _lookAction.action.ReadValue<Vector2>();
             var lookInputDelta = lookInput * (_mouseSensitivity * Time.deltaTime);
-
+            _lookRightRotation += lookInputDelta.x;
             _lookDownRotation += lookInputDelta.y;
             _lookDownRotation = Mathf.Clamp(_lookDownRotation, -90f, 90f);
 
-            transform.localRotation = Quaternion.Euler(_lookDownRotation, 0f, 0f);
-            _playerBody.Rotate(Vector3.up * lookInputDelta.x);
+            transform.localRotation = Quaternion.Euler(_lookDownRotation, _lookRightRotation, 0f);
+
+            // _playerBody.Rotate(Vector3.up * lookInputDelta.x);
         }
     }
 }

@@ -76,7 +76,6 @@ MonoBehaviour:
     Forward: {fileID: 1377105111605906921}
     Back: {fileID: 4370124163806689174}
   _maxObjectRange: 30
-  _sphereSelectionRadius: 0.1
   _aimBufferDuration: 0.25
 --- !u!1 &2446000720691385914
 GameObject:
@@ -128,35 +127,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 82c4cda855974e24a859ecef155676c4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _moveSpeedMps: 8
-  _maxAcceleration: 2
-  _jumpForce: 9
-  _airMovementModifier: 0.3
-  _accelerationCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0.5
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
+  _maxMoveSpeed: 8
+  _maxAcceleration: 70
+  _airMovementModifier: 0.5
+  _maxSlopeAngle: 40
+  _jumpUpwardSpeed: 10
+  _jumpForwardSpeed: 0.3
   _jumpBufferTime: 0.15
+  _coyoteTime: 0.15
   _moveInput: {fileID: -1680190386980627800, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   _jumpInput: {fileID: -2099379676528639254, guid: 052faaac586de48259a63d0c4782560b, type: 3}
 --- !u!54 &1163891898892029019
@@ -168,7 +146,7 @@ Rigidbody:
   m_GameObject: {fileID: 2446000720691385914}
   serializedVersion: 4
   m_Mass: 60
-  m_Drag: 0.01
+  m_Drag: 0.3
   m_AngularDrag: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
@@ -183,7 +161,7 @@ Rigidbody:
   m_ImplicitTensor: 1
   m_UseGravity: 1
   m_IsKinematic: 0
-  m_Interpolate: 0
+  m_Interpolate: 1
   m_Constraints: 0
   m_CollisionDetection: 3
 --- !u!136 &2847947673748998656
@@ -242,7 +220,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1390bb0118c849048dad3280a9f58cd9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GravityMagnitude: 30
+  GravityMagnitude: 32
   Group: 0
 --- !u!114 &2766821908369855471
 MonoBehaviour:
@@ -735,19 +713,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1991700683236326326, guid: 5dfd7d84d21bc2c48bcdd06adb32c656, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.7071068
+      value: 0.0580604
       objectReference: {fileID: 0}
     - target: {fileID: 1991700683236326326, guid: 5dfd7d84d21bc2c48bcdd06adb32c656, type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0.7071068
+      value: 0.0580604
       objectReference: {fileID: 0}
     - target: {fileID: 1991700683236326326, guid: 5dfd7d84d21bc2c48bcdd06adb32c656, type: 3}
       propertyPath: m_LocalRotation.y
-      value: -0
+      value: -0.7047191
       objectReference: {fileID: 0}
     - target: {fileID: 1991700683236326326, guid: 5dfd7d84d21bc2c48bcdd06adb32c656, type: 3}
       propertyPath: m_LocalRotation.z
-      value: -0
+      value: -0.7047191
       objectReference: {fileID: 0}
     - target: {fileID: 1991700683236326326, guid: 5dfd7d84d21bc2c48bcdd06adb32c656, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -827,7 +805,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1991700683236326326, guid: 5dfd7d84d21bc2c48bcdd06adb32c656, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 1
+      value: 0.08210981
       objectReference: {fileID: 0}
     - target: {fileID: 1991700683236326326, guid: 5dfd7d84d21bc2c48bcdd06adb32c656, type: 3}
       propertyPath: m_LocalRotation.x
@@ -835,7 +813,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1991700683236326326, guid: 5dfd7d84d21bc2c48bcdd06adb32c656, type: 3}
       propertyPath: m_LocalRotation.y
-      value: -0
+      value: -0.99662334
       objectReference: {fileID: 0}
     - target: {fileID: 1991700683236326326, guid: 5dfd7d84d21bc2c48bcdd06adb32c656, type: 3}
       propertyPath: m_LocalRotation.z
