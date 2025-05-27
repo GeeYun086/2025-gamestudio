@@ -21,6 +21,10 @@ namespace GravityGame.Audio
         // Speed at which the collision sound reaches max volume
         public int MaxCollisionVelocity = 10;
 
+        // Min and max volume bounds for sound playback
+        public float MinVolume = 0.4f;
+        public float MaxVolume = 1f;
+        
         // Minimum speed threshold to consider the cube as "moving"
         const float MinSpeed = 0.1f;
 
@@ -30,10 +34,6 @@ namespace GravityGame.Audio
 
         // Tracks whether the cube was previously moving
         bool _wasMoving;
-
-        // Min and max volume bounds for sound playback
-        const float MinVolume = 0.4f;
-        const float MaxVolume = 1f;
 
         // Minimum relative collision velocity needed to trigger collision sound
         const float MinRelativeVelocity = 1f;

@@ -169,6 +169,8 @@ MonoBehaviour:
   CollisionSound: {fileID: 8300000, guid: 28856fe864c95a64fbf3e793b63ed7d6, type: 3}
   DragSound: {fileID: 8300000, guid: f66a93e1ad7782b458044ebed2f9bd91, type: 3}
   MaxCollisionVelocity: 5
+  MinVolume: 0.05
+  MaxVolume: 0.2
 --- !u!82 &5735985433874089844
 AudioSource:
   m_ObjectHideFlags: 0
