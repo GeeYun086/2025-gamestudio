@@ -132,7 +132,6 @@ namespace GravityGame.Player
                     speed = Math.Max(speed, steeredSpeed);
                     speed = Math.Max(speed, _maxMoveSpeed);
                     workingVelocity = interpolatedVelocity.normalized * speed;
-                    Debug.Log(changedAngle);
                 }
             }
 
