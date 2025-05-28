@@ -35,9 +35,12 @@ namespace GravityGame.Puzzle_Elements
         void FixedUpdate()
         {
             _rigidbodiesOnBelt.RemoveAll(rb => !rb || !rb.gameObject.activeInHierarchy);
+            var worldMoveDirection = transform.TransformDirection(_direction);
 
-            foreach (var rb in _rigidbodiesOnBelt) rb.linearVelocity = _direction * _moveSpeed;
-            ;
+            foreach (var rb in _rigidbodiesOnBelt) {
+                var velocityDifference = worldMoveDirection * _moveSpeed - Vector3.Project(rb.linearVelocity, worldMoveDirection);
+                if (Vector3.Dot(velocityDifference, worldMoveDirection) > 0.01f) rb.AddForce(velocityDifference * 25f, ForceMode.Acceleration);
+            }
 
             if (_material && _moveSpeed != 0) {
                 float scrollSpeed = _moveSpeed * Time.fixedDeltaTime;
