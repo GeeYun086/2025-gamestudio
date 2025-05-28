@@ -22,6 +22,7 @@ namespace GravityGame.Gravity
                 _gravityDirection = value;
             }
         }
+        
         Vector3 _gravityDirection = Vector3.down;
         public float GravityMagnitude = 9.81f;
         public GravityGroup Group = GravityGroup.None;
