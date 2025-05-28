@@ -31,7 +31,7 @@ namespace GravityGame.Gravity
 
         Rigidbody _rigidbody;
 
-        protected virtual void Awake()
+        void Awake()
         {
             _rigidbody = GetComponent<Rigidbody>();
             _rigidbody.useGravity = false;
@@ -39,7 +39,7 @@ namespace GravityGame.Gravity
                 GravityGroupHandler.Instance.OnGravityGroupDirectionChange += SetGravityDirectionWithoutGroupAlert;
         }
 
-        protected virtual void FixedUpdate()
+        void FixedUpdate()
         {
             _rigidbody.AddForce(GravityDirection.normalized * GravityMagnitude, ForceMode.Acceleration);
         }
@@ -50,7 +50,7 @@ namespace GravityGame.Gravity
                 _gravityDirection = gravityDirection;
         }
 
-        protected virtual void OnDestroy()
+        void OnDestroy()
         {
             GravityGroupHandler.Instance.OnGravityGroupDirectionChange -= SetGravityDirectionWithoutGroupAlert;
         }

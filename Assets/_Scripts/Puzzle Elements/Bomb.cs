@@ -6,8 +6,14 @@ using UnityEngine;
 
 namespace GravityGame.Puzzle_Elements
 {
+    /// <summary>
+    /// Represents a bomb that will be armed upon collision.
+    /// After a configurable duration <see cref="_fuseTime"/>, it detonates,
+    /// either killing or pushing back the player, depending on the configured radii.
+    /// </summary>
+    [RequireComponent(typeof(GravityModifier))]
     [RequireComponent(typeof(Rigidbody))]
-    public class Bomb : GravityModifier
+    public class Bomb : MonoBehaviour
     {
         [Header("Explosion")]
         [SerializeField] float _explosionRadius = 5f;
@@ -27,23 +33,19 @@ namespace GravityGame.Puzzle_Elements
 
         bool _isArmed;
         AudioSource _audioSource;
-        Collider[] _hitColliders;
 
         void OnValidate()
         {
             if (_explosionRadius > _pushbackRadius) Debug.LogError($"{name}: Explosion radius should not be larger then pushback radius");
         }
 
-        protected override void Awake()
+        void Awake()
         {
-            base.Awake();
-
             _audioSource = GetComponent<AudioSource>();
             if (!_audioSource) {
                 _audioSource = gameObject.AddComponent<AudioSource>();
             }
             _audioSource.playOnAwake = false;
-            _hitColliders = new Collider[50];
         }
 
         void OnCollisionEnter(Collision collision)
@@ -82,19 +84,21 @@ namespace GravityGame.Puzzle_Elements
             PlayerMovement playerRef = null;
 
             float overlapRadius = _pushback ? Mathf.Max(_explosionRadius, _pushbackRadius) : _explosionRadius;
+            var hitColliders = new Collider[100];
+            int colliders = Physics.OverlapSphereNonAlloc(transform.position, overlapRadius, hitColliders);
 
-            for (int i = 0; i < Physics.OverlapSphereNonAlloc(transform.position, overlapRadius, _hitColliders); i++) {
-                if (!_hitColliders[i]) continue;
+            for (int i = 0; i < colliders; i++) {
+                if (!hitColliders[i]) continue;
 
-                if (_hitColliders[i].GetComponentInParent<PlayerMovement>()) {
-                    if (!playerRef) playerRef = _hitColliders[i].GetComponentInParent<PlayerMovement>();
+                if (hitColliders[i].GetComponentInParent<PlayerMovement>()) {
+                    if (!playerRef) playerRef = hitColliders[i].GetComponentInParent<PlayerMovement>();
                     continue;
                 }
 
                 if (!_pushbackPlayerOnly) {
-                    if (_hitColliders[i].GetComponent<Rigidbody>()) {
-                        if (Vector3.Distance(transform.position, _hitColliders[i].transform.position) <= _explosionRadius)
-                            _hitColliders[i].GetComponent<Rigidbody>().AddExplosionForce(
+                    if (hitColliders[i].GetComponent<Rigidbody>()) {
+                        if (Vector3.Distance(transform.position, hitColliders[i].transform.position) <= _explosionRadius)
+                            hitColliders[i].GetComponent<Rigidbody>().AddExplosionForce(
                                 _playerPushbackForce, transform.position, _explosionRadius, 0f, ForceMode.Impulse
                             );
                     }
@@ -106,6 +110,7 @@ namespace GravityGame.Puzzle_Elements
                 float distanceToPlayer = Vector3.Distance(transform.position, playerRef.transform.position);
 
                 if (_killPlayerInRange && distanceToPlayer <= _explosionRadius) {
+                    // TODO FS: Add kill logic when player health is implemented
                     Debug.LogWarning($"{playerRef.name} killed by {name}");
                 }
 
