@@ -39,6 +39,10 @@ namespace GravityGame.CheckpointSystem
 
             _playerMovementScript = _playerObject.GetComponent<PlayerMovement>();
         }
+        
+        void OnEnable() => PlayerHealth.Instance.OnPlayerDied.AddListener(RespawnPlayer);
+
+        void OnDisable() => PlayerHealth.Instance.OnPlayerDied.RemoveListener(RespawnPlayer);
 
         void OnDestroy()
         {
@@ -108,6 +112,7 @@ namespace GravityGame.CheckpointSystem
             _playerObject.transform.position = _checkpoints.First(cp => cp.IsActiveCheckpoint).transform.position +
                                               Vector3.up * _respawnHeightOffset;
             _playerMovementScript.enabled = true;
+            PlayerHealth.Instance.Heal(PlayerHealth.MaxHealth);
         }
 
         Checkpoint FindCheckpointByID(string id) => string.IsNullOrEmpty(id)
