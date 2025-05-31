@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 7141643927944324989}
   - component: {fileID: 1705936659200336268}
   - component: {fileID: 2872335722583491305}
+  - component: {fileID: -6410267396343549473}
   m_Layer: 0
   m_Name: Lever
   m_TagString: Untagged
@@ -176,3 +177,17 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_renderer: {fileID: 1705936659200336268}
   m_maskType: 0
+--- !u!114 &-6410267396343549473
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8192998669939030872}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 811ff8f5d0b47a7458568f1e1e7b7e83, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _isPowered: 0
+  LogicComponents: []
