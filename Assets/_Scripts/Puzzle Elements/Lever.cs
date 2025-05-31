@@ -15,7 +15,7 @@ namespace GravityGame
         /// <summary>
         /// Need to Add Door script to doors and drag those GameObjects into this script of the Lever
         /// </summary>
-        [SerializeField] public List<RedstoneComponent> LogicComponents = new List<RedstoneComponent>();
+        [SerializeField] List<RedstoneComponent> _logicComponents = new List<RedstoneComponent>();
         public bool IsPowered
         {
             set {
@@ -36,7 +36,7 @@ namespace GravityGame
         /// </summary>
         public void UpdateConnectedComponents()
         {
-            foreach (var component in LogicComponents) {
+            foreach (var component in _logicComponents) {
                 if (component != null)
                     component.IsPowered = !component.IsPowered;
             }

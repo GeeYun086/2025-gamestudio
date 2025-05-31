@@ -12,21 +12,21 @@ namespace GravityGame.Puzzle_Elements
     public class InteractableObject : MonoBehaviour, IInteractable
     {
         [Header("Interaction Settings")]
-        [SerializeField]  string _interactionPrompt = "Press [E] to interact";
-        [SerializeField]  bool _isInteractable = true;
-        
+        [SerializeField] string _interactionPrompt = "Press [E] to interact";
+        [SerializeField] bool _isInteractable = true;
+
         [Header("Events")]
         public UnityEvent OnInteract;
-        
+
         public string InteractionPrompt => _interactionPrompt;
         public bool IsInteractable => _isInteractable;
-        
+
         public virtual void Interact()
         {
             if (!_isInteractable) return;
             OnInteract.Invoke();
         }
-        
+
         public void SetInteractable(bool state) => _isInteractable = state;
     }
 }
