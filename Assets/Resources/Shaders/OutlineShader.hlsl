@@ -2,38 +2,35 @@
 #define OUTLINESHADER_INCLUDED
 
 #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
-
-    //object space
-struct Attributes {
-    float4 positionOS : POSITION;
-    float3 normalOS : NORMAL;
-};
-
-    //clip space
-struct VertexOutput {
-    float4 positionCS : SV_POSITION;
-};
-
 float _Thickness;
-float4 _Color;
+            
+struct Attributes
+{
+    float4 posO : POSITION;
+    float4 posN : NORMAL;
+};
+            
+struct VertexOutput
+{
+    float4 pos: SV_POSITION;
+};
 
-VertexOutput Vertex(Attributes input){
+VertexOutput Vertex(Attributes input)
+{
     VertexOutput output = (VertexOutput)0;
-#if VISIBLE
-    float3 normalOS = input.normalOS;
-
-    float3 normal= normalize(input.positionOS.xyz)*_Thickness;
-    float3 posOS = input.positionOS.xyz + normal;
-#else
-    float3 normal= normalize(input.positionOS.xyz)*-0.8;
-    float3 posOS = input.positionOS.xyz + normal;
-#endif
-    output.positionCS = GetVertexPositionInputs(posOS).positionCS;
+    #if VISIBLE
+    float len = dot(input.posN,input.posO.xyz);
+    float3 direction= input.posN*len - input.posO.xyz;
+    float3 posOS = input.posO.xyz + direction*_Thickness;;
+    output.pos = GetVertexPositionInputs(posOS).positionCS;
+    #else
+    output.pos = GetVertexPositionInputs(input.posO.xyz).positionCS;
+    #endif
     return output;
 }
 
-float4 Fragment(VertexOutput input) : SV_Target {
-    return _Color;
+float4 Fragment(VertexOutput input) : SV_Target
+{
+    return 0;
 }
-
 #endif
