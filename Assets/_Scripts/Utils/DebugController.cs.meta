@@ -1,3 +1,13 @@
-﻿fileFormatVersion: 2
+fileFormatVersion: 2
 guid: 2ff8d277d537483993363d9268bcde19
-timeCreated: 1746463833
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - _playerObject: {fileID: 2446000720691385914, guid: 20f183c53d63e61429e2e4e099ccd34f, type: 3}
+  - _debugGravityObject: {fileID: 4662317870626134877, guid: 64e97b85a4f90c348a6daf19eecade02, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
