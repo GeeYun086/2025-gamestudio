@@ -6,6 +6,7 @@ namespace GravityGame.Puzzle_Elements
     public class CubeSpawner : MonoBehaviour
     {
         public GameObject Cube;
+        GameObject _currentCube;
         Vector3 _cubePosition;
         void Start()
         {
@@ -17,8 +18,8 @@ namespace GravityGame.Puzzle_Elements
         {
             Debug.Log("Respawn");
             GameObject newCube = Instantiate(Cube, _cubePosition, transform.rotation, transform);
-            Destroy(Cube);
-            Cube = newCube;
+            Destroy(_currentCube);
+            _currentCube = newCube;
             
             newCube.TryGetComponent(out GravityModifier gravityModifier);
             gravityModifier.GravityDirection = -transform.up;

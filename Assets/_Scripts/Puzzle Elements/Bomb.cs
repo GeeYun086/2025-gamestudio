@@ -52,6 +52,7 @@ namespace GravityGame.Puzzle_Elements
         {
             if (_isArmed) return;
             if (collision.transform.IsChildOf(transform) || collision.gameObject == gameObject) return;
+            if(collision.transform.TryGetComponent(out CubeSpawner cubeSpawner)) return;
 
             if (collision.contacts.Select(contact => contact.thisCollider.transform)
                 .Any(contactColliderTransform => contactColliderTransform.parent == transform)) ArmForExplosion();
