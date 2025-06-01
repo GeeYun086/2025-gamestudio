@@ -3,6 +3,9 @@ using UnityEngine;
 
 namespace GravityGame.Puzzle_Elements
 {
+    /// <summary>
+     /// (Re)spawns assigned (<see cref="_fuseTime"/>) cube on load and interact.
+     /// </summary>
     public class CubeSpawner : MonoBehaviour
     {
         public GameObject Cube;
