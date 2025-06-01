@@ -8,6 +8,7 @@ namespace GravityGame.Puzzle_Elements
         public GameObject Cube;
         GameObject _currentCube;
         Vector3 _cubePosition;
+
         void Start()
         {
             _cubePosition = transform.position + transform.up;
@@ -20,7 +21,7 @@ namespace GravityGame.Puzzle_Elements
             GameObject newCube = Instantiate(Cube, _cubePosition, transform.rotation, transform);
             Destroy(_currentCube);
             _currentCube = newCube;
-            
+
             newCube.TryGetComponent(out GravityModifier gravityModifier);
             gravityModifier.GravityDirection = -transform.up;
         }
