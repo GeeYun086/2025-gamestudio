@@ -19,10 +19,9 @@ VertexOutput Vertex(Attributes input)
 {
     VertexOutput output = (VertexOutput)0;
     #if VISIBLE
-    float len = dot(input.posN,input.posO.xyz);
-    float3 direction= input.posN*len - input.posO.xyz;
-    float3 posOS = input.posO.xyz + direction*_Thickness;;
-    output.pos = GetVertexPositionInputs(posOS).positionCS;
+        float3 direction = -normalize(input.posO.xyz);
+        float3 posOS = input.posO.xyz + direction*_Thickness;
+        output.pos = GetVertexPositionInputs(posOS).positionCS;
     #else
     output.pos = GetVertexPositionInputs(input.posO.xyz).positionCS;
     #endif
