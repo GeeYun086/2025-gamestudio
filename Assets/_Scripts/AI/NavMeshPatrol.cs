@@ -89,5 +89,14 @@ namespace GravityGame
             else
                 _agent.SetDestination(hit.position);
         }
+        
+        public void RepathToCurrentTarget()
+        {
+            StopAllCoroutines();
+            _waiting = false;
+
+            GoTo(_index);
+        }
+
     }
 }
