@@ -343,11 +343,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!4 &1036406251 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 4715745792198065692, guid: 6d797a3af3ab1c94fa9671fac86dd6c5, type: 3}
-  m_PrefabInstance: {fileID: 6719570920845027953}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1054415895
 GameObject:
   m_ObjectHideFlags: 0
@@ -503,11 +498,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &3102207434749554438 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 724300993355900891, guid: 6d797a3af3ab1c94fa9671fac86dd6c5, type: 3}
-  m_PrefabInstance: {fileID: 6719570920845027953}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &6719570920845027953
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -519,18 +509,6 @@ PrefabInstance:
     - target: {fileID: 1048923521071570241, guid: 6d797a3af3ab1c94fa9671fac86dd6c5, type: 3}
       propertyPath: m_Name
       value: enemy_v2
-      objectReference: {fileID: 0}
-    - target: {fileID: 3620783818044481209, guid: 6d797a3af3ab1c94fa9671fac86dd6c5, type: 3}
-      propertyPath: WaitAtEnds
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3620783818044481209, guid: 6d797a3af3ab1c94fa9671fac86dd6c5, type: 3}
-      propertyPath: carrySocket
-      value: 
-      objectReference: {fileID: 1036406251}
-    - target: {fileID: 3620783818044481209, guid: 6d797a3af3ab1c94fa9671fac86dd6c5, type: 3}
-      propertyPath: SelectedMode
-      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3620783818044481209, guid: 6d797a3af3ab1c94fa9671fac86dd6c5, type: 3}
       propertyPath: WaypointsRoot
@@ -579,84 +557,8 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 1048923521071570241, guid: 6d797a3af3ab1c94fa9671fac86dd6c5, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 7950190656829992523}
-    - targetCorrespondingSourceObject: {fileID: 724300993355900891, guid: 6d797a3af3ab1c94fa9671fac86dd6c5, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 9205915258210417548}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 6d797a3af3ab1c94fa9671fac86dd6c5, type: 3}
---- !u!1 &7286561325059896562 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 1048923521071570241, guid: 6d797a3af3ab1c94fa9671fac86dd6c5, type: 3}
-  m_PrefabInstance: {fileID: 6719570920845027953}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &7950190656829992523
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7286561325059896562}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2ec0235e20e551540b18db10d54456c2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  waitBeforePickup: 1
-  moveTime: 0.5
-  heightCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  targetTag: Carryable
-  lookAhead: 2
-  detectionRadius: 2.02
-  grabDistance: 1.15
-  carrySocket: {fileID: 1036406251}
---- !u!95 &9205915258210417548
-Animator:
-  serializedVersion: 7
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3102207434749554438}
-  m_Enabled: 1
-  m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: ce6c813a130a74d40a6f735487cd2786, type: 2}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_StabilizeFeet: 0
-  m_AnimatePhysics: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorStateOnDisable: 0
-  m_WriteDefaultValuesOnDisable: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
