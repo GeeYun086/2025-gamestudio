@@ -1068,14 +1068,6 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7659109521922652848, guid: e5f69f19d715ef74194ca553976c9066, type: 3}
-      propertyPath: _pushbackForce
-      value: 10000
-      objectReference: {fileID: 0}
-    - target: {fileID: 7659109521922652848, guid: e5f69f19d715ef74194ca553976c9066, type: 3}
-      propertyPath: _explosionRadius
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7659109521922652848, guid: e5f69f19d715ef74194ca553976c9066, type: 3}
       propertyPath: _killPlayerInRange
       value: 0
       objectReference: {fileID: 0}
@@ -1086,10 +1078,6 @@ PrefabInstance:
     - target: {fileID: 7659109521922652848, guid: e5f69f19d715ef74194ca553976c9066, type: 3}
       propertyPath: _playerPushbackForce
       value: 10000
-      objectReference: {fileID: 0}
-    - target: {fileID: 9102643707808039048, guid: e5f69f19d715ef74194ca553976c9066, type: 3}
-      propertyPath: GravityMagnitude
-      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
