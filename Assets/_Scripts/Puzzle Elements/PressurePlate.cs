@@ -7,6 +7,10 @@ using GravityGame.Puzzle_Elements;
 
 namespace GravityGame
 {
+    /// <summary>
+    /// Add to Pressure Plate GameObject and drag Doors into List
+    /// Activated by GameObject with Tag "Cube"
+    /// </summary>
     public class PressurePlate : MonoBehaviour
     {
         [Header("Pressure Plate Settings")]
@@ -26,7 +30,7 @@ namespace GravityGame
                 UpdateConnectedComponents();
             }
         }
-
+        
         void UpdateConnectedComponents()
         {
             foreach (var component in _logicComponents) {

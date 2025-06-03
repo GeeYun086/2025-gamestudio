@@ -15,7 +15,7 @@ namespace GravityGame
         /// <summary>
         /// Need to Add Door script to doors and drag those GameObjects into this script of the Lever
         /// </summary>
-        [SerializeField] List<RedstoneComponent> _logicComponents = new List<RedstoneComponent>();
+        [SerializeField] List<RedstoneComponent> _logicComponents;
         public bool IsPowered
         {
             set {
