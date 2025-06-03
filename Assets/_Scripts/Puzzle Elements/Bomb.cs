@@ -1,5 +1,7 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using GravityGame.Gravity;
 using GravityGame.Player;
 using UnityEngine;
@@ -21,15 +23,12 @@ namespace GravityGame.Puzzle_Elements
         [SerializeField] GameObject _explosionVFX;
         [SerializeField] AudioClip _explosionSound;
         [SerializeField] bool _killPlayerInRange = true;
+        [SerializeField] float _playerDamageAmount = 35f;
 
         [Header("Player Pushback")]
         [SerializeField] bool _pushback = true;
-        [SerializeField] bool _pushbackPlayerOnly = true;
         [SerializeField] float _pushbackRadius = 8.5f;
-        [SerializeField] float _playerPushbackForce = 1000f;
-
-        [Header("Damage")]
-        [SerializeField] float _playerDamageAmount = 35f;
+        [SerializeField] float _pushbackForce = 1000f;
 
         [Header("Interaction")]
         [SerializeField] float _fuseTime = 5f;
@@ -75,7 +74,7 @@ namespace GravityGame.Puzzle_Elements
 
         IEnumerator ExplosionSequenceCoroutine()
         {
-            _audioSource.PlayOneShot(_fuseSound);
+            if (_fuseSound && _audioSource) _audioSource.PlayOneShot(_fuseSound);
             yield return new WaitForSeconds(_fuseTime);
             Detonate();
         }
@@ -83,16 +82,16 @@ namespace GravityGame.Puzzle_Elements
         void Detonate()
         {
             if (_explosionVFX) Instantiate(_explosionVFX, transform.position, Quaternion.identity);
-            if (_explosionSound) AudioSource.PlayClipAtPoint(_explosionSound, transform.position, _audioSource.volume);
+            if (_explosionSound && _audioSource) AudioSource.PlayClipAtPoint(_explosionSound, transform.position, _audioSource.volume);
 
             PlayerMovement playerRef = null;
             PlayerHealth playerHealthRef = null;
 
-            float overlapRadius = _pushback ? Mathf.Max(_explosionRadius, _pushbackRadius) : _explosionRadius;
+            float overlapSphereRadiusToScan = _pushback ? Mathf.Max(_explosionRadius, _pushbackRadius) : _explosionRadius;
             var hitColliders = new Collider[100];
-            int colliders = Physics.OverlapSphereNonAlloc(transform.position, overlapRadius, hitColliders);
+            int numActualColliders = Physics.OverlapSphereNonAlloc(transform.position, overlapSphereRadiusToScan, hitColliders);
 
-            for (int i = 0; i < colliders; i++) {
+            for (int i = 0; i < numActualColliders; i++) {
                 var hitCollider = hitColliders[i];
                 if (!hitCollider || hitCollider.transform.IsChildOf(transform) || hitCollider.gameObject == gameObject) continue;
 
@@ -111,30 +110,28 @@ namespace GravityGame.Puzzle_Elements
                 if (breakableComponent) {
                     if (distance <= _explosionRadius) {
                         breakableComponent.Break();
-                        continue;
+                        continue; 
                     }
                 }
-
+                
                 var enemyComponent = hitCollider.GetComponentInParent<NavMeshPatrol>();
                 if (enemyComponent) {
                     if (distance <= _explosionRadius) {
                         var enemyRb = enemyComponent.GetComponentInParent<Rigidbody>();
                         if (enemyRb) {
-                            enemyRb.AddExplosionForce(_playerPushbackForce, transform.position, _explosionRadius, 0f, ForceMode.Impulse);
+                            enemyRb.AddExplosionForce(_pushbackForce, transform.position, _explosionRadius, 0f, ForceMode.Impulse);
                         }
                         Destroy(enemyComponent.gameObject);
-                        continue;
+                        continue; 
                     }
                 }
 
                 var rb = hitCollider.GetComponentInParent<Rigidbody>();
                 if (rb) {
-                    if (!_pushbackPlayerOnly) {
-                        if (distance <= _explosionRadius) {
-                            rb.AddExplosionForce(_playerPushbackForce, transform.position, _explosionRadius, 0f, ForceMode.Impulse);
-                        } else if (_pushback && distance <= _pushbackRadius) {
-                            rb.AddExplosionForce(_playerPushbackForce, transform.position, _pushbackRadius, 0f, ForceMode.Impulse);
-                        }
+                    if (distance <= _explosionRadius) {
+                        rb.AddExplosionForce(_pushbackForce, transform.position, _explosionRadius, 0f, ForceMode.Impulse);
+                    } else if (_pushback && distance <= _pushbackRadius) {
+                        rb.AddExplosionForce(_pushbackForce, transform.position, _pushbackRadius, 0f, ForceMode.Impulse);
                     }
                 }
             }
@@ -151,9 +148,9 @@ namespace GravityGame.Puzzle_Elements
                             playerHealthRef.TakeDamage(_playerDamageAmount);
                         }
                     }
-                    if (playerRb) playerRb.AddExplosionForce(_playerPushbackForce, transform.position, _explosionRadius, 0f, ForceMode.Impulse);
+                    if (playerRb) playerRb.AddExplosionForce(_pushbackForce, transform.position, _explosionRadius, 0f, ForceMode.Impulse);
                 } else if (_pushback && distanceToPlayer <= _pushbackRadius) {
-                    if (playerRb) playerRb.AddExplosionForce(_playerPushbackForce, transform.position, _pushbackRadius, 0f, ForceMode.Impulse);
+                    if (playerRb) playerRb.AddExplosionForce(_pushbackForce, transform.position, _pushbackRadius, 0f, ForceMode.Impulse);
                 }
             }
             Destroy(gameObject);
