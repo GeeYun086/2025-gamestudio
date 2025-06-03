@@ -1,173 +1,136 @@
-﻿/*------------------------------------------------*/
-/* 1. Font Face                                   */
+﻿/*------------------------------------------------
+   1. Base & Font                               */
 /*------------------------------------------------*/
 @font-face {
     src: resource("UI/Fonts/OCRA.ttf");
     font-family: OCRA;
 }
 
-/*------------------------------------------------*/
-/* 2. Pause-Menu Overlay w/ Background Image      */
-/*------------------------------------------------*/
+/* Fullscreen overlay */
 .pause-menu {
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
-
+    background-image: resource("UI/Images/bg_pausemenu");
+    background-size: cover;
+    background-position: center;
     display: flex;
     justify-content: center;
     align-items: center;
+}
 
-    /* make sure your file is at Assets/UI/Images/bg_pausemenu.png */
-    background-image: resource("UI/Images/bg_pausemenu");
+/*------------------------------------------------
+   2. Frame with art                            */
+/*------------------------------------------------*/
+.menu-frame {
+    width: 1500px;
+    height: 800px;
+    background-image: resource("UI/Images/MenuFrame");
+    background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
-    background-size: cover;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
+/*------------------------------------------------
+   3. Shared panel content layout               */
 /*------------------------------------------------*/
-/* 3. Panel Containers                            */
-/*------------------------------------------------*/
-.menu-container {
-    width: 420px;
-    padding-top: 40px;
-    padding-bottom: 40px;
-    padding-left: 30px;
-    padding-right: 30px;
-
-    background-color: rgba(10, 2, 2, 0.98);
-
-    border-color: rgba(120, 8, 8, 0.7);
-    border-width: 3px;
-    border-radius: 8px;
+.panel-content {
+    width: 300px;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 16px;
+    background: rgba(0,0,0,0.6); /* optional tint */
+    border-radius: 4px;
 }
 
+/*------------------------------------------------
+   4. Header and separators                     */
 /*------------------------------------------------*/
-/* 4. Headers & Separators                        */
-/*------------------------------------------------*/
-.menu-header {
+.options-header {
     font-family: OCRA;
-    font-size: 32px;
-    color: #6DFF6D;
-
-    padding-bottom: 20px;
+    font-size: 28px;
+    color: #FFFFFF;
+    align-self: center;
+    margin-bottom: 12px;
 }
 
 .separator {
     height: 1px;
-    background-color: rgba(120, 8, 8, 0.7);
-    margin-top: 20px;
-    margin-bottom: 20px;
+    background-color: rgba(255,255,255,0.2);
+    margin: 12px 0;
 }
 
+/*------------------------------------------------
+   5. Options list & items                      */
 /*------------------------------------------------*/
-/* 5. Menu Items                                  */
-/*------------------------------------------------*/
-.menu-item {
-    padding-top: 14px;
-    padding-bottom: 14px;
-    padding-left: 25px;
-    padding-right: 25px;
+.options-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
 
-    font-family: Consolas;
+.options-item {
+    padding: 8px 12px;
+    font-family: OCRA;
     font-size: 20px;
-    color: #E0E0E0;
-
-    background-color: transparent;
-    border-left-width: 3px;
-    border-left-color: transparent;
+    color: #FFF;
+    background-color: rgba(0,0,0,0.4);
+    border: 1px solid transparent;
+    border-left-width: 4px;
+    border-radius: 2px;
 }
-
-.menu-item:hover {
-    background-color: rgba(80, 0, 0, 0.3);
-    color: #FF4A4A;
+.options-item:hover {
+    background-color: rgba(255, 0, 0, 0.5);
     border-left-color: #FF4A4A;
-    cursor: link;
+    cursor: pointer;
 }
 
-/*------------------------------------------------*/
-/* 6. Volume Icon                                 */
-/*------------------------------------------------*/
-.icon-sound {
-    width: 24px;
-    height: 24px;
-
-    background-image: resource("UI/Images/icon_sound");
-    background-size: contain;
-    background-repeat: no-repeat;
-    margin-right: 12px;
-}
-
-/*------------------------------------------------*/
-/* 7. Modern Slider Container & Slider Overrides  */
+/*------------------------------------------------
+   6. Volume slider (settings panel)            */
 /*------------------------------------------------*/
 .slider-container {
     display: flex;
-    flex-direction: row;
     align-items: center;
-
-    padding-top: 12px;
-    padding-bottom: 12px;
-    padding-left: 20px;
-    padding-right: 20px;
-
-    background-color: rgba(20, 20, 20, 0.8);
-
-    border-color: rgba(255, 255, 255, 0.1);
-    border-width: 1px;
-    border-radius: 8px;
-
-    margin-bottom: 16px;
+    padding: 8px;
+    background-color: rgba(20,20,20,0.8);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 4px;
+    margin-bottom: 12px;
 }
-
 .modern-slider {
     flex-grow: 1;
-    height: 16px;
-    margin: 0;
+    height: 12px;
+    margin: 0 8px;
 }
-
 /* Track */
-.modern-slider .unity-slider-track {
-    background-color: #333;
-    height: 8px;
-    border-radius: 4px;
-    overflow: hidden;
-}
-
-/* Progress fill */
-.modern-slider .unity-slider-progress {
-    background-color: #1E90FF;
-    height: 8px;
-    border-radius: 4px;
-}
-
+.modern-slider .unity-slider-track { background-color: #333; height: 6px; border-radius: 3px; overflow: hidden; }
+/* Fill */
+.modern-slider .unity-slider-progress { background-color: #1E90FF; height: 6px; border-radius: 3px; }
 /* Thumb */
-.modern-slider .unity-slider-dragger {
-    width: 24px;
-    height: 24px;
-    background-color: #1E90FF;
-    border-color: #FFFFFF;
-    border-width: 2px;
-    border-radius: 50%;
+.modern-slider .unity-slider-dragger { width: 16px; height: 16px; background-color: #1E90FF; border-width: 2px; border-color: #FFF; border-radius: 50%; }
+/* Input */
+.modern-slider .unity-input--text {
+    width: 40px;
+    margin-left: 6px;
+    padding: 2px 4px;
+    background: #222;
+    color: #FFF;
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 2px;
+    font-size: 14px;
 }
 
+/*------------------------------------------------
+   7. Sound icon                                 */
 /*------------------------------------------------*/
-/* 8. Slider Input Field                          */
-/*------------------------------------------------*/
-.modern-slider .unity-input--text {
-    width: 48px;
-    margin-left: 10px;
-
-    padding-top: 2px;
-    padding-bottom: 2px;
-    padding-left: 4px;
-    padding-right: 4px;
-
-    background-color: #222;
-    color: #FFFFFF;
-
-    border-color: rgba(255,255,255,0.2);
-    border-width: 1px;
-    border-radius: 4px;
-
-    font-size: 14px;
+.icon-sound {
+    width: 20px;
+    height: 20px;
+    background-image: resource("UI/Images/icon_sound");
+    background-size: contain;
+    background-repeat: no-repeat;
 }
