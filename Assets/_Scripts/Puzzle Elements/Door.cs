@@ -6,12 +6,12 @@ namespace GravityGame
     /// <summary>
     /// Add to Door GameObject
     /// </summary>
-    public class Door : MonoBehaviour, IRedstoneComponent 
+    public class Door : RedstoneComponent
     {
         [Header("Door Settings")]
         [SerializeField] bool _isPowered;
 
-        public bool IsPowered
+        public override bool IsPowered
         {
             get => _isPowered;
             set {

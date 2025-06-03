@@ -11,19 +11,19 @@ namespace GravityGame
     {
         [Header("Pressure Plate Settings")]
         [SerializeField] bool _isPowered;
-        [SerializeReference, SerializeField] List<Door> _logicComponents = new List<Door>();
+        [SerializeField] List<RedstoneComponent> _logicComponents;
 
-        void OnTriggerEnter(Collider other) // Changed from OnTriggerEvent
+        void OnTriggerEnter(Collider other)
         {
             if (other.CompareTag("Cube")) {
-                UpdateConnectedComponents(); // Set to powered when block enters
+                UpdateConnectedComponents();
             }
         }
 
-        void OnTriggerExit(Collider other) // Add this method
+        void OnTriggerExit(Collider other)
         {
             if (other.CompareTag("Cube")) {
-                UpdateConnectedComponents(); // Set to unpowered when block leaves
+                UpdateConnectedComponents();
             }
         }
 
@@ -31,7 +31,7 @@ namespace GravityGame
         {
             foreach (var component in _logicComponents) {
                 if (component != null)
-                    component.IsPowered = !component.IsPowered; // Set components to match our state
+                    component.IsPowered = !component.IsPowered;
             }
         }
     }

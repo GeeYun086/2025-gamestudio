@@ -3,10 +3,10 @@ using UnityEngine;
 namespace GravityGame
 {
     /// <summary>
-    /// Let Doors inherit from this class.
+    /// Abstract Class for Door like components
     /// </summary>
-    public interface IRedstoneComponent
+    public abstract class RedstoneComponent : MonoBehaviour
     {
-        public bool IsPowered { get; set; }
+        public abstract bool IsPowered { get; set; }
     }
 }
