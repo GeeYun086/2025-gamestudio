@@ -5,8 +5,8 @@ namespace GravityGame
     /// <summary>
     /// Let Doors inherit from this class.
     /// </summary>
-    public abstract class RedstoneComponent : MonoBehaviour
+    public interface IRedstoneComponent
     {
-        public abstract bool IsPowered { get; set; }
+        public bool IsPowered { get; set; }
     }
 }

@@ -1,24 +1,37 @@
+using System;
 using Codice.Client.Common.EventTracking;
 using UnityEngine;
+using System.Collections.Generic;
+using GravityGame.Puzzle_Elements;
+
 
 namespace GravityGame
 {
-    public class PressurePlate : RedstoneComponent
+    public class PressurePlate : MonoBehaviour
     {
+        [Header("Pressure Plate Settings")]
         [SerializeField] bool _isPowered;
-        public override bool IsPowered
+        [SerializeReference, SerializeField] List<Door> _logicComponents = new List<Door>();
+
+        void OnTriggerEnter(Collider other) // Changed from OnTriggerEvent
         {
-            get => _isPowered;
-            set {
-                _isPowered = value;
-                OnTriggerEvent();
+            if (other.CompareTag("Cube")) {
+                UpdateConnectedComponents(); // Set to powered when block enters
             }
         }
 
-        void OnTriggerEvent()
+        void OnTriggerExit(Collider other) // Add this method
         {
-            if (CompareTag("Block") && !_isPowered) {
-                _isPowered = true;
+            if (other.CompareTag("Cube")) {
+                UpdateConnectedComponents(); // Set to unpowered when block leaves
+            }
+        }
+
+        void UpdateConnectedComponents()
+        {
+            foreach (var component in _logicComponents) {
+                if (component != null)
+                    component.IsPowered = !component.IsPowered; // Set components to match our state
             }
         }
     }
