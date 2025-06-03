@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Linq;
-using System.Runtime.CompilerServices;
+﻿using System.Collections;
 using GravityGame.Gravity;
 using GravityGame.Player;
 using UnityEngine;
@@ -9,7 +6,7 @@ using UnityEngine;
 namespace GravityGame.Puzzle_Elements
 {
     /// <summary>
-    /// Represents a bomb that will be armed upon collision.
+    /// Represents a bomb that will be armed upon its trigger being entered.
     /// After a configurable duration <see cref="_fuseTime"/>, it detonates,
     /// either killing or pushing back the player, depending on the configured radii.
     /// Also pushes other physics objects, kills enemies, and breaks destructibles.
@@ -25,7 +22,7 @@ namespace GravityGame.Puzzle_Elements
         [SerializeField] bool _killPlayerInRange = true;
         [SerializeField] float _playerDamageAmount = 35f;
 
-        [Header("Player Pushback")]
+        [Header("Pushback")]
         [SerializeField] bool _pushback = true;
         [SerializeField] float _pushbackRadius = 8.5f;
         [SerializeField] float _pushbackForce = 1000f;
@@ -36,6 +33,7 @@ namespace GravityGame.Puzzle_Elements
 
         bool _isArmed;
         AudioSource _audioSource;
+        Rigidbody _rigidbody;
 
         void OnValidate()
         {
@@ -45,19 +43,17 @@ namespace GravityGame.Puzzle_Elements
         void Awake()
         {
             _audioSource = GetComponent<AudioSource>();
-            if (!_audioSource) {
-                _audioSource = gameObject.AddComponent<AudioSource>();
-            }
+            if (!_audioSource) _audioSource = gameObject.AddComponent<AudioSource>();
             _audioSource.playOnAwake = false;
+            _rigidbody = GetComponent<Rigidbody>();
         }
 
-        void OnCollisionEnter(Collision collision)
+        void OnTriggerEnter(Collider other)
         {
             if (_isArmed) return;
-            if (collision.transform.IsChildOf(transform) || collision.gameObject == gameObject) return;
-
-            if (collision.contacts.Select(contact => contact.thisCollider.transform)
-                .Any(contactColliderTransform => contactColliderTransform.parent == transform)) ArmForExplosion();
+            if (other.gameObject == gameObject || other.transform.IsChildOf(transform)) return;
+            if (other.attachedRigidbody == _rigidbody && _rigidbody) return;
+            ArmForExplosion();
         }
 
         void ArmForExplosion()
@@ -87,15 +83,14 @@ namespace GravityGame.Puzzle_Elements
             PlayerMovement playerRef = null;
             PlayerHealth playerHealthRef = null;
 
-            float overlapSphereRadiusToScan = _pushback ? Mathf.Max(_explosionRadius, _pushbackRadius) : _explosionRadius;
+            float overlapRadius = _pushback ? Mathf.Max(_explosionRadius, _pushbackRadius) : _explosionRadius;
             var hitColliders = new Collider[100];
-            int numActualColliders = Physics.OverlapSphereNonAlloc(transform.position, overlapSphereRadiusToScan, hitColliders);
+            int colliders = Physics.OverlapSphereNonAlloc(transform.position, overlapRadius, hitColliders);
 
-            for (int i = 0; i < numActualColliders; i++) {
-                var hitCollider = hitColliders[i];
-                if (!hitCollider || hitCollider.transform.IsChildOf(transform) || hitCollider.gameObject == gameObject) continue;
+            for (int i = 0; i < colliders; i++) {
+                if (!hitColliders[i] || hitColliders[i].transform.IsChildOf(transform) || hitColliders[i].gameObject == gameObject) continue;
 
-                var playerComponent = hitCollider.GetComponentInParent<PlayerMovement>();
+                var playerComponent = hitColliders[i].GetComponentInParent<PlayerMovement>();
                 if (playerComponent) {
                     if (!playerRef) {
                         playerRef = playerComponent;
@@ -104,9 +99,9 @@ namespace GravityGame.Puzzle_Elements
                     continue;
                 }
 
-                float distance = Vector3.Distance(transform.position, hitCollider.transform.position);
+                float distance = Vector3.Distance(transform.position, hitColliders[i].transform.position);
 
-                var breakableComponent = hitCollider.GetComponentInParent<Breakable>();
+                var breakableComponent = hitColliders[i].GetComponentInParent<Breakable>();
                 if (breakableComponent) {
                     if (distance <= _explosionRadius) {
                         breakableComponent.Break();
@@ -114,7 +109,7 @@ namespace GravityGame.Puzzle_Elements
                     }
                 }
                 
-                var enemyComponent = hitCollider.GetComponentInParent<NavMeshPatrol>();
+                var enemyComponent = hitColliders[i].GetComponentInParent<NavMeshPatrol>();
                 if (enemyComponent) {
                     if (distance <= _explosionRadius) {
                         var enemyRb = enemyComponent.GetComponentInParent<Rigidbody>();
@@ -126,7 +121,7 @@ namespace GravityGame.Puzzle_Elements
                     }
                 }
 
-                var rb = hitCollider.GetComponentInParent<Rigidbody>();
+                var rb = hitColliders[i].GetComponentInParent<Rigidbody>();
                 if (rb) {
                     if (distance <= _explosionRadius) {
                         rb.AddExplosionForce(_pushbackForce, transform.position, _explosionRadius, 0f, ForceMode.Impulse);
