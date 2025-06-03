@@ -5,8 +5,8 @@ using UnityEngine.UIElements;
 namespace GravityGame.UI
 {
     /// <summary>
-    ///     Centralized access to all UI elements in the Game UI Document.
-    ///     Guarantees every field is non-null (falls back to empty stubs if not found).
+    /// Provides centralized access to all UI elements in the Game UI Document,
+    /// ensuring no field is ever null by falling back to empty stubs when an element is missing.
     /// </summary>
     public class GameUIElements
     {
@@ -20,39 +20,32 @@ namespace GravityGame.UI
         public readonly Button ResumeButton;
         public readonly Button SettingsButton;
         public readonly Button MainMenuButton;
-        public readonly Button QuitButton;
         public readonly Button BackButton;
 
         public readonly Slider VolumeSlider;
 
+        /// <summary>
+        /// Queries the root document for all named UI elements. 
+        /// If an element isn't found, a new stub is assigned to prevent null references.
+        /// </summary>
+        /// <param name="root">The root VisualElement of the UI Document.</param>
         public GameUIElements(VisualElement root)
         {
-            // If Q<>() returns null, we substitute a brand‐new stub so nobody ever sees a null.
             GravityDirectionRadialMenu = root.Q<GravityDirectionRadialMenu>("RadialMenu")
                                          ?? new GravityDirectionRadialMenu();
-            DebugElement = root.Q<VisualElement>("Debug")
-                           ?? new VisualElement();
+            DebugElement              = root.Q<VisualElement>("Debug")
+                                         ?? new VisualElement();
 
-            PauseMenu = root.Q<VisualElement>("PauseMenu")
-                        ?? new VisualElement();
-            MainPanel = root.Q<VisualElement>("MainPanel")
-                        ?? new VisualElement();
-            SettingsPanel = root.Q<VisualElement>("SettingsPanel")
-                            ?? new VisualElement();
+            PauseMenu    = root.Q<VisualElement>("PauseMenu")    ?? new VisualElement();
+            MainPanel    = root.Q<VisualElement>("MainPanel")    ?? new VisualElement();
+            SettingsPanel = root.Q<VisualElement>("SettingsPanel") ?? new VisualElement();
 
-            ResumeButton = root.Q<Button>("ResumeButton")
-                           ?? new Button();
-            SettingsButton = root.Q<Button>("SettingsButton")
-                             ?? new Button();
-            MainMenuButton = root.Q<Button>("MainMenuButton")
-                             ?? new Button();
-            QuitButton = root.Q<Button>("QuitButton")
-                         ?? new Button();
-            BackButton = root.Q<Button>("BackButton")
-                         ?? new Button();
+            ResumeButton    = root.Q<Button>("ResumeButton")    ?? new Button();
+            SettingsButton  = root.Q<Button>("SettingsButton")  ?? new Button();
+            MainMenuButton  = root.Q<Button>("MainMenuButton")  ?? new Button();
+            BackButton      = root.Q<Button>("BackButton")      ?? new Button();
 
-            VolumeSlider = root.Q<Slider>("VolumeSlider")
-                           ?? new Slider();
+            VolumeSlider    = root.Q<Slider>("VolumeSlider")    ?? new Slider();
         }
     }
 
@@ -63,15 +56,20 @@ namespace GravityGame.UI
         public UIDocument UIDocument { get; private set; }
         public GameUIElements Elements { get; private set; }
 
-        void Awake()
+        /// <summary>
+        /// Ensures that only one instance of GameUI exists in the MainScene.
+        /// Any duplicate or out-of-scene instances are destroyed immediately.
+        /// </summary>
+        private void Awake()
         {
-            // Only one GameUI in MainScene
-            if (SceneManager.GetActiveScene().name != "MainScene") {
+            if (SceneManager.GetActiveScene().name != "MainScene")
+            {
                 Destroy(gameObject);
                 return;
             }
 
-            if (Instance != null && Instance != this) {
+            if (Instance != null && Instance != this)
+            {
                 Destroy(gameObject);
                 return;
             }
@@ -79,9 +77,12 @@ namespace GravityGame.UI
             Instance = this;
         }
 
-        void OnEnable()
+        /// <summary>
+        /// Initializes the UIDocument and constructs the GameUIElements wrapper.
+        /// If no UIDocument is attached, uses an empty root to prevent null issues.
+        /// </summary>
+        private void OnEnable()
         {
-            // Grab the root if we have a UIDocument; otherwise use an empty root.
             UIDocument = GetComponent<UIDocument>();
             var root = UIDocument != null
                 ? UIDocument.rootVisualElement

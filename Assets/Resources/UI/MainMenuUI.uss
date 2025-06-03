@@ -1,7 +1,5 @@
-﻿/* MainMenuUI.uss */
-
+﻿/* Fullscreen background and layout */
 .main-root {
-    /* background-image only accepts resource("nameWithoutExtension") */
     background-image: resource("UI/Images/main_menubg");
     background-size: cover;
     background-position: center;
@@ -10,68 +8,58 @@
     flex-direction: column;
     align-items: flex-start;
     justify-content: flex-start;
-    /* shorthand padding: top right bottom left */
-    padding: 110px 0 0 100px;
+    padding: 110 0 0 100;
 }
 
+/* Game title styling */
 .game-title {
-    /* Unity-font reference — make sure OCRA.ttf is imported as a Font asset */
-    -unity-font: OCRA;
-    font-size: 44px;
     color: #ff2424;
-    /* margin: top right bottom left */
-    margin: 0 0 10px 6px;
-    letter-spacing: 4px;
-    -unity-font-style: bold;
+    margin: 0 0 10 6;
 }
 
+/* Container for menu buttons */
 .menu-panel {
     flex-direction: column;
-    width: 350px;
-    background-color: rgba(28,34,40,0.88);
-    /* Unity-style borders */
-    border-width: 2px;
+    width: 350;
+    background-color: rgba(28, 34, 40, 0.88);
+    border-width: 2;
     border-color: #eaeaea;
-    border-radius: 9px;
-    /* shorthand padding: top right bottom left */
-    padding: 28px 18px 24px 32px;
-    margin-top: 90px;
+    border-radius: 9;
+    padding: 28 18 24 32;
+    margin-top: 90;
 }
 
-.menu-panel > * {
-    margin-bottom: 10px;
+/* Spacing between each button in the menu panel */
+.menu-panel .menu-button {
+    margin-bottom: 10;
 }
 
+/* Base styling for menu buttons */
 .menu-button {
-    -unity-font: OCRA;
-    font-size: 24px;
     color: #f5f5f5;
     background-color: transparent;
-    border-width: 2px;
+    border-width: 2;
     border-color: #d3d6d9;
-    border-radius: 6px;
-    width: 270px;
-    /* shorthand padding: vertical horizontal */
-    padding: 10px 24px;
+    border-radius: 6;
+    width: 270;
+    padding: 10 24;
     justify-content: flex-start;
-    letter-spacing: 1.5px;
 }
 
 .menu-button:hover {
-    /* Unity supports background-color on hover */
-    background-color: rgba(90,200,250,0.12);
+    background-color: rgba(90, 200, 250, 0.12);
     color: #ffffff;
     border-color: #ffffff;
 }
 
+/* Overrides for the “Quit” button */
 .quit-button {
     color: #ff2323;
     border-color: #ff2323;
-    -unity-font-style: bold;
 }
 
 .quit-button:hover {
-    background-color: rgba(255,36,36,0.09);
+    background-color: rgba(255, 36, 36, 0.09);
     color: #ffffff;
     border-color: #ffffff;
 }

@@ -1610,6 +1610,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9346d96b771b4b74a634a17472c6ec1b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  OcrFont: {fileID: 12800000, guid: 9abada186f8687a40bbb14d189b9e26d, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

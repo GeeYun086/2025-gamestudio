@@ -1,3 +1,12 @@
-﻿fileFormatVersion: 2
+fileFormatVersion: 2
 guid: 6b61ad80c1fe47189389b685a57e3e49
-timeCreated: 1747999245
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - OcrFont: {fileID: 12800000, guid: 9abada186f8687a40bbb14d189b9e26d, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

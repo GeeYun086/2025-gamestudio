@@ -6,30 +6,65 @@
     noNamespaceSchemaLocation="../../../../UIElementsSchema/UIElements.xsd"
     editor-extension-mode="False">
 
-    <!-- Pull in styles -->
+    <!-- Pull in our USS stylesheet -->
     <Style src="GameUI.uss" />
 
-    <engine:VisualElement name="PauseMenu" class="pause-menu" style="display:none;">
+    <!-- Root PauseMenu: hidden by default -->
+    <engine:VisualElement
+        name="PauseMenu"
+        class="pause-menu"
+        style="display: none;">
 
-        <!-- The full-frame artwork container -->
+        <!-- Full-frame container (1500×800 background image) -->
         <engine:VisualElement class="menu-frame">
 
-            <!-- Main Panel -->
-            <engine:VisualElement name="MainPanel" class="panel-content main-panel">
-                <engine:Label text="Options" class="options-header" />
-                <engine:VisualElement class="options-list">
-                    <engine:Button name="ResumeButton" text="Resume" class="options-item" />
-                    <engine:Button name="SettingsButton" text="Settings" class="options-item" />
-                    <engine:Button name="AudioButton"   text="Audio"    class="options-item" />
-                    <engine:Button name="CreditsButton" text="Credits"  class="options-item" />
-                    <engine:Button name="ExitButton"    text="Exit"     class="options-item" />
+            <!-- MainPanel: only buttons (no “Options” header) -->
+            <engine:VisualElement
+                name="MainPanel"
+                class="panel-content main-panel"
+                style="display: none;">
+                
+                <!-- Vertical list of buttons -->
+                <engine:VisualElement class="button-list">
+                    <!-- First button has margin-top:0 so following buttons stack at 8px -->
+                    <engine:Button
+                        name="ResumeButton"
+                        text="Resume"
+                        class="menu-item"
+                        style="margin-top: 0px;" />
+                    <engine:Button
+                        name="SettingsButton"
+                        text="Settings"
+                        class="menu-item" />
+                    <engine:Button
+                        name="AudioButton"
+                        text="Audio"
+                        class="menu-item" />
+                    <engine:Button
+                        name="CreditsButton"
+                        text="Credits"
+                        class="menu-item" />
+                    <engine:Button
+                        name="MainMenuButton"
+                        text="Main Menu"
+                        class="menu-item" />
                 </engine:VisualElement>
             </engine:VisualElement>
 
-            <!-- Settings Panel -->
-            <engine:VisualElement name="SettingsPanel" class="panel-content settings-panel" style="display:none;">
-                <engine:Label text="Sound Levels" class="options-header" />
+            <!-- SettingsPanel: a “Sound Levels” header, a slider, and a Back button -->
+            <engine:VisualElement
+                name="SettingsPanel"
+                class="panel-content settings-panel"
+                style="display: none;">
+
+                <!-- Label to show “Sound Levels” -->
+                <engine:Label
+                    name="SoundLevelsLabel"
+                    text="Sound Levels"
+                    class="menu-header" />
+
                 <engine:VisualElement class="separator" />
+
                 <engine:VisualElement class="slider-container">
                     <engine:VisualElement class="icon-sound" />
                     <engine:Slider
@@ -40,11 +75,17 @@
                         page-size="0.05"
                         show-input-field="true" />
                 </engine:VisualElement>
+
                 <engine:VisualElement class="separator" />
-                <engine:Button name="BackButton" text="Back" class="options-item" />
+
+                <!-- Back button has margin-top:8px to match other buttons’ spacing -->
+                <engine:Button
+                    name="BackButton"
+                    text="Back"
+                    class="menu-item"
+                    style="margin-top: 8px;" />
             </engine:VisualElement>
 
         </engine:VisualElement>
-
     </engine:VisualElement>
 </engine:UXML>
