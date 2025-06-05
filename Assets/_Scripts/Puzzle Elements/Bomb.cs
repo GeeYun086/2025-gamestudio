@@ -19,7 +19,7 @@ namespace GravityGame.Puzzle_Elements
         [SerializeField] float _explosionRadius = 5f;
         [SerializeField] GameObject _explosionVFX;
         [SerializeField] AudioClip _explosionSound;
-        [SerializeField] bool _enableExplosionDamage = true;
+        [SerializeField] float _explosionDamage = 34f;
 
         [Header("Pushback")]
         [SerializeField] bool _pushback = true;
@@ -77,65 +77,71 @@ namespace GravityGame.Puzzle_Elements
             if (_explosionVFX) Instantiate(_explosionVFX, transform.position, Quaternion.identity);
             if (_explosionSound && _audioSource) AudioSource.PlayClipAtPoint(_explosionSound, transform.position, _audioSource.volume);
 
-            PlayerMovement playerRef = null;
-
-            float overlapRadius = _pushback ? Mathf.Max(_explosionRadius, _pushbackRadius) : _explosionRadius;
             var hitColliders = new Collider[100];
-            int colliders = Physics.OverlapSphereNonAlloc(transform.position, overlapRadius, hitColliders);
+            int numColliders = Physics.OverlapSphereNonAlloc(
+                transform.position, _pushback ? Mathf.Max(_explosionRadius, _pushbackRadius) : _explosionRadius, hitColliders
+            );
 
-            for (int i = 0; i < colliders; i++) {
+            for (int i = 0; i < numColliders; i++) {
                 if (!hitColliders[i] || hitColliders[i].transform.IsChildOf(transform) || hitColliders[i].gameObject == gameObject) continue;
+                float distance = Vector3.Distance(transform.position, hitColliders[i].transform.position);
 
-                var playerComponent = hitColliders[i].GetComponentInParent<PlayerMovement>();
-                if (playerComponent) {
-                    if (!playerRef) playerRef = playerComponent;
+                var player = hitColliders[i].GetComponentInParent<PlayerMovement>();
+                if (player) {
+                    HandlePlayerImpact(player, distance);
                     continue;
                 }
 
-                float distance = Vector3.Distance(transform.position, hitColliders[i].transform.position);
-
-                var breakableComponent = hitColliders[i].GetComponentInParent<Breakable>();
-                if (breakableComponent) {
-                    if (distance <= _explosionRadius) {
-                        breakableComponent.Break();
-                        continue;
-                    }
+                var enemy = hitColliders[i].GetComponentInParent<NavMeshPatrol>();
+                if (enemy) {
+                    HandleEnemyImpact(enemy, distance);
+                    continue;
                 }
 
-                var enemyComponent = hitColliders[i].GetComponentInParent<NavMeshPatrol>();
-                if (enemyComponent) {
-                    if (distance <= _explosionRadius) {
-                        var enemyRb = enemyComponent.GetComponentInParent<Rigidbody>();
-                        if (enemyRb) {
-                            enemyRb.AddExplosionForce(_pushbackForce, transform.position, _explosionRadius, 0f, ForceMode.Impulse);
-                        }
-                        Destroy(enemyComponent.gameObject);
-                        continue;
-                    }
-                }
+                var breakable = hitColliders[i].GetComponentInParent<Breakable>();
+                if (breakable) HandleBreakableImpact(breakable, distance);
 
                 var rb = hitColliders[i].GetComponentInParent<Rigidbody>();
-                if (rb) {
-                    if (distance <= _explosionRadius) {
-                        rb.AddExplosionForce(_pushbackForce, transform.position, _explosionRadius, 0f, ForceMode.Impulse);
-                    } else if (_pushback && distance <= _pushbackRadius) {
-                        rb.AddExplosionForce(_pushbackForce, transform.position, _pushbackRadius, 0f, ForceMode.Impulse);
-                    }
-                }
-            }
-
-            if (playerRef) {
-                var playerRb = playerRef.GetComponent<Rigidbody>();
-                float distanceToPlayer = Vector3.Distance(transform.position, playerRef.transform.position);
-
-                if (distanceToPlayer <= _explosionRadius) {
-                    if (_enableExplosionDamage) PlayerHealth.Instance.TakeDamage(PlayerHealth.MaxHealth * 2f);
-                    if (playerRb) playerRb.AddExplosionForce(_pushbackForce, transform.position, _explosionRadius, 0f, ForceMode.Impulse);
-                } else if (_pushback && distanceToPlayer <= _pushbackRadius) {
-                    if (playerRb) playerRb.AddExplosionForce(_pushbackForce, transform.position, _pushbackRadius, 0f, ForceMode.Impulse);
-                }
+                if (rb) HandleRigidbodyImpact(rb, distance);
             }
             Destroy(gameObject);
+        }
+
+        void HandlePlayerImpact(PlayerMovement player, float distance)
+        {
+            var playerRb = player.GetComponent<Rigidbody>();
+            if (distance <= _explosionRadius) {
+                PlayerHealth.Instance.TakeDamage(_explosionDamage);
+                playerRb.AddExplosionForce(_pushbackForce, transform.position, _explosionRadius, 0f, ForceMode.Impulse);
+            } else if (_pushback && distance <= _pushbackRadius) {
+                playerRb.AddExplosionForce(_pushbackForce, transform.position, _pushbackRadius, 0f, ForceMode.Impulse);
+            }
+        }
+
+        void HandleEnemyImpact(NavMeshPatrol enemy, float distance)
+        {
+            var enemyRb = enemy.GetComponentInParent<Rigidbody>();
+            if (distance <= _explosionRadius) {
+                // TODO FS: Change to damage enemy when enemy health is implemented)
+                Destroy(enemy.gameObject);
+                enemyRb.AddExplosionForce(_pushbackForce, transform.position, _explosionRadius, 0f, ForceMode.Impulse);
+            } else if (_pushback && distance <= _pushbackRadius) {
+                enemyRb.AddExplosionForce(_pushbackForce, transform.position, _pushbackRadius, 0f, ForceMode.Impulse);
+            }
+        }
+
+        void HandleBreakableImpact(Breakable breakable, float distance)
+        {
+            if (distance <= _explosionRadius) breakable.Break();
+        }
+
+        void HandleRigidbodyImpact(Rigidbody rb, float distance)
+        {
+            if (distance <= _explosionRadius) {
+                rb.AddExplosionForce(_pushbackForce, transform.position, _explosionRadius, 0f, ForceMode.Impulse);
+            } else if (_pushback && distance <= _pushbackRadius) {
+                rb.AddExplosionForce(_pushbackForce, transform.position, _pushbackRadius, 0f, ForceMode.Impulse);
+            }
         }
 
         void OnDrawGizmosSelected()
