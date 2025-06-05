@@ -110,18 +110,18 @@ namespace GravityGame.Player
                 if (!_selectedObject) return;
                 ToggleOutlineOnObject(_selectedObject.gameObject, 1);
 
-                var newHoveredDirection = GetRadialMenuGravityDirection();
-                SetVisualizedDirection(newHoveredDirection ?? _selectedObject.GravityDirection);
+                var newDirection = GetRadialMenuGravityDirection();
+                SetVisualizedDirection(newDirection ?? _selectedObject.GravityDirection);
 
-                if (newHoveredDirection.HasValue) {
-                    if (!_previewCloneInstance || _currentPreviewDirection != newHoveredDirection) {
+                if (newDirection.HasValue) {
+                    if (!_previewCloneInstance || _currentPreviewDirection != newDirection) {
                         StopGravityPreview();
-                        StartGravityPreview(_selectedObject, newHoveredDirection.Value);
+                        StartGravityPreview(_selectedObject, newDirection.Value);
                     }
                 } else {
                     StopGravityPreview();
                 }
-                _currentPreviewDirection = newHoveredDirection;
+                _currentPreviewDirection = newDirection;
             } else if (_previewCloneInstance) {
                 StopGravityPreview();
             }
@@ -133,17 +133,14 @@ namespace GravityGame.Player
 
         void StartGravityPreview(GravityModifier originalObjectToPreview, Vector3 direction)
         {
-            if (!originalObjectToPreview) return;
-
             StopGravityPreview();
-
             _previewCloneInstance = Instantiate(
                 originalObjectToPreview.gameObject,
                 originalObjectToPreview.transform.position,
                 originalObjectToPreview.transform.rotation
             );
-
             _currentPreviewDirection = direction;
+            
             if (_previewCloneInstance) {
                 _previewCloneInstance.GetComponent<Rigidbody>().isKinematic = true;
                 _previewCloneInstance.GetComponent<GravityModifier>().enabled = false;
@@ -169,8 +166,6 @@ namespace GravityGame.Player
 
         IEnumerator PreviewGravityMovementRoutine(Transform clone, Transform original, Vector3 gravityDirection)
         {
-            if (!clone || !original) yield break;
-
             while (true) {
                 if (!clone || !original) yield break;
 
