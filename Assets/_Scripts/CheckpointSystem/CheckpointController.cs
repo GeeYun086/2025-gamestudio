@@ -40,7 +40,7 @@ namespace GravityGame.CheckpointSystem
             _playerMovementScript = _playerObject.GetComponent<PlayerMovement>();
         }
         
-        void OnEnable() => PlayerHealth.Instance.OnPlayerDied.AddListener(RespawnPlayer);
+        void Start() => PlayerHealth.Instance.OnPlayerDied.AddListener(RespawnPlayer);
 
         void OnDisable() => PlayerHealth.Instance.OnPlayerDied.RemoveListener(RespawnPlayer);
 
