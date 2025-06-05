@@ -8,18 +8,18 @@ namespace GravityGame
     /// </summary>
     public class Door : RedstoneComponent
     {
+        [Header("Door Settings")]
         [SerializeField] bool _isPowered;
 
         public override bool IsPowered
         {
             get => _isPowered;
-            set
-            {
+            set {
                 _isPowered = value;
                 ToggleDoor();
             }
         }
-        
+
         /// <summary>
         /// Toggle GameObject in scene with this script
         /// </summary>
