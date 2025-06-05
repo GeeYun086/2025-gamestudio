@@ -192,14 +192,14 @@ namespace GravityGame.Player
             if (go) {
                 var materialsCopy = go.GetComponent<Renderer>().materials;
                 if (materialsCopy.Length < 2) return;
-                var shader = materialsCopy[1].shader;
+                var shader = materialsCopy[0].shader;
                 var keywords = shader.keywordSpace;
                 foreach (var keyword in keywords.keywords)
                     if (keyword.name == "VISIBLE") {
                         if (mode > 0)
-                            materialsCopy[1].SetKeyword(keyword, true);
+                            materialsCopy[0].SetKeyword(keyword, true);
                         else
-                            materialsCopy[1].SetKeyword(keyword, false);
+                            materialsCopy[0].SetKeyword(keyword, false);
                     }
 
                 go.GetComponent<Renderer>().materials = materialsCopy;
