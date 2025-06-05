@@ -22,7 +22,6 @@ namespace GravityGame.Puzzle_Elements
         [SerializeField] float _explosionDamage = 34f;
 
         [Header("Pushback")]
-        [SerializeField] bool _pushback = true;
         [SerializeField] float _pushbackRadius = 8.5f;
         [SerializeField] float _pushbackForce = 10000f;
 
@@ -79,7 +78,7 @@ namespace GravityGame.Puzzle_Elements
 
             var hitColliders = new Collider[100];
             int numColliders = Physics.OverlapSphereNonAlloc(
-                transform.position, _pushback ? Mathf.Max(_explosionRadius, _pushbackRadius) : _explosionRadius, hitColliders
+                transform.position, _pushbackRadius > 0 ? Mathf.Max(_explosionRadius, _pushbackRadius) : _explosionRadius, hitColliders
             );
 
             for (int i = 0; i < numColliders; i++) {
@@ -113,7 +112,7 @@ namespace GravityGame.Puzzle_Elements
             if (distance <= _explosionRadius) {
                 PlayerHealth.Instance.TakeDamage(_explosionDamage);
                 playerRb.AddExplosionForce(_pushbackForce, transform.position, _explosionRadius, 0f, ForceMode.Impulse);
-            } else if (_pushback && distance <= _pushbackRadius) {
+            } else if (_pushbackRadius > 0 && distance <= _pushbackRadius) {
                 playerRb.AddExplosionForce(_pushbackForce, transform.position, _pushbackRadius, 0f, ForceMode.Impulse);
             }
         }
@@ -125,7 +124,7 @@ namespace GravityGame.Puzzle_Elements
                 // TODO FS: Change to damage enemy when enemy health is implemented)
                 Destroy(enemy.gameObject);
                 enemyRb.AddExplosionForce(_pushbackForce, transform.position, _explosionRadius, 0f, ForceMode.Impulse);
-            } else if (_pushback && distance <= _pushbackRadius) {
+            } else if (_pushbackRadius > 0 && distance <= _pushbackRadius) {
                 enemyRb.AddExplosionForce(_pushbackForce, transform.position, _pushbackRadius, 0f, ForceMode.Impulse);
             }
         }
@@ -139,7 +138,7 @@ namespace GravityGame.Puzzle_Elements
         {
             if (distance <= _explosionRadius) {
                 rb.AddExplosionForce(_pushbackForce, transform.position, _explosionRadius, 0f, ForceMode.Impulse);
-            } else if (_pushback && distance <= _pushbackRadius) {
+            } else if (_pushbackRadius > 0 && distance <= _pushbackRadius) {
                 rb.AddExplosionForce(_pushbackForce, transform.position, _pushbackRadius, 0f, ForceMode.Impulse);
             }
         }
