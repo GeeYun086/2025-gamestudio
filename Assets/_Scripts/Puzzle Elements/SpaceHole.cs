@@ -2,6 +2,10 @@
 
 namespace GravityGame.Puzzle_Elements
 {
+    /// <summary>
+    /// Applies a pull force to Rigidbodies within a defined hemispherical area.
+    /// The force strength is modulated by distance using an AnimationCurve.
+    /// </summary>
     public class SpaceHole : MonoBehaviour
     {
         [SerializeField] float _pullRadius = 20f;
