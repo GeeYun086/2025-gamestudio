@@ -2,6 +2,9 @@ using UnityEngine;
 
 namespace GravityGame.Puzzle_Elements
 {
+    /// <summary>
+    /// Provides easier setup for Platform on Rails Prefab. User defines rail by moving the start- and endpoint. Platform can either be defined by its normal being parallel to an axis or have a custom rotation.
+    /// </summary>
     public class SetUpPlatformOnRail : MonoBehaviour
     {
         [SerializeField] GameObject _platform;
@@ -24,7 +27,6 @@ namespace GravityGame.Puzzle_Elements
 
         void RotatePlatform()
         {
-            //Vector3 reorientation = -_rail.transform.parent.rotation.eulerAngles;
             Vector3 rotate = Vector3.zero;
             switch (_platformNormalParallelToAxis) {
                 case Direction.X:

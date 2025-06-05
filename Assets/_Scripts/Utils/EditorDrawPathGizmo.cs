@@ -9,14 +9,15 @@ namespace GravityGame
     public class EditorDrawPathGizmo : MonoBehaviour
     {
         public bool drawSphere = true;
+
         void OnDrawGizmos()
         {
             Gizmos.color = Color.yellow;
-            if(drawSphere) Gizmos.DrawSphere(transform.position, 0.2f);
-            
-            int count  = transform.childCount;
+            if (drawSphere) Gizmos.DrawSphere(transform.position, 0.2f);
+
+            int count = transform.childCount;
             if (count < 2) return;
-            
+
             for (int i = 0; i < count - 1; i++) {
                 Transform a = transform.GetChild(i);
                 Transform b = transform.GetChild(i + 1);
