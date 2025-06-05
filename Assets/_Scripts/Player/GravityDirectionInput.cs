@@ -1,7 +1,7 @@
 using System;
+using System.Collections;
 using GravityGame.Gravity;
 using GravityGame.UI;
-using GravityGame.Utils;
 using JetBrains.Annotations;
 using UnityEngine;
 using Cursor = UnityEngine.Cursor;
@@ -18,14 +18,18 @@ namespace GravityGame.Player
         [SerializeField] Axes _visualizationAxes;
         [SerializeField] float _maxObjectRange = 30;
         [SerializeField] float _aimBufferDuration = 0.25f;
+        [SerializeField] float _previewDistance = 3f;
+        [SerializeField] float _previewCycleDuration = 1f;
         [CanBeNull] GravityModifier _aimedObject;
         [CanBeNull] GravityModifier _lastAimedObject;
         float _lastObjectAimedTime;
         [CanBeNull] GameObject _lastSelectedObject;
 
-        Vector3 _selectedDirection;
-
         [CanBeNull] GravityModifier _selectedObject;
+
+        Coroutine _previewCoroutine;
+        [CanBeNull] GameObject _previewCloneInstance;
+        [CanBeNull] Vector3? _currentPreviewDirection;
 
         static GravityDirectionRadialMenu GravityChangeMenu => GameUI.Instance.Elements.GravityDirectionRadialMenu;
 
@@ -57,38 +61,37 @@ namespace GravityGame.Player
                 }
             }
 
-            if (Input.GetMouseButtonDown(1))
-                if (!_selectedObject) {
-                    GravityModifier objectToSelect = null;
-                    if (_aimedObject) objectToSelect = _aimedObject;
-                    else if (_lastAimedObject && Time.time - _lastObjectAimedTime < _aimBufferDuration)
-                        objectToSelect = _lastAimedObject;
-
-                    if (objectToSelect) {
-                        _selectedObject = objectToSelect;
-                        if (_selectedObject.gameObject != _lastSelectedObject) {
-                            ToggleOutlineOnObject(_lastSelectedObject, 0);
-                            ToggleOutlineOnObject(_selectedObject.gameObject, 1);
-                            _lastSelectedObject = _selectedObject.gameObject;
-                        }
+            if (Input.GetMouseButtonDown(1) && !_selectedObject) {
+                var objectToSelect = _aimedObject
+                    ? _aimedObject
+                    : _lastAimedObject && Time.time - _lastObjectAimedTime < _aimBufferDuration
+                        ? _lastAimedObject
+                        : null;
+                if (objectToSelect) {
+                    _selectedObject = objectToSelect;
+                    if (_selectedObject.gameObject != _lastSelectedObject) {
+                        ToggleOutlineOnObject(_lastSelectedObject, 0);
+                        ToggleOutlineOnObject(_selectedObject.gameObject, 1);
+                        _lastSelectedObject = _selectedObject.gameObject;
                     }
                 }
+            }
 
             bool isInteracting = Input.GetMouseButton(1) && _selectedObject;
 
             switch (isInteracting) {
-                case true when !GravityChangeMenu.visible: {
+                case true when !GravityChangeMenu.visible:
                     GravityChangeMenu.visible = true;
                     Cursor.lockState = CursorLockMode.None;
                     Cursor.visible = true;
-                    if (_selectedObject) SetVisualizedDirection(_selectedObject.GravityDirection);
                     if (_selectedObject) {
+                        SetVisualizedDirection(_selectedObject.GravityDirection);
                         ToggleOutlineOnObject(_selectedObject.gameObject, 1);
                         _lastSelectedObject = _selectedObject.gameObject;
                     }
                     break;
-                }
-                case false when GravityChangeMenu.visible: {
+                case false when GravityChangeMenu.visible:
+                    StopGravityPreview();
                     var direction = GetRadialMenuGravityDirection();
                     if (_selectedObject && direction.HasValue) _selectedObject.GravityDirection = direction.Value;
 
@@ -100,23 +103,113 @@ namespace GravityGame.Player
 
                     _selectedObject = null;
                     break;
-                }
             }
 
             if (isInteracting) {
                 if (!_selectedObject) return;
                 ToggleOutlineOnObject(_selectedObject.gameObject, 1);
-                
-                // TODO TG: actually highlight object
-                DebugDraw.DrawSphere(_selectedObject.transform.position, 1.0f, Color.white);
 
-                SetVisualizedDirection(GetRadialMenuGravityDirection() ?? _selectedObject.GravityDirection);
+                var newHoveredDirection = GetRadialMenuGravityDirection();
+                SetVisualizedDirection(newHoveredDirection ?? _selectedObject.GravityDirection);
+
+                if (newHoveredDirection.HasValue) {
+                    if (!_previewCloneInstance || _currentPreviewDirection != newHoveredDirection) {
+                        StopGravityPreview();
+                        StartGravityPreview(_selectedObject, newHoveredDirection.Value);
+                    }
+                } else {
+                    StopGravityPreview();
+                }
+                _currentPreviewDirection = newHoveredDirection;
+            } else if (_previewCloneInstance) {
+                StopGravityPreview();
             }
         }
 
-        void OnEnable()
+        void OnEnable() => SetVisualizedDirection(Vector3.zero);
+        void OnDisable() => StopGravityPreview();
+        void OnDestroy() => StopGravityPreview();
+
+        void StartGravityPreview(GravityModifier originalObjectToPreview, Vector3 direction)
         {
-            SetVisualizedDirection(Vector3.zero);
+            if (!originalObjectToPreview) return;
+
+            StopGravityPreview();
+
+            _previewCloneInstance = Instantiate(
+                originalObjectToPreview.gameObject,
+                originalObjectToPreview.transform.position,
+                originalObjectToPreview.transform.rotation
+            );
+
+            _currentPreviewDirection = direction;
+            if (_previewCloneInstance) {
+                _previewCloneInstance.GetComponent<Rigidbody>().isKinematic = true;
+                _previewCloneInstance.GetComponent<GravityModifier>().enabled = false;
+                _previewCloneInstance.GetComponent<Collider>().enabled = false;
+                _previewCoroutine = StartCoroutine(
+                    PreviewGravityMovementRoutine(_previewCloneInstance.transform, originalObjectToPreview.transform, direction)
+                );
+            }
+        }
+
+        void StopGravityPreview()
+        {
+            if (_previewCoroutine != null) {
+                StopCoroutine(_previewCoroutine);
+                _previewCoroutine = null;
+            }
+
+            if (_previewCloneInstance) {
+                Destroy(_previewCloneInstance);
+                _previewCloneInstance = null;
+            }
+        }
+
+        IEnumerator PreviewGravityMovementRoutine(Transform cloneToAnimate, Transform originalToTrack, Vector3 gravityDirection)
+        {
+            if (!cloneToAnimate || !originalToTrack) yield break;
+
+            float halfCycleDuration = _previewCycleDuration / 2f;
+            if (halfCycleDuration <= 0.001f) halfCycleDuration = 0.5f;
+
+            while (true) {
+                if (!cloneToAnimate || !originalToTrack) yield break;
+
+                var startPos = originalToTrack.position;
+                cloneToAnimate.position = startPos;
+                cloneToAnimate.rotation = originalToTrack.rotation;
+
+                float timer = 0f;
+                while (timer < halfCycleDuration) {
+                    if (!cloneToAnimate || !originalToTrack) yield break;
+                    var currentOriginalPos = originalToTrack.position;
+                    cloneToAnimate.position = Vector3.Lerp(
+                        currentOriginalPos,
+                        currentOriginalPos + gravityDirection.normalized * _previewDistance,
+                        timer / halfCycleDuration
+                    );
+                    timer += Time.deltaTime;
+                    yield return null;
+                }
+                if (!cloneToAnimate || !originalToTrack) yield break;
+                cloneToAnimate.position = originalToTrack.position + gravityDirection.normalized * _previewDistance;
+
+                timer = 0f;
+                while (timer < halfCycleDuration) {
+                    if (!cloneToAnimate || !originalToTrack) yield break;
+                    var currentOriginalPos = originalToTrack.position;
+                    cloneToAnimate.position = Vector3.Lerp(
+                        currentOriginalPos + gravityDirection.normalized * _previewDistance,
+                        currentOriginalPos,
+                        timer / halfCycleDuration
+                    );
+                    timer += Time.deltaTime;
+                    yield return null;
+                }
+                if (!cloneToAnimate || !originalToTrack) yield break;
+                cloneToAnimate.position = originalToTrack.position;
+            }
         }
 
         [CanBeNull]
@@ -140,17 +233,23 @@ namespace GravityGame.Player
             var mouseOffset = Input.mousePosition - screenCenter;
             float distance = mouseOffset.magnitude;
 
-            var up = Vector3.up;
-            var forward = GetClosestCardinalDirection(Vector3.ProjectOnPlane(cam.transform.forward, up).normalized);
-            var right = Vector3.Cross(up, forward).normalized;
-
             if (distance < GravityChangeMenu.DeadZoneRadius) return null;
 
-            if (distance < GravityChangeMenu.InnerRadius) return mouseOffset.y > 0 ? forward : -forward;
+            var cameraUp = cam.transform.up;
+            var cameraRight = cam.transform.right;
+            var cameraForward = cam.transform.forward;
 
-            if (Mathf.Abs(mouseOffset.x) > Mathf.Abs(mouseOffset.y)) return mouseOffset.x > 0 ? right : -right;
+            if (distance < GravityChangeMenu.InnerRadius)
+                return mouseOffset.y > 0 ? cameraForward : -cameraForward;
 
-            return mouseOffset.y > 0 ? up : -up;
+            float angle = Vector2.SignedAngle(Vector2.up, mouseOffset);
+
+            return angle switch {
+                > -45f and <= 45f => cameraUp,
+                > 45f and <= 135f => -cameraRight,
+                > 135f or <= -135f => -cameraUp,
+                _ => cameraRight
+            };
         }
 
         void SetVisualizedDirection(Vector3 direction)
@@ -161,48 +260,39 @@ namespace GravityGame.Player
             _visualizationAxes.Right.SetActive(false);
             _visualizationAxes.Forward.SetActive(false);
             _visualizationAxes.Back.SetActive(false);
-            var displayedAxis = GetDisplayedAxis();
-            displayedAxis?.SetActive(true);
+
+            GetDisplayedAxis(direction)?.SetActive(true);
             return;
 
-            GameObject GetDisplayedAxis()
+            GameObject GetDisplayedAxis(Vector3 dir)
             {
-                if (direction.y != 0) return direction.y > 0 ? _visualizationAxes.Up : _visualizationAxes.Down;
-
-                if (direction.x != 0) return direction.x > 0 ? _visualizationAxes.Right : _visualizationAxes.Left;
-
-                if (direction.z != 0) return direction.z > 0 ? _visualizationAxes.Forward : _visualizationAxes.Back;
-
+                if (Mathf.Abs(dir.y) > Mathf.Abs(dir.x) && Mathf.Abs(dir.y) > Mathf.Abs(dir.z))
+                    return dir.y > 0 ? _visualizationAxes.Up : _visualizationAxes.Down;
+                if (Mathf.Abs(dir.x) > Mathf.Abs(dir.y) && Mathf.Abs(dir.x) > Mathf.Abs(dir.z))
+                    return dir.x > 0 ? _visualizationAxes.Right : _visualizationAxes.Left;
+                if (Mathf.Abs(dir.z) > 0.001f)
+                    return dir.z > 0 ? _visualizationAxes.Forward : _visualizationAxes.Back;
+                if (dir.y != 0) return dir.y > 0 ? _visualizationAxes.Up : _visualizationAxes.Down;
+                if (dir.x != 0) return dir.x > 0 ? _visualizationAxes.Right : _visualizationAxes.Left;
+                if (dir.z != 0) return dir.z > 0 ? _visualizationAxes.Forward : _visualizationAxes.Back;
                 return null;
             }
         }
 
-        static Vector3 GetClosestCardinalDirection(Vector3 input)
+        static void ToggleOutlineOnObject(GameObject go, int mode)
         {
-            var abs = new Vector3(Mathf.Abs(input.x), Mathf.Abs(input.y), Mathf.Abs(input.z));
-            if (abs.x > abs.y && abs.x > abs.z) return input.x > 0 ? Vector3.right : Vector3.left;
+            if (!go) return;
+            var renderer = go.GetComponent<Renderer>();
+            if (!renderer) return;
 
-            if (abs.y > abs.z) return input.y > 0 ? Vector3.up : Vector3.down;
+            var materials = renderer.materials;
+            if (materials.Length < 2) return;
 
-            return input.z > 0 ? Vector3.forward : Vector3.back;
-        }
-
-        void ToggleOutlineOnObject(GameObject go, int mode)
-        {
-            if (go) {
-                var materialsCopy = go.GetComponent<Renderer>().materials;
-                if (materialsCopy.Length < 2) return;
-                var shader = materialsCopy[1].shader;
-                var keywords = shader.keywordSpace;
-                foreach (var keyword in keywords.keywords)
-                    if (keyword.name == "VISIBLE") {
-                        if (mode > 0)
-                            materialsCopy[1].SetKeyword(keyword, true);
-                        else
-                            materialsCopy[1].SetKeyword(keyword, false);
-                    }
-
-                go.GetComponent<Renderer>().materials = materialsCopy;
+            var outlineMaterial = materials[1];
+            if (mode > 0) {
+                if (!outlineMaterial.IsKeywordEnabled("VISIBLE")) outlineMaterial.EnableKeyword("VISIBLE");
+            } else {
+                if (outlineMaterial.IsKeywordEnabled("VISIBLE")) outlineMaterial.DisableKeyword("VISIBLE");
             }
         }
 
