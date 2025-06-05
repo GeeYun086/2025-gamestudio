@@ -233,23 +233,17 @@ namespace GravityGame.Player
             var mouseOffset = Input.mousePosition - screenCenter;
             float distance = mouseOffset.magnitude;
 
+            var up = Vector3.up;
+            var forward = GetClosestCardinalDirection(Vector3.ProjectOnPlane(cam.transform.forward, up).normalized);
+            var right = Vector3.Cross(up, forward).normalized;
+
             if (distance < GravityChangeMenu.DeadZoneRadius) return null;
 
-            var cameraUp = cam.transform.up;
-            var cameraRight = cam.transform.right;
-            var cameraForward = cam.transform.forward;
+            if (distance < GravityChangeMenu.InnerRadius) return mouseOffset.y > 0 ? forward : -forward;
 
-            if (distance < GravityChangeMenu.InnerRadius)
-                return mouseOffset.y > 0 ? cameraForward : -cameraForward;
+            if (Mathf.Abs(mouseOffset.x) > Mathf.Abs(mouseOffset.y)) return mouseOffset.x > 0 ? right : -right;
 
-            float angle = Vector2.SignedAngle(Vector2.up, mouseOffset);
-
-            return angle switch {
-                > -45f and <= 45f => cameraUp,
-                > 45f and <= 135f => -cameraRight,
-                > 135f or <= -135f => -cameraUp,
-                _ => cameraRight
-            };
+            return mouseOffset.y > 0 ? up : -up;
         }
 
         void SetVisualizedDirection(Vector3 direction)
@@ -260,39 +254,48 @@ namespace GravityGame.Player
             _visualizationAxes.Right.SetActive(false);
             _visualizationAxes.Forward.SetActive(false);
             _visualizationAxes.Back.SetActive(false);
-
-            GetDisplayedAxis(direction)?.SetActive(true);
+            var displayedAxis = GetDisplayedAxis();
+            displayedAxis?.SetActive(true);
             return;
 
-            GameObject GetDisplayedAxis(Vector3 dir)
+            GameObject GetDisplayedAxis()
             {
-                if (Mathf.Abs(dir.y) > Mathf.Abs(dir.x) && Mathf.Abs(dir.y) > Mathf.Abs(dir.z))
-                    return dir.y > 0 ? _visualizationAxes.Up : _visualizationAxes.Down;
-                if (Mathf.Abs(dir.x) > Mathf.Abs(dir.y) && Mathf.Abs(dir.x) > Mathf.Abs(dir.z))
-                    return dir.x > 0 ? _visualizationAxes.Right : _visualizationAxes.Left;
-                if (Mathf.Abs(dir.z) > 0.001f)
-                    return dir.z > 0 ? _visualizationAxes.Forward : _visualizationAxes.Back;
-                if (dir.y != 0) return dir.y > 0 ? _visualizationAxes.Up : _visualizationAxes.Down;
-                if (dir.x != 0) return dir.x > 0 ? _visualizationAxes.Right : _visualizationAxes.Left;
-                if (dir.z != 0) return dir.z > 0 ? _visualizationAxes.Forward : _visualizationAxes.Back;
+                if (direction.y != 0) return direction.y > 0 ? _visualizationAxes.Up : _visualizationAxes.Down;
+
+                if (direction.x != 0) return direction.x > 0 ? _visualizationAxes.Right : _visualizationAxes.Left;
+
+                if (direction.z != 0) return direction.z > 0 ? _visualizationAxes.Forward : _visualizationAxes.Back;
+
                 return null;
             }
         }
 
-        static void ToggleOutlineOnObject(GameObject go, int mode)
+        static Vector3 GetClosestCardinalDirection(Vector3 input)
         {
-            if (!go) return;
-            var renderer = go.GetComponent<Renderer>();
-            if (!renderer) return;
+            var abs = new Vector3(Mathf.Abs(input.x), Mathf.Abs(input.y), Mathf.Abs(input.z));
+            if (abs.x > abs.y && abs.x > abs.z) return input.x > 0 ? Vector3.right : Vector3.left;
 
-            var materials = renderer.materials;
-            if (materials.Length < 2) return;
+            if (abs.y > abs.z) return input.y > 0 ? Vector3.up : Vector3.down;
 
-            var outlineMaterial = materials[1];
-            if (mode > 0) {
-                if (!outlineMaterial.IsKeywordEnabled("VISIBLE")) outlineMaterial.EnableKeyword("VISIBLE");
-            } else {
-                if (outlineMaterial.IsKeywordEnabled("VISIBLE")) outlineMaterial.DisableKeyword("VISIBLE");
+            return input.z > 0 ? Vector3.forward : Vector3.back;
+        }
+
+        void ToggleOutlineOnObject(GameObject go, int mode)
+        {
+            if (go) {
+                var materialsCopy = go.GetComponent<Renderer>().materials;
+                if (materialsCopy.Length < 2) return;
+                var shader = materialsCopy[1].shader;
+                var keywords = shader.keywordSpace;
+                foreach (var keyword in keywords.keywords)
+                    if (keyword.name == "VISIBLE") {
+                        if (mode > 0)
+                            materialsCopy[1].SetKeyword(keyword, true);
+                        else
+                            materialsCopy[1].SetKeyword(keyword, false);
+                    }
+
+                go.GetComponent<Renderer>().materials = materialsCopy;
             }
         }
 
