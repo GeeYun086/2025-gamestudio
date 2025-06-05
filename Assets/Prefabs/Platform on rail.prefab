@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5632689454486192938}
-  - component: {fileID: 2389402647529967726}
+  - component: {fileID: 7250649066746789736}
   m_Layer: 0
   m_Name: Platform on rail
   m_TagString: Untagged
@@ -35,7 +35,7 @@ Transform:
   - {fileID: 6737900995671522536}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &2389402647529967726
+--- !u!114 &7250649066746789736
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -44,7 +44,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1059938489781448540}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 92953a97054ad0f40a1b9ee293c83ec4, type: 3}
+  m_Script: {fileID: 11500000, guid: 58430480aed91724fa5de2811455316a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   _platform: {fileID: 5782319830520525607}
