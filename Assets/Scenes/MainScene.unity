@@ -981,13 +981,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1712288142}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.101, y: -0.042, z: -8.236}
-  m_LocalScale: {x: 10, y: 0.1, z: 1}
+  m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
+  m_LocalPosition: {x: -2.93, y: -0.042, z: -2.33}
+  m_LocalScale: {x: 30, y: 0.1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
 --- !u!114 &1712288147
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1000,9 +1000,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b50a7a33443f4a6593123f1a8be7701d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _speed: 200
-  _conveyorSpeed: 2
-  _direction: {x: 1, y: 0, z: 0}
+  _speed: 20
+  _textureSpeed: 1
+  _direction: {x: 0, y: 0, z: -1}
   _onBelt: []
 --- !u!1 &1870685855 stripped
 GameObject:
@@ -1248,6 +1248,10 @@ PrefabInstance:
     - target: {fileID: 4662317870626134877, guid: 64e97b85a4f90c348a6daf19eecade02, type: 3}
       propertyPath: m_Name
       value: Cube
+      objectReference: {fileID: 0}
+    - target: {fileID: 9181645947103299050, guid: 64e97b85a4f90c348a6daf19eecade02, type: 3}
+      propertyPath: m_Mass
+      value: 100
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
