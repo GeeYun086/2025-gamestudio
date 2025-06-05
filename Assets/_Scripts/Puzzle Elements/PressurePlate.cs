@@ -1,11 +1,7 @@
-using System;
-using Codice.Client.Common.EventTracking;
-using UnityEngine;
 using System.Collections.Generic;
-using GravityGame.Puzzle_Elements;
+using UnityEngine;
 
-
-namespace GravityGame
+namespace GravityGame.Puzzle_Elements
 {
     /// <summary>
     /// Add to Pressure Plate GameObject and drag Doors into List
