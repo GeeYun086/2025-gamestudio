@@ -18,8 +18,8 @@ namespace GravityGame.Player
         [SerializeField] Axes _visualizationAxes;
         [SerializeField] float _maxObjectRange = 30;
         [SerializeField] float _aimBufferDuration = 0.25f;
-        [SerializeField] float _previewDistance = 3f;
-        [SerializeField] float _previewCycleDuration = 1f;
+        [SerializeField] float _previewDistance = 4f;
+        [SerializeField] float _previewCycleDuration = 1.5f;
         [CanBeNull] GravityModifier _aimedObject;
         [CanBeNull] GravityModifier _lastAimedObject;
         float _lastObjectAimedTime;
@@ -61,21 +61,22 @@ namespace GravityGame.Player
                 }
             }
 
-            if (Input.GetMouseButtonDown(1) && !_selectedObject) {
-                var objectToSelect = _aimedObject
-                    ? _aimedObject
-                    : _lastAimedObject && Time.time - _lastObjectAimedTime < _aimBufferDuration
-                        ? _lastAimedObject
-                        : null;
-                if (objectToSelect) {
-                    _selectedObject = objectToSelect;
-                    if (_selectedObject.gameObject != _lastSelectedObject) {
-                        ToggleOutlineOnObject(_lastSelectedObject, 0);
-                        ToggleOutlineOnObject(_selectedObject.gameObject, 1);
-                        _lastSelectedObject = _selectedObject.gameObject;
+            if (Input.GetMouseButtonDown(1))
+                if (!_selectedObject) {
+                    GravityModifier objectToSelect = null;
+                    if (_aimedObject) objectToSelect = _aimedObject;
+                    else if (_lastAimedObject && Time.time - _lastObjectAimedTime < _aimBufferDuration)
+                        objectToSelect = _lastAimedObject;
+
+                    if (objectToSelect) {
+                        _selectedObject = objectToSelect;
+                        if (_selectedObject.gameObject != _lastSelectedObject) {
+                            ToggleOutlineOnObject(_lastSelectedObject, 0);
+                            ToggleOutlineOnObject(_selectedObject.gameObject, 1);
+                            _lastSelectedObject = _selectedObject.gameObject;
+                        }
                     }
                 }
-            }
 
             bool isInteracting = Input.GetMouseButton(1) && _selectedObject;
 
@@ -166,49 +167,27 @@ namespace GravityGame.Player
             }
         }
 
-        IEnumerator PreviewGravityMovementRoutine(Transform cloneToAnimate, Transform originalToTrack, Vector3 gravityDirection)
+        IEnumerator PreviewGravityMovementRoutine(Transform clone, Transform original, Vector3 gravityDirection)
         {
-            if (!cloneToAnimate || !originalToTrack) yield break;
-
-            float halfCycleDuration = _previewCycleDuration / 2f;
-            if (halfCycleDuration <= 0.001f) halfCycleDuration = 0.5f;
+            if (!clone || !original) yield break;
 
             while (true) {
-                if (!cloneToAnimate || !originalToTrack) yield break;
+                if (!clone || !original) yield break;
 
-                var startPos = originalToTrack.position;
-                cloneToAnimate.position = startPos;
-                cloneToAnimate.rotation = originalToTrack.rotation;
+                clone.position = original.position;
+                clone.rotation = original.rotation;
 
                 float timer = 0f;
-                while (timer < halfCycleDuration) {
-                    if (!cloneToAnimate || !originalToTrack) yield break;
-                    var currentOriginalPos = originalToTrack.position;
-                    cloneToAnimate.position = Vector3.Lerp(
-                        currentOriginalPos,
-                        currentOriginalPos + gravityDirection.normalized * _previewDistance,
-                        timer / halfCycleDuration
+                while (timer < _previewCycleDuration) {
+                    clone.position = Vector3.Lerp(
+                        original.position,
+                        original.position + gravityDirection.normalized * _previewDistance,
+                        timer / _previewCycleDuration
                     );
                     timer += Time.deltaTime;
                     yield return null;
                 }
-                if (!cloneToAnimate || !originalToTrack) yield break;
-                cloneToAnimate.position = originalToTrack.position + gravityDirection.normalized * _previewDistance;
-
-                timer = 0f;
-                while (timer < halfCycleDuration) {
-                    if (!cloneToAnimate || !originalToTrack) yield break;
-                    var currentOriginalPos = originalToTrack.position;
-                    cloneToAnimate.position = Vector3.Lerp(
-                        currentOriginalPos + gravityDirection.normalized * _previewDistance,
-                        currentOriginalPos,
-                        timer / halfCycleDuration
-                    );
-                    timer += Time.deltaTime;
-                    yield return null;
-                }
-                if (!cloneToAnimate || !originalToTrack) yield break;
-                cloneToAnimate.position = originalToTrack.position;
+                clone.position = original.position + gravityDirection.normalized * _previewDistance;
             }
         }
 
