@@ -5,26 +5,26 @@ namespace GravityGame.Puzzle_Elements
     public class SetUpPlatformOnRail : MonoBehaviour
     {
         [SerializeField] GameObject _platform;
+        [SerializeField] GameObject _customPlatformRotation;
         [SerializeField] GameObject _rail;
         [SerializeField] GameObject _startPosition;
         [SerializeField] GameObject _endPosition;
 
         [SerializeField] Direction _platformNormalParallelToAxis;
 
-        enum Direction { X, Y, Z }
+        enum Direction { X, Y, Z, CUSTOM }
 
         void Awake()
         {
             _platform.GetComponent<MeshRenderer>().enabled = true;
             _rail.GetComponentInChildren<MeshRenderer>().enabled = true;
-            SetUpRail();
             RotatePlatform();
-            _rail.GetComponent<ConfigurableJoint>().connectedBody = _platform.GetComponent<Rigidbody>();
+            SetUpRail();
         }
 
         void RotatePlatform()
         {
-            Vector3 reorientation = -_rail.GetComponent<Rigidbody>().rotation.eulerAngles;
+            //Vector3 reorientation = -_rail.transform.parent.rotation.eulerAngles;
             Vector3 rotate = Vector3.zero;
             switch (_platformNormalParallelToAxis) {
                 case Direction.X:
@@ -33,10 +33,13 @@ namespace GravityGame.Puzzle_Elements
                 case Direction.Z:
                     rotate = new Vector3(0, 90, 90);
                     break;
-                case Direction.Y:
+                case Direction.CUSTOM:
+                    rotate = _customPlatformRotation.transform.eulerAngles;
                     break;
             }
-            _platform.GetComponent<Rigidbody>().rotation = Quaternion.Euler(reorientation + rotate);
+            _customPlatformRotation.SetActive(false);
+            _platform.GetComponent<Rigidbody>().rotation = Quaternion.Euler(rotate);
+            _platform.GetComponent<Rigidbody>().freezeRotation = true;
         }
 
         void SetUpRail()
@@ -46,12 +49,13 @@ namespace GravityGame.Puzzle_Elements
                 return;
             float length = path.magnitude;
             Vector3 middlePoint = _startPosition.transform.position + path * .5f;
-            _rail.transform.position = middlePoint;
+            _rail.transform.parent.position = middlePoint;
             _rail.GetComponentInChildren<Transform>().localScale = new Vector3(1f, 1f, length);
             _rail.GetComponent<ConfigurableJoint>().linearLimit = new SoftJointLimit {
-                limit = length / 2f
+                limit = length / 2f,
+                contactDistance = .05f
             };
-            _rail.transform.rotation = Quaternion.LookRotation(path);
+            _rail.transform.parent.rotation = Quaternion.LookRotation(path);
         }
     }
 }
