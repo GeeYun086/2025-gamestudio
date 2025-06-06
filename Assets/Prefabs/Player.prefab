@@ -94,6 +94,7 @@ GameObject:
   - component: {fileID: 3291113726908820060}
   - component: {fileID: 359691680859113906}
   - component: {fileID: 2766821908369855471}
+  - component: {fileID: 4356562832223538105}
   - component: {fileID: 5880869433627786739}
   - component: {fileID: 6715350223055641122}
   m_Layer: 3
@@ -243,6 +244,25 @@ MonoBehaviour:
   _pickUpLayerMask:
     serializedVersion: 2
     m_Bits: 1079
+--- !u!114 &4356562832223538105
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2446000720691385914}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d72cf67ac9b340e469a115bde2f86680, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _interactDistance: 3
+  _interactKey: 101
+  _interactableLayer:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  _playerCamera: {fileID: 6900899572408050767}
+  _showDebugRays: 1
 --- !u!114 &5880869433627786739
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -651,7 +671,7 @@ Camera:
     y: 0
     width: 1
     height: 1
-  near clip plane: 0.2
+  near clip plane: 0.1
   far clip plane: 1000
   field of view: 60
   orthographic: 0
