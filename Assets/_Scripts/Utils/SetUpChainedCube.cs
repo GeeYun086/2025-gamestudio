@@ -1,4 +1,3 @@
-using System.Numerics;
 using UnityEngine;
 using Vector3 = UnityEngine.Vector3;
 
@@ -8,18 +7,21 @@ namespace GravityGame.Utils
     {
         GameObject _previousLink;
         GameObject _currentLink;
+        
+        [SerializeField] GameObject _firstLink;
 
         void Start()
         {
-            _currentLink = gameObject.transform.GetChild(0).gameObject;
+            _currentLink = _firstLink;
+            Transform cube = _currentLink.GetComponent<Joint>().connectedBody.transform;
+            //_currentLink.transform.position = cube.position+Vector3.up * cube.localScale.y;
+            
+            
             int i = 0;
-            while ((_currentLink.transform.position - transform.position).magnitude > .11f && i<1000) {
-                GameObject temp = Instantiate(_currentLink, _currentLink.transform.position + Vector3.up *.08f, _currentLink.transform.rotation, transform);
+            while ((_currentLink.transform.position - transform.position).magnitude > .10f && i<100) {
+                GameObject temp = Instantiate(_currentLink, _currentLink.transform.position + Vector3.up *.12f, _currentLink.transform.rotation, cube.transform);
                 _previousLink = _currentLink;
                 _currentLink = temp;
-                
-                Vector3 directionToPrevious = _previousLink.transform.position - _currentLink.transform.position;
-                //_currentLink.transform.rotation = Quaternion.LookRotation(Vector3.forward, -directionToPrevious);
 
                 _currentLink.GetComponent<Joint>().connectedBody = _previousLink.GetComponent<Rigidbody>();
             i++;
