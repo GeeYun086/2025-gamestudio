@@ -56,10 +56,11 @@ MonoBehaviour:
   OnInteract:
     m_PersistentCalls:
       m_Calls: []
-  _isPowered: 0
   _leverOn: {fileID: 2832286042544383802}
   _leverOff: {fileID: 4945693772455841968}
-  _logicComponents: []
+  _isPowered: 0
+  _logicComponents:
+  - {fileID: 0}
 --- !u!114 &617617663161325254
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -389,7 +390,6 @@ GameObject:
   - component: {fileID: 5087719245785868995}
   - component: {fileID: 75512455856810223}
   - component: {fileID: 3233564287925317884}
-  - component: {fileID: 1725843455512567419}
   m_Layer: 6
   m_Name: lever (on)
   m_TagString: Untagged
@@ -706,28 +706,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2832286042544383802}
   m_Mesh: {fileID: 0}
---- !u!64 &1725843455512567419
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2832286042544383802}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 0
-  serializedVersion: 5
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 0}
 --- !u!1 &4945693772455841968
 GameObject:
   m_ObjectHideFlags: 0
@@ -741,7 +719,6 @@ GameObject:
   - component: {fileID: 3358190781929052593}
   - component: {fileID: 8459786728024571422}
   - component: {fileID: 8400225067442587075}
-  - component: {fileID: 472078799374819563}
   m_Layer: 6
   m_Name: 'lever (off) '
   m_TagString: Untagged
@@ -1057,26 +1034,4 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4945693772455841968}
-  m_Mesh: {fileID: 0}
---- !u!64 &472078799374819563
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4945693772455841968}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 0
-  serializedVersion: 5
-  m_Convex: 0
-  m_CookingOptions: 30
   m_Mesh: {fileID: 0}

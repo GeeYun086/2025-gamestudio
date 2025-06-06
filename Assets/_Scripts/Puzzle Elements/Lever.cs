@@ -16,33 +16,21 @@ namespace GravityGame.Puzzle_Elements
         [SerializeField] bool _isPowered;
         [SerializeField] List<RedstoneComponent> _logicComponents;
         
-        public bool IsPowered
+        void SetPowered(bool value)
         {
-            set {
-                _isPowered = value;
-                _leverOn.SetActive(_isPowered);
-                _leverOff.SetActive(!_isPowered);
-                UpdateConnectedComponents();
-            }
-        }
-        
-        void OnEnable() => OnInteract.AddListener(Toggle);
-        void OnDisable() => OnInteract.RemoveListener(Toggle);
-
-        void Toggle() => IsPowered = !_isPowered;
-
-        /// <summary>
-        ///     Changes IsPowered of all Doors in List.
-        ///     Switch between on and off.
-        ///     Need to set in Door`s scripts which Doors are already powered.
-        /// </summary>
-        void UpdateConnectedComponents()
-        {
+            _isPowered = value;
+            _leverOn.SetActive(_isPowered);
+            _leverOff.SetActive(!_isPowered);
+            // Update connected components
             foreach (var component in _logicComponents.Where(c => c != null)) {
                 component.IsPowered = _isPowered;
             }
         }
         
-        void OnValidate() => IsPowered = _isPowered;
+        void OnEnable() => OnInteract.AddListener(Toggle);
+        void OnDisable() => OnInteract.RemoveListener(Toggle);
+        void Toggle() => SetPowered(!_isPowered);
+        
+        void OnValidate() => SetPowered(_isPowered);
     }
 }
