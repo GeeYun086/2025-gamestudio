@@ -99,8 +99,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 84bb250c28584d1bb92008a4cdd82135, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  MaxDistance: 20
-  ObstacleMask:
+  maxDistance: 20
+  obstacleMask:
     serializedVersion: 2
-    m_Bits: 136
-  BeamRadius: 0.05
+    m_Bits: 137
+  beamRadius: 0.05
