@@ -1,13 +1,12 @@
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.Serialization;
 
 namespace GravityGame.Puzzle_Elements
 {
     /// <summary>
-    /// Base class for all interactable objects in the game.
-    /// Implements the IInteractable interface to provide consistent interaction behavior.
-    /// When implemented on an object, allows player to interact via raycast detection and key press.
+    ///     Base class for all interactable objects in the game.
+    ///     Implements the IInteractable interface to provide consistent interaction behavior.
+    ///     When implemented on an object, allows player to interact via raycast detection and key press.
     /// </summary>
     public class InteractableObject : MonoBehaviour, IInteractable
     {
