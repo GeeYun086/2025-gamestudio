@@ -15,6 +15,7 @@ namespace GravityGame.Player
     /// </summary>
     public class GravityDirectionInput : MonoBehaviour
     {
+        [SerializeField] Material _previewMaterial;
         [SerializeField] Axes _visualizationAxes;
         [SerializeField] float _maxObjectRange = 30;
         [SerializeField] float _aimBufferDuration = 0.25f;
@@ -144,6 +145,8 @@ namespace GravityGame.Player
             if (_previewCloneInstance) {
                 _previewCloneInstance.GetComponent<Rigidbody>().isKinematic = true;
                 _previewCloneInstance.GetComponent<GravityModifier>().enabled = false;
+                _previewCloneInstance.GetComponent<Renderer>().material = _previewMaterial;
+                _previewCloneInstance.transform.localScale *= .999f;
                 _previewCloneInstance.GetComponent<Collider>().enabled = false;
                 _previewCoroutine = StartCoroutine(
                     PreviewGravityMovementRoutine(_previewCloneInstance.transform, originalObjectToPreview.transform, direction)
