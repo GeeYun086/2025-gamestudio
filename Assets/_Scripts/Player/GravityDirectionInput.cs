@@ -143,6 +143,7 @@ namespace GravityGame.Player
             
             if (_previewCloneInstance) {
                 _previewCloneInstance.GetComponent<Rigidbody>().isKinematic = true;
+                _previewCloneInstance.transform.localScale = new Vector3(.999f, .999f, .999f);
                 _previewCloneInstance.GetComponent<GravityModifier>().enabled = false;
                 _previewCloneInstance.GetComponent<Collider>().enabled = false;
                 _previewCoroutine = StartCoroutine(
@@ -213,7 +214,7 @@ namespace GravityGame.Player
 
             if (distance < GravityChangeMenu.DeadZoneRadius) return null;
 
-            if (distance < GravityChangeMenu.InnerRadius) return mouseOffset.y > 0 ? forward : -forward;
+            if (distance > GravityChangeMenu.InnerRadius) return mouseOffset.y > 0 ? forward : -forward;
 
             if (Mathf.Abs(mouseOffset.x) > Mathf.Abs(mouseOffset.y)) return mouseOffset.x > 0 ? right : -right;
 
