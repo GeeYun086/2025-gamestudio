@@ -213,10 +213,10 @@ namespace GravityGame.Player
             var right = Vector3.Cross(up, forward).normalized;
 
             if (distance < GravityChangeMenu.DeadZoneRadius) return null;
-
+            
+            if (Mathf.Abs(mouseOffset.x)*2 > Mathf.Abs(mouseOffset.y)*3) return mouseOffset.x > 0 ? right : -right;
+            
             if (distance > GravityChangeMenu.InnerRadius) return mouseOffset.y > 0 ? forward : -forward;
-
-            if (Mathf.Abs(mouseOffset.x) > Mathf.Abs(mouseOffset.y)) return mouseOffset.x > 0 ? right : -right;
 
             return mouseOffset.y > 0 ? up : -up;
         }
