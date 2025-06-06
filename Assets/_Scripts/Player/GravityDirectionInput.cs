@@ -147,7 +147,9 @@ namespace GravityGame.Player
                 _previewCloneInstance.GetComponent<GravityModifier>().enabled = false;
                 _previewCloneInstance.GetComponent<Renderer>().material = _previewMaterial;
                 _previewCloneInstance.transform.localScale *= .999f;
-                _previewCloneInstance.GetComponent<Collider>().enabled = false;
+                foreach (var component in _previewCloneInstance.GetComponentsInChildren<Collider>()) {
+                    component.enabled = false;
+                }
                 _previewCoroutine = StartCoroutine(
                     PreviewGravityMovementRoutine(_previewCloneInstance.transform, originalObjectToPreview.transform, direction)
                 );
