@@ -1,15 +1,16 @@
-using System;
 using UnityEngine;
 
-namespace GravityGame
+namespace GravityGame.Puzzle_Elements
 {
     /// <summary>
-    /// Add to Door GameObject
+    ///     Add to Door GameObject
     /// </summary>
     public class Door : RedstoneComponent
     {
-        [Header("Door Settings")]
-        [SerializeField] bool _isPowered;
+        enum DoorState { Open, Closed }
+
+        [SerializeField] DoorState _whenPowered;
+        bool _isPowered;
 
         public override bool IsPowered
         {
@@ -20,12 +21,11 @@ namespace GravityGame
             }
         }
 
-        /// <summary>
-        /// Toggle GameObject in scene with this script
-        /// </summary>
         void ToggleDoor()
         {
-            gameObject.SetActive(IsPowered);
+            bool isOpen = IsPowered == (_whenPowered == DoorState.Open);
+            // currently just toggles the GameObject. Should have an animation in the future
+            gameObject.SetActive(isOpen);
         }
     }
 }
