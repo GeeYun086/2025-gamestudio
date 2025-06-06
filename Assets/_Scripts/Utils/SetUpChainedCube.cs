@@ -13,13 +13,10 @@ namespace GravityGame.Utils
         void Start()
         {
             _currentLink = _firstLink;
-            Transform cube = _currentLink.GetComponent<Joint>().connectedBody.transform;
-            //_currentLink.transform.position = cube.position+Vector3.up * cube.localScale.y;
-            
             
             int i = 0;
             while ((_currentLink.transform.position - transform.position).magnitude > .10f && i<100) {
-                GameObject temp = Instantiate(_currentLink, _currentLink.transform.position + Vector3.up *.12f, _currentLink.transform.rotation, cube.transform);
+                GameObject temp = Instantiate(_currentLink, _currentLink.transform.position + Vector3.up *.12f, _currentLink.transform.rotation, transform.parent);
                 _previousLink = _currentLink;
                 _currentLink = temp;
 
