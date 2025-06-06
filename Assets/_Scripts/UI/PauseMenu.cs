@@ -74,10 +74,10 @@ namespace GravityGame.UI
         /// </summary>
         private void TryInitialize()
         {
-            if (_initialized || GameUI.Instance == null)
+            if (_initialized || GameUI.instance == null)
                 return;
 
-            var elements = GameUI.Instance.Elements;
+            var elements = GameUI.instance.elements;
 
             _pauseMenu      = elements.PauseMenu;
             _mainPanel      = elements.MainPanel;
@@ -90,7 +90,7 @@ namespace GravityGame.UI
             _volumeSlider   = elements.VolumeSlider;
 
             // Retrieve the "SoundLevelsLabel" from the root VisualElement
-            _soundLevelsLabel = GameUI.Instance.UIDocument.rootVisualElement
+            _soundLevelsLabel = GameUI.instance.uiDocument.rootVisualElement
                 .Q<Label>("SoundLevelsLabel");
 
             // Verify all required UI elements exist

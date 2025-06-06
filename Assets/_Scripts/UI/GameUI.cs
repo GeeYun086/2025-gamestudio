@@ -52,9 +52,9 @@ namespace GravityGame.UI
     [RequireComponent(typeof(UIDocument))]
     public class GameUI : MonoBehaviour
     {
-        public static GameUI Instance { get; private set; }
-        public UIDocument UIDocument { get; private set; }
-        public GameUIElements Elements { get; private set; }
+        public static GameUI instance { get; private set; }
+        public UIDocument uiDocument { get; private set; }
+        public GameUIElements elements { get; private set; }
 
         /// <summary>
         /// Ensures that only one instance of GameUI exists in the MainScene.
@@ -68,13 +68,13 @@ namespace GravityGame.UI
                 return;
             }
 
-            if (Instance != null && Instance != this)
+            if (instance != null && instance != this)
             {
                 Destroy(gameObject);
                 return;
             }
 
-            Instance = this;
+            instance = this;
         }
 
         /// <summary>
@@ -83,12 +83,12 @@ namespace GravityGame.UI
         /// </summary>
         private void OnEnable()
         {
-            UIDocument = GetComponent<UIDocument>();
-            var root = UIDocument != null
-                ? UIDocument.rootVisualElement
+            uiDocument = GetComponent<UIDocument>();
+            var root = uiDocument != null
+                ? uiDocument.rootVisualElement
                 : new VisualElement();
 
-            Elements = new GameUIElements(root);
+            elements = new GameUIElements(root);
         }
     }
 }

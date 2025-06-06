@@ -31,7 +31,7 @@ namespace GravityGame.Player
         [CanBeNull] GameObject _previewCloneInstance;
         [CanBeNull] Vector3? _currentPreviewDirection;
 
-        static GravityDirectionRadialMenu GravityChangeMenu => GameUI.Instance.Elements.GravityDirectionRadialMenu;
+        static GravityDirectionRadialMenu GravityChangeMenu => GameUI.instance.elements.GravityDirectionRadialMenu;
 
         void Update()
         {

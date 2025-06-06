@@ -19,7 +19,7 @@ namespace GravityGame.Utils
         readonly List<Action<MeshGenerationContext>> _drawActionsNextFrame = new();
 
         static DebugDraw Instance => FindFirstObjectByType<DebugDraw>();
-        static VisualElement DebugElement => GameUI.Instance.Elements.DebugElement; // Element to draw on
+        static VisualElement DebugElement => GameUI.instance.elements.DebugElement; // Element to draw on
 
         void Update()
         {

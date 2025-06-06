@@ -1,4 +1,4 @@
-﻿<engine:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+﻿<engine:UXML 
              xmlns:ui="UnityEngine.UIElements"
              xmlns:engine="UnityEngine.UIElements">
 
