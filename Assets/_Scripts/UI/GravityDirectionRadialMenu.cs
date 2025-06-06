@@ -10,7 +10,7 @@ namespace GravityGame.UI
     [UxmlElement]
     public partial class GravityDirectionRadialMenu : VisualElement
     {
-        [UxmlAttribute] float _deadZoneRadius = 30f;
+        [UxmlAttribute] float _deadZoneRadius = 45f;
         [UxmlAttribute] float _innerRadius = 300;
         [UxmlAttribute] float _outerRadius = 1400;
         [UxmlAttribute] Color _outlineColor = Color.white;
@@ -33,14 +33,14 @@ namespace GravityGame.UI
             
             
             // Draw Outer Radial Menu (Diagonals: Top-Left, Top-Right, Bottom-Left, Bottom-Right)
-            DrawRadialSection(painter, Vector2.zero, _deadZoneRadius, _outerRadius, 150, 210); // left
-            DrawRadialSection(painter, Vector2.zero, _deadZoneRadius, _outerRadius, 330, 390); // right
+            DrawRadialSection(painter, Vector2.zero, _deadZoneRadius, _outerRadius, 150.59f, 209.41f); // left
+            DrawRadialSection(painter, Vector2.zero, _deadZoneRadius, _outerRadius, 330.59f, 389.41f); // right
             
-            DrawRadialSection(painter, Vector2.zero, _innerRadius, _outerRadius, 30, 150);  // down
-            DrawRadialSection(painter, Vector2.zero, _innerRadius, _outerRadius, 210, 330); // up
+            DrawRadialSection(painter, Vector2.zero, _innerRadius, _outerRadius, 29.41f, 150.59f);  // down
+            DrawRadialSection(painter, Vector2.zero, _innerRadius, _outerRadius, 209.41f, 330.59f); // up
             
-            DrawRadialSection(painter, Vector2.zero, _deadZoneRadius, _innerRadius, 210, 330); // up
-            DrawRadialSection(painter, Vector2.zero, _deadZoneRadius, _innerRadius, 30, 150);  // down
+            DrawRadialSection(painter, Vector2.zero, _deadZoneRadius, _innerRadius, 209.41f, 330.59f); // up
+            DrawRadialSection(painter, Vector2.zero, _deadZoneRadius, _innerRadius, 29.41f, 150.59f);  // down
         }
 
         static void DrawRadialSection(

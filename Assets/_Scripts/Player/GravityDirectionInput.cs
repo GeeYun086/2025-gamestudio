@@ -216,7 +216,7 @@ namespace GravityGame.Player
 
             if (distance < GravityChangeMenu.DeadZoneRadius) return null;
             
-            if (Mathf.Abs(mouseOffset.x)*2 > Mathf.Abs(mouseOffset.y)*3) return mouseOffset.x > 0 ? right : -right;
+            if (Mathf.Abs(mouseOffset.x)*9 > Mathf.Abs(mouseOffset.y)*16) return mouseOffset.x > 0 ? right : -right;
             
             if (distance > GravityChangeMenu.InnerRadius) return mouseOffset.y > 0 ? forward : -forward;
 
