@@ -102,5 +102,5 @@ MonoBehaviour:
   MaxDistance: 20
   ObstacleMask:
     serializedVersion: 2
-    m_Bits: 200
+    m_Bits: 136
   BeamRadius: 0.05
