@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace GravityGame.Puzzle_Elements
@@ -9,6 +10,9 @@ namespace GravityGame.Puzzle_Elements
     /// </summary>
     public class PressurePlate : MonoBehaviour
     {
+        [SerializeField] GameObject _leverOn;
+        [SerializeField] GameObject _leverOff;
+        
         [Header("Pressure Plate Settings")]
         [SerializeField] bool _isPowered;
         [SerializeField] List<RedstoneComponent> _logicComponents;
@@ -29,9 +33,8 @@ namespace GravityGame.Puzzle_Elements
         
         void UpdateConnectedComponents()
         {
-            foreach (var component in _logicComponents) {
-                if (component != null)
-                    component.IsPowered = !component.IsPowered;
+            foreach (var component in _logicComponents.Where(c => c != null)) {
+                component.IsPowered = _isPowered;
             }
         }
     }

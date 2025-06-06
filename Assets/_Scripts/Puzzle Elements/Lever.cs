@@ -1,23 +1,21 @@
 using System.Collections.Generic;
 using System.Linq;
-using GravityGame.Puzzle_Elements;
 using UnityEngine;
 
-namespace GravityGame
+namespace GravityGame.Puzzle_Elements
 {
     /// <summary>
     ///     Add to Lever GameObject and drag Doors into List
     /// </summary>
     public class Lever : InteractableObject
     {
-        [Header("Lever Settings")]
-        [SerializeField] bool _isPowered;
         [SerializeField] GameObject _leverOn;
         [SerializeField] GameObject _leverOff;
-        /// <summary>
-        ///     Need to Add Door script to doors and drag those GameObjects into this script of the Lever
-        /// </summary>
+        
+        [Header("Lever Settings")]
+        [SerializeField] bool _isPowered;
         [SerializeField] List<RedstoneComponent> _logicComponents;
+        
         public bool IsPowered
         {
             set {
