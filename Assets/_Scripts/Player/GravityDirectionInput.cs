@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using GravityGame.Gravity;
 using GravityGame.UI;
 using JetBrains.Annotations;
@@ -145,7 +146,7 @@ namespace GravityGame.Player
             if (_previewCloneInstance) {
                 _previewCloneInstance.GetComponent<Rigidbody>().isKinematic = true;
                 _previewCloneInstance.GetComponent<GravityModifier>().enabled = false;
-                _previewCloneInstance.GetComponent<Renderer>().material = _previewMaterial;
+                _previewCloneInstance.GetComponent<Renderer>().SetMaterials(new List<Material>(){_previewMaterial});
                 _previewCloneInstance.transform.localScale *= .999f;
                 foreach (var component in _previewCloneInstance.GetComponentsInChildren<Collider>()) {
                     component.enabled = false;
