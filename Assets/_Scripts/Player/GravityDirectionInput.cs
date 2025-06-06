@@ -144,7 +144,9 @@ namespace GravityGame.Player
             if (_previewCloneInstance) {
                 _previewCloneInstance.GetComponent<Rigidbody>().isKinematic = true;
                 _previewCloneInstance.GetComponent<GravityModifier>().enabled = false;
-                _previewCloneInstance.GetComponent<Collider>().enabled = false;
+                foreach (var component in _previewCloneInstance.GetComponentsInChildren<Collider>()) {
+                    component.enabled = false;
+                }
                 _previewCoroutine = StartCoroutine(
                     PreviewGravityMovementRoutine(_previewCloneInstance.transform, originalObjectToPreview.transform, direction)
                 );
