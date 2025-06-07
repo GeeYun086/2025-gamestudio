@@ -22,7 +22,7 @@ namespace GravityGame.Puzzle_Elements
             }
         }
 
-        void Break()
+        public void Break()
         {
             if (BrokenVersionPrefab != null)
             {
