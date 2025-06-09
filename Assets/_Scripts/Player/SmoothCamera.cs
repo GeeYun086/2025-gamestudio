@@ -3,7 +3,7 @@ using UnityEngine;
 namespace GravityGame.Player
 {
     /// <summary>
-    ///     Camera boom arm, smoothes sudden movements of parent
+    ///     Camera boom arm, smoothes sudden vertical movements of parent
     /// </summary>
     public class SmoothCamera : MonoBehaviour
     {
@@ -14,7 +14,11 @@ namespace GravityGame.Player
         void Update()
         {
             var goal = transform.parent.transform;
-            transform.position = Vector3.Lerp(_lastPosition, goal.position, Time.deltaTime/TimeToCatchUp);
+            var lastUp = Vector3.Project(_lastPosition, transform.up);
+            var currUp = Vector3.Project(transform.position, transform.up);
+            var pos = transform.position - currUp + lastUp; // just use last for the up axis
+            
+            transform.position = Vector3.Lerp(pos, goal.position, Time.deltaTime/TimeToCatchUp);
             _lastPosition = transform.position;
         }
     }
