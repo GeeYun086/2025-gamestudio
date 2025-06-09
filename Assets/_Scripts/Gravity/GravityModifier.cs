@@ -1,3 +1,4 @@
+using GravityGame.Player;
 using GravityGame.Puzzle_Elements;
 using UnityEngine;
 
@@ -11,9 +12,11 @@ namespace GravityGame.Gravity
     [RequireComponent(typeof(Rigidbody))]
     public class GravityModifier : MonoBehaviour
     {
+        public Vector3 Gravity => GravityDirection * GravityMagnitude;
+        
         public Vector3 GravityDirection
         {
-            get => _gravityDirection;
+            get => _gravityDirection.normalized;
             set {
                 if (value == _gravityDirection)
                     return;
@@ -23,7 +26,7 @@ namespace GravityGame.Gravity
             }
         }
         
-        Vector3 _gravityDirection = Vector3.down;
+        [SerializeField] Vector3 _gravityDirection = Vector3.down;
         public float GravityMagnitude = 9.81f;
         public GravityGroup Group = GravityGroup.None;
 
@@ -41,6 +44,7 @@ namespace GravityGame.Gravity
 
         void FixedUpdate()
         {
+            if (GetComponent<PlayerMovement>() != null) return; 
             _rigidbody.AddForce(GravityDirection.normalized * GravityMagnitude, ForceMode.Acceleration);
         }
 
