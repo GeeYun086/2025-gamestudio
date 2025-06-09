@@ -10,10 +10,9 @@ namespace GravityGame.Puzzle_Elements
     /// </summary>
     [RequireComponent(typeof(Rigidbody))]
     [RequireComponent(typeof(Collider))]
-    public class DirectionalMover : MonoBehaviour
+    public class IndependentMovingPlatform : MonoBehaviour
     {
-        [SerializeField] Transform _targetPointTransform;
-        [SerializeField] Vector3 _targetPointManual = new(0, 0, 0);
+        [SerializeField] Vector3 _targetPoint = new(0, 0, 0);
         [SerializeField] float _moveSpeed = 1f;
 
         [SerializeField] LayerMask _collisionLayers = ~0;
@@ -21,7 +20,6 @@ namespace GravityGame.Puzzle_Elements
 
         Rigidbody _rigidbody;
         Vector3 _pathStartPoint;
-        Vector3 _pathEndPoint;
         Vector3 _currentDestination;
         bool _isMovingTowardsPathEndPoint;
 
@@ -105,9 +103,8 @@ namespace GravityGame.Puzzle_Elements
         void Start()
         {
             _pathStartPoint = transform.position;
-            _pathEndPoint = _targetPointTransform ? _targetPointTransform.position : _targetPointManual;
 
-            _currentDestination = _pathEndPoint;
+            _currentDestination = _targetPoint;
             _isMovingTowardsPathEndPoint = true;
         }
 
@@ -132,31 +129,17 @@ namespace GravityGame.Puzzle_Elements
         void SwitchDirection()
         {
             _isMovingTowardsPathEndPoint = !_isMovingTowardsPathEndPoint;
-            _currentDestination = _isMovingTowardsPathEndPoint ? _pathEndPoint : _pathStartPoint;
+            _currentDestination = _isMovingTowardsPathEndPoint ? _targetPoint : _pathStartPoint;
         }
 
         static bool IsLayerInMask(LayerMask layerMask, int layer) => layerMask == (layerMask | (1 << layer));
 
         void OnDrawGizmosSelected()
         {
-            Vector3 gizmoPathStart, gizmoPathEnd;
-            var currentPosition = transform.position;
-
-            if (Application.isPlaying && enabled)
-            {
-                gizmoPathStart = _pathStartPoint;
-                gizmoPathEnd = _pathEndPoint;
-            }
-            else
-            {
-                gizmoPathStart = currentPosition;
-                gizmoPathEnd = _targetPointTransform ? _targetPointTransform.position : _targetPointManual;
-            }
-
             Gizmos.color = Color.cyan;
-            Gizmos.DrawLine(gizmoPathStart, gizmoPathEnd);
-            Gizmos.DrawWireSphere(gizmoPathStart, 0.2f);
-            Gizmos.DrawSphere(gizmoPathEnd, 0.2f);
+            Gizmos.DrawLine(transform.position, _targetPoint);
+            Gizmos.DrawWireSphere(transform.position, 0.2f);
+            Gizmos.DrawSphere(_targetPoint, 0.2f);
         }
     }
 }
