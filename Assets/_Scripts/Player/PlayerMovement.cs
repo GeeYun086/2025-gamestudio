@@ -220,7 +220,13 @@ namespace GravityGame.Player
 
             float jumpUpSpeed = Mathf.Sqrt(JumpHeight * 2f * Gravity.magnitude);
             jumpVelocity = transform.up * jumpUpSpeed;
-            _ground = default; // un-ground yourself
+            
+            // push ground down
+            if (_ground.Hit.rigidbody is {} dynamicGround) {
+                dynamicGround.AddForceAtPosition(-jumpVelocity * _rigidbody.mass, _ground.Hit.point, ForceMode.Impulse);
+            }
+            // un-ground yourself
+            _ground = default; 
             return true;
         }
 
