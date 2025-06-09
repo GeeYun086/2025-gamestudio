@@ -25,7 +25,7 @@ namespace GravityGame.Puzzle_Elements
         {
             bool isOpen = IsPowered == (_whenPowered == DoorState.Open);
             // currently just toggles the GameObject. Should have an animation in the future
-            gameObject.SetActive(isOpen);
+            gameObject.SetActive(!isOpen);
         }
     }
 }
