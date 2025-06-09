@@ -33,6 +33,7 @@ namespace GravityGame.Player
         float _lastJumpInputTime;
         float _lastJumpTime;
         float _coyoteLastGroundedTime;
+        Vector3 _inputDirection;
 
         void OnEnable()
         {
@@ -46,13 +47,18 @@ namespace GravityGame.Player
             _jumpInput.action.performed += _ => _lastJumpInputTime = Time.time;
         }
 
+        void Update()
+        {
+            var input = _moveInput.action.ReadValue<Vector2>().normalized;
+            _inputDirection = Quaternion.Euler(0, _camera.transform.eulerAngles.y, 0) * new Vector3(input.x, 0, input.y);
+        }
+
         void FixedUpdate()
         {
             _ground = CheckGround();
             if (_ground is not null) _coyoteLastGroundedTime = Time.time;
 
-            var inputDirection = _moveInput.action.ReadValue<Vector2>();
-            Move(inputDirection);
+            Move();
 
             bool hasJumpInput = _lastJumpInputTime + _jumpBufferTime > Time.time;
             bool canJump = _coyoteLastGroundedTime + _coyoteTime > Time.time;
@@ -75,20 +81,18 @@ namespace GravityGame.Player
             return hit ? ground : null;
         }
 
-        void Move(Vector2 direction)
+        void Move()
         {
-            direction = direction.normalized;
             var velocity = new Vector3(_rigidbody.linearVelocity.x, 0, _rigidbody.linearVelocity.z);
-            var desiredVelocity = new Vector3(direction.x, 0, direction.y) * _maxMoveSpeed;
-            desiredVelocity = Quaternion.Euler(0, _camera.transform.eulerAngles.y, 0) * desiredVelocity;
+            var desiredVelocity = _inputDirection * _maxMoveSpeed;
 
             // Need to reset this incase this was changed by stay on slope logic
             var gravity = GetComponent<GravityModifier>();
             gravity.GravityDirection = Vector3.down;
 
-            if (direction == Vector2.zero) {
-                return;
-            }
+            // if (_inputDirection == Vector3.zero) {
+            //     return;
+            // }
 
             var workingVelocity = new Vector3();
 
@@ -100,12 +104,14 @@ namespace GravityGame.Player
             }
 
             if (_ground is { } ground) {
+                var friction = 8.0f;
+                workingVelocity *= 1f - friction * Time.fixedDeltaTime;
                 if (Vector3.Angle(ground.normal, transform.up) > _maxSlopeAngle) {
                     // Project to enable walking on slopes
                     desiredVelocity = Vector3.ProjectOnPlane(desiredVelocity, ground.normal);
                     // Stay one slope logic
                     // Note TG: I have a feeling this might cause weird issues when standing on non-static objects. Needs to be tested in real puzzles
-                    if (direction == Vector2.zero) {
+                    if (_inputDirection == Vector3.zero) {
                         gravity = GetComponent<GravityModifier>();
                         gravity.GravityDirection = -ground.normal;
                     }
@@ -123,7 +129,7 @@ namespace GravityGame.Player
                 const float lostSpeedPerAngle = 0.01f;
                 const float anglePerSecond = 360;
                 float angle = Vector3.Angle(velocity, desiredVelocity);
-
+            
                 if (angle < 90 && velocity.magnitude > _maxMoveSpeed * 0.75f) {
                     var interpolatedVelocity = Vector3.Lerp(velocity, desiredVelocity, Time.fixedDeltaTime * anglePerSecond / angle);
                     float speed = interpolatedVelocity.magnitude;
