@@ -182,11 +182,11 @@ MonoBehaviour:
   MaxAcceleration: 70
   GroundFriction: 8
   MaxStepHeight: 0.5
-  AirMovementModifier: 0.5
   MaxSlopeAngle: 40
+  AirMovementModifier: 0.5
   JumpHeight: 1.4
-  JumpBufferTime: 0.15
-  CoyoteTime: 0.15
+  JumpPreGroundedGraceTime: 0.15
+  JumpPostGroundedGraceTime: 0.15
   MoveInput: {fileID: -1680190386980627800, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   JumpInput: {fileID: -2099379676528639254, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   DebugStepDetection: 0
