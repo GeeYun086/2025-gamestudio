@@ -145,6 +145,7 @@ namespace GravityGame.Player
             
             if (_previewCloneInstance) {
                 _previewCloneInstance.GetComponent<Rigidbody>().isKinematic = true;
+                _previewCloneInstance.transform.localScale = new Vector3(.999f, .999f, .999f);
                 _previewCloneInstance.GetComponent<GravityModifier>().enabled = false;
                 _previewCloneInstance.GetComponent<Renderer>().SetMaterials(new List<Material>(){_previewMaterial});
                 _previewCloneInstance.transform.localScale *= .999f;
@@ -218,10 +219,10 @@ namespace GravityGame.Player
             var right = Vector3.Cross(up, forward).normalized;
 
             if (distance < GravityChangeMenu.DeadZoneRadius) return null;
-
-            if (distance < GravityChangeMenu.InnerRadius) return mouseOffset.y > 0 ? forward : -forward;
-
-            if (Mathf.Abs(mouseOffset.x) > Mathf.Abs(mouseOffset.y)) return mouseOffset.x > 0 ? right : -right;
+            
+            if (Mathf.Abs(mouseOffset.x)*9 > Mathf.Abs(mouseOffset.y)*16) return mouseOffset.x > 0 ? right : -right;
+            
+            if (distance > GravityChangeMenu.InnerRadius) return mouseOffset.y > 0 ? forward : -forward;
 
             return mouseOffset.y > 0 ? up : -up;
         }
