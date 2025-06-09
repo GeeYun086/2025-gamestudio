@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using GravityGame.Player;
 using UnityEngine;
@@ -40,7 +41,11 @@ namespace GravityGame.CheckpointSystem
             _playerMovementScript = _playerObject.GetComponent<PlayerMovement>();
         }
         
-        void Start() => PlayerHealth.Instance.OnPlayerDied.AddListener(RespawnPlayer);
+        void OnEnable()
+        {
+            Instance = this;
+            PlayerHealth.Instance.OnPlayerDied.AddListener(RespawnPlayer);
+        }
 
         void OnDisable() => PlayerHealth.Instance.OnPlayerDied.RemoveListener(RespawnPlayer);
 
@@ -109,8 +114,8 @@ namespace GravityGame.CheckpointSystem
         public void RespawnPlayer()
         {
             _playerMovementScript.enabled = false;
-            _playerObject.transform.position = _checkpoints.First(cp => cp.IsActiveCheckpoint).transform.position +
-                                              Vector3.up * _respawnHeightOffset;
+            _playerObject.GetComponent<Rigidbody>().MovePosition(_checkpoints.Count == 0 ? Vector3.zero : _checkpoints.First(cp => cp.IsActiveCheckpoint).transform.position +
+                Vector3.up * _respawnHeightOffset); 
             _playerMovementScript.enabled = true;
             PlayerHealth.Instance.Heal(PlayerHealth.MaxHealth);
         }
