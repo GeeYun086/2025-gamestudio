@@ -180,7 +180,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   MaxMoveSpeed: 8
   MoveAcceleration: 70
-  GroundFriction: 8
+  GroundFriction: 10
   MaxStepHeight: 0.5
   MaxAirStepHeight: 0.1
   MaxSlopeAngle: 40
@@ -190,6 +190,7 @@ MonoBehaviour:
   JumpHeight: 1.4
   JumpPreGroundedGraceTime: 0.15
   JumpPostGroundedGraceTime: 0.15
+  MinTimeBetweenJumps: 0.2
   MoveInput: {fileID: -1680190386980627800, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   JumpInput: {fileID: -2099379676528639254, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   DebugStepDetection: 0
