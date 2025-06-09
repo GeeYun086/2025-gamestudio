@@ -68,6 +68,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a4178df924dd4bb9ada9cf1080fb77aa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _previewMaterial: {fileID: 2100000, guid: 2009c9bf16dd65040a4492a051f077bb, type: 2}
   _visualizationAxes:
     Up: {fileID: 4183016400899394350}
     Down: {fileID: 6773717936227390705}
