@@ -12,8 +12,9 @@ namespace GravityGame.Puzzle_Elements
     public class Carryable : MonoBehaviour, IInteractable
     {
         Rigidbody _rigidbody;
-        Transform _carryPointTransform;
-        bool _isCarried;
+        Transform _carryPoint;
+        const float MoveSpeed = 15f;
+        const float RotationSpeed = 10f;
 
         void Awake() => _rigidbody = GetComponent<Rigidbody>();
 
@@ -27,42 +28,27 @@ namespace GravityGame.Puzzle_Elements
 
         public void PickUp(Transform carryPoint)
         {
-            _carryPointTransform = carryPoint;
-            _isCarried = true;
+            _carryPoint = carryPoint;
             DisableGravity();
         }
 
         public void Release()
         {
-            _carryPointTransform = null;
-            _isCarried = false;
+            _carryPoint = null;
             ReactivateGravity();
         }
 
         void FixedUpdate()
         {
-            if (_isCarried && _carryPointTransform) {
+            if (_carryPoint) {
                 MoveToCarryPoint();
                 AlignWithCarryPointRotation();
             }
         }
 
-        void MoveToCarryPoint()
-        {
-            var targetPosition = _carryPointTransform.position;
-            const float moveSpeed = 15f;
+        void MoveToCarryPoint() => _rigidbody.MovePosition(Vector3.Lerp(transform.position, _carryPoint.position, Time.fixedDeltaTime * MoveSpeed));
 
-            var newPosition = Vector3.Lerp(transform.position, targetPosition, Time.fixedDeltaTime * moveSpeed);
-            _rigidbody.MovePosition(newPosition);
-        }
-
-        void AlignWithCarryPointRotation()
-        {
-            const float rotationSpeed = 10f;
-            var targetRotation = _carryPointTransform.rotation;
-            var newRotation = Quaternion.Slerp(_rigidbody.rotation, targetRotation, Time.fixedDeltaTime * rotationSpeed);
-            _rigidbody.MoveRotation(newRotation);
-        }
+        void AlignWithCarryPointRotation() => _rigidbody.MoveRotation(Quaternion.Slerp(_rigidbody.rotation, _carryPoint.rotation, Time.fixedDeltaTime * RotationSpeed));
 
         void DisableGravity()
         {
