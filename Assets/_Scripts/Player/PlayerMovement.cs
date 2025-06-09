@@ -92,7 +92,7 @@ namespace GravityGame.Player
             
             float distance = _collider.height;
             var rayFront = input.normalized * (_collider.radius + stepForward);
-            var rayUp = distance * transform.up;
+            var rayUp = (distance + minStepHeight) * transform.up;
             var origin = transform.position + rayUp + rayFront;
             var dir = -transform.up;
 
@@ -103,7 +103,7 @@ namespace GravityGame.Player
             }
             var stepHeight = distance - hit.distance;
 
-            bool inStepThreshold = stepHeight <= MaxStepHeight && stepHeight >= minStepHeight;
+            bool inStepThreshold = stepHeight <= MaxStepHeight;
             var stepGround = CheckGround(hit.point);
             if (inStepThreshold && stepGround.HasStableGround) {
                 // good hit
