@@ -125,7 +125,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a9bb2f0f797c4378a9d87b50aa108b40, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  TimeToCatchUp: 0.03
+  TimeToCatchUp: 0.035
 --- !u!1 &2446000720691385914
 GameObject:
   m_ObjectHideFlags: 0
@@ -179,11 +179,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   MaxMoveSpeed: 8
-  MaxAcceleration: 70
+  MoveAcceleration: 70
   GroundFriction: 8
   MaxStepHeight: 0.5
+  MaxAirStepHeight: 0.1
   MaxSlopeAngle: 40
-  AirMovementModifier: 0.5
+  MaxAirMoveSpeed: 4
+  AirAcceleration: 30
+  AirDrag: 0.1
   JumpHeight: 1.4
   JumpPreGroundedGraceTime: 0.15
   JumpPostGroundedGraceTime: 0.15
@@ -199,8 +202,8 @@ Rigidbody:
   m_GameObject: {fileID: 2446000720691385914}
   serializedVersion: 4
   m_Mass: 60
-  m_Drag: 0.3
-  m_AngularDrag: 0.05
+  m_Drag: 0
+  m_AngularDrag: 0
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
   m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
