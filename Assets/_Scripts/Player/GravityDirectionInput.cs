@@ -213,9 +213,9 @@ namespace GravityGame.Player
             var mouseOffset = Input.mousePosition - screenCenter;
             float distance = mouseOffset.magnitude;
 
-            var up = Vector3.up;
-            var forward = GetClosestCardinalDirection(Vector3.ProjectOnPlane(cam.transform.forward, up).normalized);
-            var right = Vector3.Cross(up, forward).normalized;
+            var right = GetClosestCardinalDirection(cam.transform.right);
+            var forward = GetClosestCardinalDirection(cam.transform.forward);
+            var up = Vector3.Cross(right, forward).normalized;
 
             if (distance < GravityChangeMenu.DeadZoneRadius) return null;
             

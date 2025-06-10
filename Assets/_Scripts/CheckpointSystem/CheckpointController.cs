@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using GravityGame.Player;
+using GravityGame.Utils;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -22,10 +23,8 @@ namespace GravityGame.CheckpointSystem
     /// The controller ensures that only one checkpoint is active at any time.
     /// When a player triggers a new, unreached checkpoint, that checkpoint becomes the active one.
     /// </summary>
-    public class CheckpointController : MonoBehaviour
+    public class CheckpointController : SingletonMonoBehavior<CheckpointController>
     {
-        public static CheckpointController Instance { get; private set; }
-
         [SerializeField] GameObject _playerObject;
         [SerializeField] List<GameObject> _gameObjectCheckpoints = new();
         [SerializeField] float _respawnHeightOffset = 2.0f;
@@ -35,15 +34,12 @@ namespace GravityGame.CheckpointSystem
 
         void Awake()
         {
-            Instance = this;
             SceneManager.sceneLoaded += OnSceneLoaded;
-
-            _playerMovementScript = _playerObject.GetComponent<PlayerMovement>();
         }
-        
+
         void OnEnable()
         {
-            Instance = this;
+            _playerMovementScript = _playerObject.GetComponent<PlayerMovement>();
             PlayerHealth.Instance.OnPlayerDied.AddListener(RespawnPlayer);
         }
 
@@ -114,14 +110,19 @@ namespace GravityGame.CheckpointSystem
         public void RespawnPlayer()
         {
             _playerMovementScript.enabled = false;
-            _playerObject.GetComponent<Rigidbody>().MovePosition(_checkpoints.Count == 0 ? Vector3.zero : _checkpoints.First(cp => cp.IsActiveCheckpoint).transform.position +
-                Vector3.up * _respawnHeightOffset); 
+            _playerObject.GetComponent<Rigidbody>().MovePosition(
+                _checkpoints.Count == 0
+                    ? Vector3.zero
+                    : _checkpoints.First(cp => cp.IsActiveCheckpoint).transform.position +
+                      Vector3.up * _respawnHeightOffset
+            );
             _playerMovementScript.enabled = true;
             PlayerHealth.Instance.Heal(PlayerHealth.MaxHealth);
         }
 
-        Checkpoint FindCheckpointByID(string id) => string.IsNullOrEmpty(id)
-            ? null
-            : _checkpoints.FirstOrDefault(cp => cp != null && cp.CheckpointID == id);
+        Checkpoint FindCheckpointByID(string id) =>
+            string.IsNullOrEmpty(id)
+                ? null
+                : _checkpoints.FirstOrDefault(cp => cp != null && cp.CheckpointID == id);
     }
 }

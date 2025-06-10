@@ -1,3 +1,4 @@
+using GravityGame.Utils;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -22,20 +23,13 @@ namespace GravityGame.UI
     ///     </remarks>
     /// </summary>
     [RequireComponent(typeof(UIDocument))]
-    public class GameUI : MonoBehaviour
+    public class GameUI : SingletonMonoBehavior<GameUI>
     {
-        public static GameUI Instance { get; private set; }
-
         public UIDocument UIDocument { get; private set; }
         public GameUIElements Elements { get; private set; }
 
         void OnEnable()
         {
-            if (Instance != null && Instance != this) {
-                Destroy(Instance);
-                Debug.LogError("More than one singleton instance in the scene!");
-            }
-            Instance = this;
             UIDocument = gameObject.GetComponent<UIDocument>();
             Elements = new GameUIElements(UIDocument.rootVisualElement);
         }
