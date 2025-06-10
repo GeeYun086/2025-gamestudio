@@ -85,7 +85,7 @@ namespace GravityGame.Player
             transform.up = -Gravity;
             _ground = CheckGround(transform.position);
             Move();
-            TryStep();
+            TryStepUp();
         }
 
         void Move()
@@ -109,9 +109,8 @@ namespace GravityGame.Player
                 velocity -= Vector3.ProjectOnPlane(velocity, _ground.Normal) * GroundFriction * deltaTime;
                 
                 if (_ground.HasStableGround) {
-                    // Project on ground slope
+                    // Project walk movement on slope
                     _inputDirection = Vector3.ProjectOnPlane(_inputDirection, _ground.Normal);
-                    // Stay one slope logic
 
                     var upVelocity = Vector3.Project(velocity, transform.up);
                     float upVelocityValue = Vector3.Dot(upVelocity, transform.up) > 0 ? upVelocity.magnitude : -upVelocity.magnitude;
@@ -126,7 +125,6 @@ namespace GravityGame.Player
                                 velocity -= slopeUpVelocity;   
                             }
                         }
-                        // Debug.Log(groundVelocity);
                         if (_inputDirection == Vector3.zero) {
                             // stick to slope when standing still
                             gravity = stickToGround;
@@ -206,7 +204,7 @@ namespace GravityGame.Player
             }
         }
 
-        void TryStep()
+        void TryStepUp()
         {
             if (FindStep() is { HasStableGround: true } step) {
                 if (DebugStepDetection) Debug.Log("Player Stepped!");
