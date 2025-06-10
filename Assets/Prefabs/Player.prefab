@@ -288,6 +288,8 @@ MonoBehaviour:
   _interactableLayer:
     serializedVersion: 2
     m_Bits: 4294967295
+  _playerCamera: {fileID: 6900899572408050767}
+  _showDebugRays: 1
 --- !u!114 &5880869433627786739
 MonoBehaviour:
   m_ObjectHideFlags: 0
