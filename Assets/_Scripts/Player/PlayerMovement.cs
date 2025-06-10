@@ -1,3 +1,4 @@
+using System;
 using GravityGame.Gravity;
 using GravityGame.Utils;
 using UnityEngine;
@@ -100,6 +101,10 @@ namespace GravityGame.Player
                 ? Vector3.ProjectOnPlane(dynamicGround.linearVelocity, transform.up)
                 : Vector3.zero;
             var groundVelocityDelta = groundVelocity - _lastGroundVelocity;
+            
+            float platformStopThreshold = 1.0f;
+            bool groundStoppedImmediately = Vector3.Dot(groundVelocityDelta, _lastGroundVelocity) < 0 
+                                            && groundVelocityDelta.magnitude > platformStopThreshold;
             _lastGroundVelocity = groundVelocity;
             
             // Get jump velocity
@@ -155,8 +160,10 @@ namespace GravityGame.Player
                     }
                 }
                 
-                // Add moving ground velocity
-                velocity += groundVelocityDelta;
+                // Add moving ground velocity, don't apply if sudden platform movement -> player should get launched off
+                if(!groundStoppedImmediately) {
+                    velocity += groundVelocityDelta;
+                }
             } else {
                 // Air Drag
                 velocity -= Vector3.ProjectOnPlane(velocity, transform.up) * AirDrag * deltaTime;
