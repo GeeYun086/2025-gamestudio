@@ -1,6 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using GravityGame.Gravity;
 using GravityGame.Player;
 using GravityGame.Utils;
 using UnityEngine;
@@ -110,12 +110,16 @@ namespace GravityGame.CheckpointSystem
         public void RespawnPlayer()
         {
             _playerMovementScript.enabled = false;
-            _playerObject.GetComponent<Rigidbody>().MovePosition(
+            var playerRb = _playerObject.GetComponent<Rigidbody>();
+            playerRb.MovePosition(
                 _checkpoints.Count == 0
                     ? Vector3.zero
                     : _checkpoints.First(cp => cp.IsActiveCheckpoint).transform.position +
                       Vector3.up * _respawnHeightOffset
             );
+            playerRb.linearVelocity = Vector3.zero;
+            var playerGravity = _playerObject.GetComponent<GravityModifier>();
+            playerGravity.GravityDirection = Vector3.down;
             _playerMovementScript.enabled = true;
             PlayerHealth.Instance.Heal(PlayerHealth.MaxHealth);
         }

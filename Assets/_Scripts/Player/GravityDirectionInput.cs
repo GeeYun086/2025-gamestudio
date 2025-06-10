@@ -142,11 +142,11 @@ namespace GravityGame.Player
                 originalObjectToPreview.transform.rotation
             );
             _currentPreviewDirection = direction;
-            
+
             if (_previewCloneInstance) {
                 _previewCloneInstance.GetComponent<Rigidbody>().isKinematic = true;
                 _previewCloneInstance.GetComponent<GravityModifier>().enabled = false;
-                _previewCloneInstance.GetComponent<Renderer>().SetMaterials(new List<Material> {_previewMaterial});
+                _previewCloneInstance.GetComponent<Renderer>().SetMaterials(new List<Material> { _previewMaterial });
                 _previewCloneInstance.transform.localScale *= .999f;
                 foreach (var component in _previewCloneInstance.GetComponentsInChildren<Collider>()) {
                     component.enabled = false;
@@ -215,12 +215,12 @@ namespace GravityGame.Player
 
             var right = GetClosestCardinalDirection(cam.transform.right);
             var forward = GetClosestCardinalDirection(cam.transform.forward);
-            var up = Vector3.Cross(right, forward).normalized;
+            var up = -Vector3.Cross(right, forward).normalized;
 
             if (distance < GravityChangeMenu.DeadZoneRadius) return null;
-            
-            if (Mathf.Abs(mouseOffset.x)*9 > Mathf.Abs(mouseOffset.y)*16) return mouseOffset.x > 0 ? right : -right;
-            
+
+            if (Mathf.Abs(mouseOffset.x) * 9 > Mathf.Abs(mouseOffset.y) * 16) return mouseOffset.x > 0 ? right : -right;
+
             if (distance > GravityChangeMenu.InnerRadius) return mouseOffset.y > 0 ? forward : -forward;
 
             return mouseOffset.y > 0 ? up : -up;
