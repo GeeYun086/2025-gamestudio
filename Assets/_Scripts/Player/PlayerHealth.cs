@@ -16,6 +16,7 @@ namespace GravityGame.Player
         public float CurrentHealth { get; private set; }
         bool IsDead => CurrentHealth <= 0;
 
+        void Awake() => OnEnable();
         void OnEnable()
         {
             if (!Instance) Instance = this;

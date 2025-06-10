@@ -74,12 +74,15 @@ namespace GravityGame.Player
         void Update()
         {
             var input = MoveInput.action.ReadValue<Vector2>().normalized;
-            _inputDirection = Quaternion.Euler(0, _camera.transform.eulerAngles.y, 0) * new Vector3(input.x, 0, input.y);
+            var right = _camera.transform.right;
+            var forward = Vector3.Cross(right, transform.up);
+            _inputDirection = forward * input.y + right * input.x;
             _inputDirection = Vector3.ClampMagnitude(_inputDirection, 1f);
         }
 
         void FixedUpdate()
         {
+            transform.up = -Gravity;
             _ground = CheckGround(transform.position);
             Move();
             TryStep();
@@ -87,10 +90,13 @@ namespace GravityGame.Player
 
         void Move()
         {
+            Rigidbody dynamicGround = null;
             var groundVelocity = Vector3.zero;
-            if (_ground.HasStableGround && _ground.Hit.rigidbody is { } dynamicGround) {
+            if (_ground.HasStableGround && _ground.Hit.rigidbody != null) {
+                dynamicGround = _ground.Hit.rigidbody;
                 groundVelocity = Vector3.ProjectOnPlane(dynamicGround.linearVelocity, transform.up);
             }
+            
             bool jumped = TryJump(out var jumpVelocity);
 
             float deltaTime = Time.fixedDeltaTime;
@@ -110,14 +116,24 @@ namespace GravityGame.Player
                     var upVelocity = Vector3.Project(velocity, transform.up);
                     float upVelocityValue = Vector3.Dot(upVelocity, transform.up) > 0 ? upVelocity.magnitude : -upVelocity.magnitude;
 
-                    if (_ground.Angle > 0.01f && groundVelocity == Vector3.zero) {
+                    if (_ground.Angle > 0.01f) {
+                        var stickToGround = -_ground.Normal * 50f;
+                        if (dynamicGround) {
+                            stickToGround = gravity * 0.1f;
+                            if (_inputDirection == Vector3.zero) {
+                                var slopeUp = Vector3.ProjectOnPlane(transform.up, _ground.Normal);
+                                var slopeUpVelocity = Vector3.Project(velocity, slopeUp);
+                                velocity -= slopeUpVelocity;   
+                            }
+                        }
+                        // Debug.Log(groundVelocity);
                         if (_inputDirection == Vector3.zero) {
-                            // stick to slop when standing still
-                            gravity = -_ground.Normal * 80f;
+                            // stick to slope when standing still
+                            gravity = stickToGround;
                         } else if (upVelocityValue > 0f && !jumped) {
                             // stick to slope when walking up it
-                            gravity = -_ground.Normal * 80f;
-                        }    
+                            gravity = stickToGround;
+                        }
                     }
                     
                 } else {
@@ -169,8 +185,10 @@ namespace GravityGame.Player
                 var jumpForwardVelocity = Mathf.Max(Mathf.Min(MaxMoveSpeed, planeVelocity.magnitude), planeVelocityInInputDir.magnitude);
                 var jumpForward = _inputDirection.normalized * jumpForwardVelocity;
                 
-                var planeGroundVelocity = Vector3.ProjectOnPlane(groundVelocity, transform.up);
-                velocity = jumpVelocity + onlyUpVelocity + jumpForward + planeGroundVelocity;
+                velocity = jumpVelocity + jumpForward + onlyUpVelocity + groundVelocity;
+                
+                // push ground down
+                dynamicGround?.AddForceAtPosition(-jumpVelocity * _rigidbody.mass, _ground.Hit.point, ForceMode.Impulse);
             }
 
             _rigidbody.AddForce(velocity - _rigidbody.linearVelocity, ForceMode.VelocityChange);
@@ -191,6 +209,7 @@ namespace GravityGame.Player
         void TryStep()
         {
             if (FindStep() is { HasStableGround: true } step) {
+                if (DebugStepDetection) Debug.Log("Player Stepped!");
                 var difference = step.Hit.point - transform.position;
                 var up = Vector3.Project(difference, transform.up);
                 var fwd = difference - up;
@@ -221,10 +240,6 @@ namespace GravityGame.Player
             float jumpUpSpeed = Mathf.Sqrt(JumpHeight * 2f * Gravity.magnitude);
             jumpVelocity = transform.up * jumpUpSpeed;
             
-            // push ground down
-            if (_ground.Hit.rigidbody is {} dynamicGround) {
-                dynamicGround.AddForceAtPosition(-jumpVelocity * _rigidbody.mass, _ground.Hit.point, ForceMode.Impulse);
-            }
             // un-ground yourself
             _ground = default; 
             return true;

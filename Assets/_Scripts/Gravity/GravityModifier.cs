@@ -34,12 +34,16 @@ namespace GravityGame.Gravity
 
         Rigidbody _rigidbody;
 
-        void Awake()
+        void OnEnable()
         {
             _rigidbody = GetComponent<Rigidbody>();
             _rigidbody.useGravity = false;
-            if(Group != GravityGroup.None)
-                GravityGroupHandler.Instance.OnGravityGroupDirectionChange += SetGravityDirectionWithoutGroupAlert;
+            GravityGroupHandler.Instance.OnGravityGroupDirectionChange += SetGravityDirectionWithoutGroupAlert;
+        }
+        
+        void OnDisable()
+        {
+            GravityGroupHandler.Instance.OnGravityGroupDirectionChange -= SetGravityDirectionWithoutGroupAlert;
         }
 
         void FixedUpdate()
@@ -52,11 +56,6 @@ namespace GravityGame.Gravity
         {
             if (gravityGroup == Group)
                 _gravityDirection = gravityDirection;
-        }
-
-        void OnDestroy()
-        {
-            GravityGroupHandler.Instance.OnGravityGroupDirectionChange -= SetGravityDirectionWithoutGroupAlert;
         }
     }
 }
