@@ -30,7 +30,7 @@ namespace GravityGame.Gravity
         public float GravityMagnitude = 9.81f;
         public GravityGroup Group = GravityGroup.None;
 
-        public enum GravityGroup { None, Red, Blue, Green }
+        public enum GravityGroup { None, Player, Red, Blue, Green }
 
         Rigidbody _rigidbody;
 

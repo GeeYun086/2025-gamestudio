@@ -258,7 +258,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _gravityDirection: {x: 0, y: -1, z: 0}
   GravityMagnitude: 32
-  Group: 0
+  Group: 1
 --- !u!114 &2766821908369855471
 MonoBehaviour:
   m_ObjectHideFlags: 0
