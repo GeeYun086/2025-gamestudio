@@ -15,13 +15,11 @@ namespace GravityGame.Puzzle_Elements
         void Start() => _material = GetComponent<MeshRenderer>().material;
 
         // Note FS: This is tested and looks the best
-        void Update() => _material.mainTextureOffset += new Vector2(1, 0) * (_speed/10 * Time.deltaTime);
+        void Update() => _material.mainTextureOffset += new Vector2(1, 0) * (_speed * 10f * Time.deltaTime);
 
         void FixedUpdate()
         {
-            for (int i = 0; i <= _onBelt.Count - 1; i++) {
-                _onBelt[i].AddForce(_speed * _direction, ForceMode.Impulse);
-            }
+            for (int i = 0; i <= _onBelt.Count - 1; i++) _onBelt[i].AddForce(_speed * _direction, ForceMode.VelocityChange);
         }
 
         void OnCollisionEnter(Collision collision) => _onBelt.Add(collision.rigidbody);
