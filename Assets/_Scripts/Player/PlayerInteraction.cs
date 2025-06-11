@@ -40,7 +40,6 @@ namespace GravityGame.Player
             Ray ray = new Ray(_playerCamera.transform.position, _playerCamera.transform.forward);
             bool hitSomething = Physics.Raycast(ray, out RaycastHit hit, _interactDistance, _interactableLayer);
             
-            
             if (_showDebugRays)
             {
                 Debug.DrawRay(ray.origin, ray.direction * _interactDistance, 
@@ -48,7 +47,6 @@ namespace GravityGame.Player
             }
 
             _currentInteractable = hitSomething ? hit.collider.GetComponent<IInteractable>() : null;
-            
         }
     }
 }
