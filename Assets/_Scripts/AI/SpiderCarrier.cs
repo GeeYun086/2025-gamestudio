@@ -12,28 +12,28 @@ namespace GravityGame
     [RequireComponent(typeof(NavMeshAgent))]
     public class SpiderCarrier : MonoBehaviour
     {
-        [Header("Pick-up timing & look")] public float waitBeforePickup = 0.35f;
-        [SerializeField] private float moveTime = 0.25f;
-        [SerializeField] private AnimationCurve heightCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
-        public string targetTag = "Carryable";
-        public float lookAhead = 2.0f;
-        public float detectionRadius = 2f;
-        public float grabDistance = 1.5f;
-        public Transform carrySocket;
+        [Header("Pick-up timing & look")] 
+        [SerializeField] float _waitBeforePickup = 0.35f;
+        [SerializeField] float _moveTime = 0.25f;
+        [SerializeField] AnimationCurve _heightCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
+        [SerializeField] string _targetTag = "Carryable";
+        [SerializeField] float _lookAhead = 2.0f;
+        [SerializeField] float _detectionRadius = 2f;
+        [SerializeField] float _grabDistance = 1.5f;
+        [SerializeField] Transform _carrySocket;
 
-        private NavMeshAgent _agent;
-        private GameObject _currentTarget;
-        private bool _foundObject;
+        NavMeshAgent _agent;
+        GameObject _currentTarget;
+        bool _foundObject;
 
-        private float _originalStopping;
-        private NavMeshPatrol _patrol;
+        float _originalStopping;
+        NavMeshPatrol _patrol;
 
-        private State _state = State.Patrol;
+        State _state = State.Patrol;
 
-        private void Update()
+        void Update()
         {
-            switch (_state)
-            {
+            switch (_state) {
                 case State.Patrol:
                     TickPatrol();
                     break;
@@ -45,16 +45,16 @@ namespace GravityGame
             }
         }
 
-        private void OnEnable()
+        void OnEnable()
         {
             _agent = GetComponent<NavMeshAgent>();
             _patrol = GetComponent<NavMeshPatrol>();
 
-            if (carrySocket == null) Debug.LogError("SpiderCarrier needs a CarrySocket assigned!");
+            if (_carrySocket == null) Debug.LogError("SpiderCarrier needs a CarrySocket assigned!");
         }
 
 #if UNITY_EDITOR
-        private void OnDrawGizmosSelected()
+        void OnDrawGizmosSelected()
         {
             if (Application.isPlaying == false) return;
 
@@ -63,45 +63,42 @@ namespace GravityGame
             var dir = _agent != null && _agent.velocity.sqrMagnitude > 0.01f
                 ? _agent.velocity.normalized
                 : transform.forward;
-            Gizmos.DrawLine(origin, origin + dir * lookAhead);
-            Gizmos.DrawWireSphere(origin + dir * lookAhead, detectionRadius);
+            Gizmos.DrawLine(origin, origin + dir * _lookAhead);
+            Gizmos.DrawWireSphere(origin + dir * _lookAhead, _detectionRadius);
         }
 #endif
 
-        private void TickPatrol()
+        void TickPatrol()
         {
             var origin = transform.position + Vector3.up * 0.2f;
             var dir = _agent.velocity.sqrMagnitude > 0.01f ? _agent.velocity.normalized : transform.forward;
 
-            if (Physics.SphereCast(origin, detectionRadius, dir, out var hit, lookAhead))
-                if (hit.collider.CompareTag(targetTag))
-                {
+            if (Physics.SphereCast(origin, _detectionRadius, dir, out var hit, _lookAhead))
+                if (hit.collider.CompareTag(_targetTag)) {
                     _currentTarget = hit.collider.gameObject;
                     _patrol.enabled = false;
                     _state = State.Acquire;
                     _originalStopping = _agent.stoppingDistance;
-                    _agent.stoppingDistance = grabDistance;
-                    var approach = GetApproachPoint(_currentTarget.transform, grabDistance);
+                    _agent.stoppingDistance = _grabDistance;
+                    var approach = GetApproachPoint(_currentTarget.transform, _grabDistance);
                     _agent.SetDestination(approach);
                 }
         }
 
-        private void TickAcquire()
+        void TickAcquire()
         {
-            if (_currentTarget == null)
-            {
+            if (_currentTarget == null) {
                 ResumePatrol();
                 return;
             }
 
-            if (!_agent.pathPending && _agent.remainingDistance <= _agent.stoppingDistance + 0.05f && !_foundObject)
-            {
+            if (!_agent.pathPending && _agent.remainingDistance <= _agent.stoppingDistance + 0.05f && !_foundObject) {
                 _foundObject = true;
                 StartCoroutine(DoPickup(_currentTarget));
             }
         }
 
-        private Vector3 GetApproachPoint(Transform target, float offset)
+        Vector3 GetApproachPoint(Transform target, float offset)
         {
             var dir = target.position - transform.position;
             dir.y = 0f;
@@ -113,29 +110,28 @@ namespace GravityGame
             return hit.position;
         }
 
-        private IEnumerator DoPickup(GameObject obj)
+        IEnumerator DoPickup(GameObject obj)
         {
             _agent.isStopped = true;
-            yield return new WaitForSeconds(waitBeforePickup);
+            yield return new WaitForSeconds(_waitBeforePickup);
             if (obj.TryGetComponent(out Rigidbody rb)) rb.isKinematic = true;
             if (obj.TryGetComponent(out Collider col)) col.enabled = false;
 
             var startPos = obj.transform.position;
             var startRot = obj.transform.rotation;
-            var endPos = carrySocket.position;
-            var endRot = carrySocket.rotation;
+            var endPos = _carrySocket.position;
+            var endRot = _carrySocket.rotation;
 
-            var t = 0f;
-            while (t < 1f)
-            {
-                t += Time.deltaTime / moveTime;
-                var yArc = heightCurve.Evaluate(t) * 0.15f;
+            float t = 0f;
+            while (t < 1f) {
+                t += Time.deltaTime / _moveTime;
+                float yArc = _heightCurve.Evaluate(t) * 0.15f;
                 obj.transform.position = Vector3.Lerp(startPos, endPos, t) + Vector3.up * yArc;
                 obj.transform.rotation = Quaternion.Slerp(startRot, endRot, t);
                 yield return null;
             }
 
-            obj.transform.SetParent(carrySocket, true);
+            obj.transform.SetParent(_carrySocket, true);
             obj.transform.localPosition = Vector3.zero;
             obj.transform.localRotation = Quaternion.identity;
 
@@ -145,7 +141,7 @@ namespace GravityGame
             ResumePatrol();
         }
 
-        private void ResumePatrol()
+        void ResumePatrol()
         {
             _patrol.enabled = true;
             _agent.stoppingDistance = _originalStopping;
@@ -153,11 +149,6 @@ namespace GravityGame
             _state = State.Patrol;
         }
 
-        private enum State
-        {
-            Patrol,
-            Acquire,
-            Carrying
-        }
+        enum State { Patrol, Acquire, Carrying }
     }
 }
