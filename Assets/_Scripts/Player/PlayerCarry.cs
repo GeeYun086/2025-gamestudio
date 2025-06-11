@@ -42,8 +42,7 @@ namespace GravityGame.Player
                     return;
                 }
 
-                if (_playerMovement.Ground.HasStableGround &&
-                    _playerMovement.Ground.Hit.collider &&
+                if (_playerMovement.Ground.Hit.collider &&
                     _playerMovement.Ground.Hit.collider.gameObject == _currentlyCarrying.gameObject) {
                     AttemptRelease();
                 }
