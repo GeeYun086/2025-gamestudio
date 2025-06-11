@@ -9,8 +9,13 @@ namespace GravityGame.Player
     public class PlayerCarry : MonoBehaviour
     {
         [SerializeField] Transform _carryPointTransform;
+        [SerializeField] float _maxCarryDistance = 5f;
 
         Carryable _currentlyCarrying;
+        PlayerMovement _playerMovement;
+
+        void Awake() => _playerMovement = GetComponent<PlayerMovement>();
+
         public bool IsCarrying() => _currentlyCarrying;
 
         public void AttemptPickUp(Carryable objectToCarry)
@@ -26,6 +31,22 @@ namespace GravityGame.Player
             if (IsCarrying()) {
                 _currentlyCarrying.Release();
                 _currentlyCarrying = null;
+            }
+        }
+
+        void Update()
+        {
+            if (IsCarrying()) {
+                if (Vector3.Distance(transform.position, _currentlyCarrying.transform.position) > _maxCarryDistance) {
+                    AttemptRelease();
+                    return;
+                }
+
+                if (_playerMovement.Ground.HasStableGround &&
+                    _playerMovement.Ground.Hit.collider &&
+                    _playerMovement.Ground.Hit.collider.gameObject == _currentlyCarrying.gameObject) {
+                    AttemptRelease();
+                }
             }
         }
     }
