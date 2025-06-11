@@ -1,9 +1,8 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
-using UnityEngine.Serialization;
 
-namespace GravityGame
+namespace GravityGame.AI
 {
     /// <summary>
     ///     Moves a NavMeshAgent back and forth through a list of waypoints,
@@ -84,11 +83,16 @@ namespace GravityGame
 
         void GoTo(int i)
         {
-            if (!NavMesh.SamplePosition(_pts[i].position, out var hit, 1f, NavMesh.AllAreas))
-                Debug.LogWarning($"Waypoint {_pts[i].name} is off the NavMesh!");
-            else
+            SpiderClimber climber = GetComponent<SpiderClimber>();
+            if (climber != null && climber.TryHandle(_pts[i]))
+                return;
+
+            if (NavMesh.SamplePosition(_pts[i].position, out var hit, 1f, NavMesh.AllAreas))
                 _agent.SetDestination(hit.position);
+            else
+                _agent.SetDestination(_pts[i].position);
         }
+
         
         public void RepathToCurrentTarget()
         {

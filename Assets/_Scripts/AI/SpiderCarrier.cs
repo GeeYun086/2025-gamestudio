@@ -4,7 +4,7 @@ using GravityGame.Gravity;
 using UnityEngine;
 using UnityEngine.AI;
 
-namespace GravityGame
+namespace GravityGame.AI
 {
     /// <summary>
     ///     Adds a "pick up and carry" layer on top of NavMeshPatrol.
@@ -116,7 +116,6 @@ namespace GravityGame
         
         void TickCarrying()
         {
-            Debug.Log("carried gravity: " + _carriedGravity);
             if (_carriedGravity == null) return;
 
             if (!IsDefaultGravity(_carriedGravity.GravityDirection))
@@ -137,7 +136,6 @@ namespace GravityGame
 
         IEnumerator DoPickup(GameObject obj)
         {
-            Debug.Log("Picking up " + obj.name);
             _agent.isStopped = true;
             yield return new WaitForSeconds(_waitBeforePickup);
 
