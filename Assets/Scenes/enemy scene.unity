@@ -508,7 +508,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1048923521071570241, guid: 6d797a3af3ab1c94fa9671fac86dd6c5, type: 3}
       propertyPath: m_Name
-      value: enemy_v2
+      value: SpiderCarrier
       objectReference: {fileID: 0}
     - target: {fileID: 3620783818044481209, guid: 6d797a3af3ab1c94fa9671fac86dd6c5, type: 3}
       propertyPath: WaypointsRoot

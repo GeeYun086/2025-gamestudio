@@ -210,7 +210,7 @@ GameObject:
   - component: {fileID: 3620783818044481209}
   - component: {fileID: 283067789367325205}
   m_Layer: 0
-  m_Name: enemy_v2
+  m_Name: SpiderCarrier
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

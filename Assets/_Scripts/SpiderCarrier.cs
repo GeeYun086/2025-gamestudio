@@ -13,8 +13,8 @@ namespace GravityGame
     public class SpiderCarrier : MonoBehaviour
     {
         [Header("Pick-up timing & look")] public float waitBeforePickup = 0.35f;
-        public float moveTime = 0.25f;
-        public AnimationCurve heightCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
+        [SerializeField] private float moveTime = 0.25f;
+        [SerializeField] private AnimationCurve heightCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
         public string targetTag = "Carryable";
         public float lookAhead = 2.0f;
         public float detectionRadius = 2f;
@@ -30,15 +30,6 @@ namespace GravityGame
 
         private State _state = State.Patrol;
 
-        private void Awake()
-        {
-            _agent = GetComponent<NavMeshAgent>();
-            _patrol = GetComponent<NavMeshPatrol>();
-
-            if (carrySocket == null)
-                Debug.LogError("SpiderCarrier needs a CarrySocket assigned!");
-        }
-
         private void Update()
         {
             switch (_state)
@@ -49,10 +40,18 @@ namespace GravityGame
                 case State.Acquire:
                     TickAcquire();
                     break;
-                case State.Carrying: break;
+                case State.Carrying:
+                    break;
             }
         }
 
+        private void OnEnable()
+        {
+            _agent = GetComponent<NavMeshAgent>();
+            _patrol = GetComponent<NavMeshPatrol>();
+
+            if (carrySocket == null) Debug.LogError("SpiderCarrier needs a CarrySocket assigned!");
+        }
 
 #if UNITY_EDITOR
         private void OnDrawGizmosSelected()
@@ -72,12 +71,9 @@ namespace GravityGame
         private void TickPatrol()
         {
             var origin = transform.position + Vector3.up * 0.2f;
-            var dir = _agent.velocity.sqrMagnitude > 0.01f
-                ? _agent.velocity.normalized
-                : transform.forward;
+            var dir = _agent.velocity.sqrMagnitude > 0.01f ? _agent.velocity.normalized : transform.forward;
 
-            if (Physics.SphereCast(origin, detectionRadius, dir,
-                    out var hit, lookAhead))
+            if (Physics.SphereCast(origin, detectionRadius, dir, out var hit, lookAhead))
                 if (hit.collider.CompareTag(targetTag))
                 {
                     _currentTarget = hit.collider.gameObject;
@@ -98,9 +94,7 @@ namespace GravityGame
                 return;
             }
 
-            if (!_agent.pathPending &&
-                _agent.remainingDistance <= _agent.stoppingDistance + 0.05f &&
-                !_foundObject)
+            if (!_agent.pathPending && _agent.remainingDistance <= _agent.stoppingDistance + 0.05f && !_foundObject)
             {
                 _foundObject = true;
                 StartCoroutine(DoPickup(_currentTarget));
