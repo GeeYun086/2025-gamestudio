@@ -1,10 +1,9 @@
 using UnityEngine;
 
-namespace GravityGame
+namespace GravityGame.Puzzle_Elements
 {
     /// <summary>
-    /// Interface used for Doors and Levers. Classes that want to change state of one GameObject through another should
-    /// inherit from this.
+    /// Abstract Class for Door like components
     /// </summary>
     public abstract class RedstoneComponent : MonoBehaviour
     {

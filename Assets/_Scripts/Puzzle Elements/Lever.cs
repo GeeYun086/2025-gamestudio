@@ -1,54 +1,36 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
-namespace GravityGame
+namespace GravityGame.Puzzle_Elements
 {
     /// <summary>
-    /// Add to Lever GameObject
+    ///     Add to Lever GameObject and drag Doors into List
     /// </summary>
-    public class Lever : RedstoneComponent
+    public class Lever : InteractableObject
     {
+        [SerializeField] GameObject _leverOn;
+        [SerializeField] GameObject _leverOff;
+        
+        [Header("Lever Settings")]
         [SerializeField] bool _isPowered;
-
-        /// <summary>
-        /// Need to Add Door script to doors and drag those GameObjects into this script of the Lever
-        /// </summary>
-        [SerializeField] public List<RedstoneComponent> LogicComponents = new List<RedstoneComponent>();
-
-        public override bool IsPowered
+        [SerializeField] List<RedstoneComponent> _logicComponents;
+        
+        void SetPowered(bool value)
         {
-            get => _isPowered;
-            set
-            {
-                _isPowered = value;
-                UpdateConnectedComponents();
+            _isPowered = value;
+            _leverOn.SetActive(_isPowered);
+            _leverOff.SetActive(!_isPowered);
+            // Update connected components
+            foreach (var component in _logicComponents.Where(c => c != null)) {
+                component.IsPowered = _isPowered;
             }
         }
-
-
-        /// <summary>
-        /// Changes IsPowered of all Doors in List.
-        /// Switch between on and off.
-        /// Need to set in Door`s scripts which Doors are already powered.
-        /// </summary>
-        void UpdateConnectedComponents()
-        {
-            foreach (var component in LogicComponents)
-            {
-                if (component != null)
-                    component.IsPowered = !component.IsPowered;
-            }
-        }
-
-#if UNITY_EDITOR
-        /// <summary>
-        /// Carl: To debug mechanism without the need of playing the level.
-        /// But also updates IsPowered while in Play mode.
-        /// </summary>
-        void OnValidate()
-        {
-            UpdateConnectedComponents();
-        }
-#endif
+        
+        void OnEnable() => OnInteract.AddListener(Toggle);
+        void OnDisable() => OnInteract.RemoveListener(Toggle);
+        void Toggle() => SetPowered(!_isPowered);
+        
+        void OnValidate() => SetPowered(_isPowered);
     }
 }
