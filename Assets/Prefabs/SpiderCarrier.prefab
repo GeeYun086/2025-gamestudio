@@ -288,9 +288,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ec0235e20e551540b18db10d54456c2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  waitBeforePickup: 1
-  moveTime: 0.5
-  heightCurve:
+  _waitBeforePickup: 0.35
+  _moveTime: 0.25
+  _heightCurve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
@@ -314,11 +314,11 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  targetTag: Carryable
-  lookAhead: 2
-  detectionRadius: 2.02
-  grabDistance: 1.15
-  carrySocket: {fileID: 4715745792198065692}
+  _targetTag: Carryable
+  _lookAhead: 2
+  _detectionRadius: 2
+  _grabDistance: 1.5
+  _carrySocket: {fileID: 4715745792198065692}
 --- !u!1 &2487129246002527110
 GameObject:
   m_ObjectHideFlags: 0
