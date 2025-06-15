@@ -1,5 +1,5 @@
-﻿using UnityEngine;
-using GravityGame.Player;
+﻿using GravityGame.Player;
+using UnityEngine;
 using UnityEngine.Serialization;
 
 namespace GravityGame.PuzzleElements
@@ -27,25 +27,23 @@ namespace GravityGame.PuzzleElements
         [Tooltip("Cylinder radius.")]
         public float BeamRadius = 0.1f;
 
-        MeshFilter      _meshFilter;
-        MeshRenderer    _meshRenderer;
+        MeshFilter _meshFilter;
+        MeshRenderer _meshRenderer;
         CapsuleCollider _collider;
-        int             _playerMask;
-        bool            _hasDamagedThisContact;
+        int _playerMask;
+        bool _hasDamagedThisContact;
 
         void Awake()
         {
             // mesh + material setup
-            _meshFilter   = GetComponent<MeshFilter>();
+            _meshFilter = GetComponent<MeshFilter>();
             _meshRenderer = GetComponent<MeshRenderer>();
-            if (_meshFilter.sharedMesh == null)
-            {
+            if (_meshFilter.sharedMesh == null) {
                 var tmp = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
                 _meshFilter.sharedMesh = tmp.GetComponent<MeshFilter>().sharedMesh;
                 DestroyImmediate(tmp);
             }
-            if (_meshRenderer.sharedMaterial == null)
-            {
+            if (_meshRenderer.sharedMaterial == null) {
                 var mat = new Material(Shader.Find("Sprites/Default"));
                 mat.color = Color.red;
                 _meshRenderer.sharedMaterial = mat;
@@ -63,42 +61,37 @@ namespace GravityGame.PuzzleElements
         void Update()
         {
             // 1) Compute beam length via Default & Cube only
-            Transform origin = transform.parent;
-            Vector3 start = origin.position + origin.forward * 0.01f;
-            Vector3 dir   = origin.forward;
+            var origin = transform.parent;
+            var start = origin.position + origin.forward * 0.01f;
+            var dir = origin.forward;
 
             // draw full‐length in Scene
             Debug.DrawRay(start, dir * MaxDistance, Color.yellow);
 
             float length = MaxDistance;
-            if (Physics.Raycast(start, dir, out var blockHit, MaxDistance, ObstacleMask))
-            {
+            if (Physics.Raycast(start, dir, out var blockHit, MaxDistance, ObstacleMask)) {
                 length = blockHit.distance;
             }
 
             // 2) Raycast for player only within that length
             bool hitPlayer = Physics.Raycast(start, dir, out var phHit, length, _playerMask);
 
-            if (hitPlayer && !_hasDamagedThisContact)
-            {
+            if (hitPlayer && !_hasDamagedThisContact) {
                 // first frame of touching beam → apply damage
                 var ph = phHit.collider.GetComponent<PlayerHealth>();
-                if (ph != null)
-                {
+                if (ph != null) {
                     Debug.Log($"[Laser] Hitting Player: dealing {FlatDamage} damage");
                     ph.TakeDamage(FlatDamage);
                 }
                 _hasDamagedThisContact = true;
-            }
-            else if (!hitPlayer)
-            {
+            } else if (!hitPlayer) {
                 // player has left the beam → reset for next entry
                 _hasDamagedThisContact = false;
             }
 
             // 3) Resize & position the visual cylinder
             transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
-            transform.localScale    = new Vector3(BeamRadius, length * 0.5f, BeamRadius);
+            transform.localScale = new Vector3(BeamRadius, length * 0.5f, BeamRadius);
             transform.localPosition = new Vector3(0f, 0f, length * 0.5f);
 
             // 4) Resize & position the capsule collider

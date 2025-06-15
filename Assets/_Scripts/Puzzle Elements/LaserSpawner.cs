@@ -16,7 +16,7 @@ public class LaserSpawner : MonoBehaviour
     [FormerlySerializedAs("spawnOnStart")] [Tooltip("Automatically spawn the laser when the scene starts?")]
     public bool SpawnOnStart = true;
 
-    private GameObject _spawnedLaser;
+    GameObject _spawnedLaser;
 
     void Start()
     {
@@ -25,33 +25,30 @@ public class LaserSpawner : MonoBehaviour
     }
 
     /// <summary>
-    /// Instantiates the laser prefab at this transform’s position + offset, with same rotation.
+    ///     Instantiates the laser prefab at this transform’s position + offset, with same rotation.
     /// </summary>
     public void SpawnLaser()
     {
-        if (LaserPrefab == null)
-        {
+        if (LaserPrefab == null) {
             Debug.LogError("LaserSpawner: laserPrefab is not assigned!", this);
             return;
         }
 
-        if (_spawnedLaser != null)
-        {
+        if (_spawnedLaser != null) {
             Destroy(_spawnedLaser);
         }
 
-        Vector3 worldPos = transform.TransformPoint(SpawnOffset);
+        var worldPos = transform.TransformPoint(SpawnOffset);
         _spawnedLaser = Instantiate(LaserPrefab, worldPos, transform.rotation);
         _spawnedLaser.transform.parent = transform;
     }
 
     /// <summary>
-    /// Destroys the spawned laser instance.
+    ///     Destroys the spawned laser instance.
     /// </summary>
     public void DestroyLaser()
     {
-        if (_spawnedLaser != null)
-        {
+        if (_spawnedLaser != null) {
             Destroy(_spawnedLaser);
             _spawnedLaser = null;
         }
