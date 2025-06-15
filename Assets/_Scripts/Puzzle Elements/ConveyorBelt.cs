@@ -7,7 +7,8 @@ namespace GravityGame.Puzzle_Elements
     public class ConveyorBelt : MonoBehaviour
     {
         [SerializeField] float _speed;
-        [SerializeField] List<Rigidbody> _onBelt;
+        [SerializeField] float _nonPlayerSpeedModifier = 0.5f;
+        readonly Dictionary<Rigidbody, RigidbodyConstraints> _onBelt = new();
 
         Material _material;
         void Start() => _material = GetComponent<MeshRenderer>().material;
@@ -17,16 +18,31 @@ namespace GravityGame.Puzzle_Elements
 
         void FixedUpdate()
         {
-            for (int i = 0; i <= _onBelt.Count - 1; i++) {
-                // Note FS: Test with max rotation damping
-                if (!_onBelt[i].GetComponent<PlayerMovement>()) _onBelt[i].angularDamping = 100f;
-                _onBelt[i].AddForce(_speed * transform.forward, ForceMode.VelocityChange);
+            foreach (var rb in _onBelt.Keys) {
+                if (rb.GetComponent<PlayerMovement>()) {
+                    rb.AddForce(_speed * transform.forward, ForceMode.VelocityChange);
+                } else {
+                    rb.AddForce(_nonPlayerSpeedModifier * _speed * transform.forward, ForceMode.VelocityChange);
+                }
             }
         }
 
+        void OnCollisionEnter(Collision collision)
+        {
+            var rb = collision.rigidbody;
+            if (rb && !_onBelt.ContainsKey(rb)) {
+                _onBelt.Add(rb, rb.constraints);
+                if (!rb.GetComponent<PlayerMovement>()) rb.constraints = RigidbodyConstraints.FreezeRotation;
+            }
+        }
 
-        void OnCollisionEnter(Collision collision) => _onBelt.Add(collision.rigidbody);
-
-        void OnCollisionExit(Collision collision) => _onBelt.Remove(collision.rigidbody);
+        void OnCollisionExit(Collision collision)
+        {
+            var rb = collision.rigidbody;
+            if (rb && _onBelt.TryGetValue(rb, out var originalConstraints)) {
+                rb.constraints = originalConstraints;
+                _onBelt.Remove(rb);
+            }
+        }
     }
 }
