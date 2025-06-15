@@ -150,4 +150,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _endPosition: {x: 5, y: 0, z: 0}
-  _force: 1000
+  _endRotation: {x: 0, y: 90, z: 0}
+  _speed: 2

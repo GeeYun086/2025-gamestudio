@@ -3,38 +3,60 @@
 namespace GravityGame.Puzzle_Elements
 {
     /// <summary>
-    /// Moves a platform back and forth between its initial start position
-    /// and a specified world target position using applied forces.
+    /// Moves (and rotates) a platform back and forth between its initial start position
+    /// and a specified target position by controlling its velocity.
     /// </summary>
     [RequireComponent(typeof(Rigidbody))]
     public class IndependentMovingPlatform : MonoBehaviour
     {
         [SerializeField] Vector3 _endPosition = new(5, 0, 0);
-        [SerializeField] float _force = 1000f;
+        [SerializeField] Vector3 _endRotation = new(0, 90, 0);
+        [SerializeField] float _speed = 5f;
 
-        const float ReachThreshold = 0.2f;
+        const float ReachThreshold = 0.1f;
 
         Rigidbody _rigidbody;
         Vector3 _startPoint;
+        Quaternion _startRotation;
         Vector3 _currentDestination;
         bool _isMovingToEnd;
+        float _pathDistance;
 
-        void Awake() => _rigidbody = GetComponent<Rigidbody>();
+        void Awake()
+        {
+            _rigidbody = GetComponent<Rigidbody>();
+            _rigidbody.useGravity = false;
+            _rigidbody.constraints = RigidbodyConstraints.FreezeRotation;
+        }
 
         void Start()
         {
-            _startPoint = transform.position;
+            _startPoint = _rigidbody.position;
+            _startRotation = _rigidbody.rotation;
             _currentDestination = _endPosition;
             _isMovingToEnd = true;
+            _pathDistance = Vector3.Distance(_startPoint, _endPosition);
         }
 
         void FixedUpdate()
         {
             if (Vector3.Distance(_rigidbody.position, _currentDestination) < ReachThreshold) {
+                _rigidbody.MovePosition(_currentDestination);
+                _rigidbody.MoveRotation(_isMovingToEnd ? Quaternion.Euler(_endRotation) : _startRotation);
                 SwitchDirection();
             } else {
-                _rigidbody.AddForce((_currentDestination - _rigidbody.position).normalized * _force);
+                _rigidbody.linearVelocity = (_currentDestination - _rigidbody.position).normalized * _speed;
+                UpdateRotation();
             }
+        }
+
+        void UpdateRotation()
+        {
+            float t = Mathf.Clamp01(Vector3.Distance(_isMovingToEnd ? _startPoint : _endPosition, _rigidbody.position) / _pathDistance);
+
+            var sourceRotation = _isMovingToEnd ? _startRotation : Quaternion.Euler(_endRotation);
+            var targetRotation = _isMovingToEnd ? Quaternion.Euler(_endRotation) : _startRotation;
+            _rigidbody.MoveRotation(Quaternion.Slerp(sourceRotation, targetRotation, t));
         }
 
         void SwitchDirection()
