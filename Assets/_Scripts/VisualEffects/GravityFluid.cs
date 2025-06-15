@@ -33,7 +33,16 @@ namespace GravityGame.VisualEffects
                     _startTime = Time.time;
                 }
                 float frac = (Time.time - _startTime) / _swooshDuration;
-                _renderer.material.SetVector("_GravityDirection", Vector3.Slerp(_currentGravity,_gravity.GravityDirection.normalized,frac));
+                if (_renderer.materials.Length > 1) {
+                    foreach (Material m in _renderer.materials)
+                    {
+                        if (m.name == "GravityFluid (Instance)") {
+                            m.SetVector("_GravityDirection", Vector3.Slerp(_currentGravity,_gravity.GravityDirection.normalized,frac));;    
+                        }
+                    }   
+                } else {
+                    _renderer.material.SetVector("_GravityDirection", Vector3.Slerp(_currentGravity,_gravity.GravityDirection.normalized,frac));
+                }
                 if (frac >= 1) {
                     _startTime = -1;
                     _currentGravity = _gravity.GravityDirection;
