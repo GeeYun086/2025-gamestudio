@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6842956085242459625}
   - component: {fileID: 2577711242875404696}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: BeamOrigin
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -56,7 +56,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1682645185086417255}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: 'LaserEmitter '
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -92,7 +92,7 @@ GameObject:
   - component: {fileID: 8579586617673685416}
   - component: {fileID: 2283488750355230857}
   - component: {fileID: 8386816223847046166}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: 'EmitterGizmo '
   m_TagString: Untagged
   m_Icon: {fileID: 0}

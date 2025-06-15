@@ -1,9 +1,6 @@
-﻿// LaserBeamCylinder.cs
-// Handles a laser beam that damages the player for 80% health on contact
-// and is physically blocked by Default‐layer geometry and cubes.
-
-using UnityEngine;
-using GravityGame.Player;  // Adjust if PlayerHealth is in a different namespace
+﻿using UnityEngine;
+using GravityGame.Player;
+using UnityEngine.Serialization;
 
 namespace GravityGame.PuzzleElements
 {
@@ -12,108 +9,112 @@ namespace GravityGame.PuzzleElements
     [RequireComponent(typeof(CapsuleCollider))]
     public class LaserBeamCylinder : MonoBehaviour
     {
+        [FormerlySerializedAs("maxDistance")]
         [Header("Beam Settings")]
-        [Tooltip("Maximum length of the laser if nothing blocks it.")]
-        public float maxDistance = 20f;
+        [Tooltip("Max length if nothing blocks.")]
+        public float MaxDistance = 20f;
 
-        [Tooltip("Which layers block the beam (Default and Cube).")]
-        public LayerMask obstacleMask;
+        [FormerlySerializedAs("obstacleMask")] [Tooltip("Layers that stop the beam (Default & Cube).")]
+        public LayerMask ObstacleMask;
 
+        [FormerlySerializedAs("flatDamage")]
         [Header("Damage Settings")]
-        [Tooltip("Percentage of current health to deduct when the player is hit.")]
-        [Range(0f, 1f)]
-        public float damageFraction = 0.8f;
+        [Tooltip("Flat damage to apply on the first frame of contact.")]
+        public float FlatDamage = 80f;
 
+        [FormerlySerializedAs("beamRadius")]
         [Header("Visual Settings")]
-        [Tooltip("Radius of the beam cylinder (half its diameter).")]
-        public float beamRadius = 0.05f;
+        [Tooltip("Cylinder radius.")]
+        public float BeamRadius = 0.1f;
 
-        private MeshFilter meshFilter;
-        private MeshRenderer meshRenderer;
-        private CapsuleCollider beamCollider;
-
-        private int playerLayerMask;
+        MeshFilter      _meshFilter;
+        MeshRenderer    _meshRenderer;
+        CapsuleCollider _collider;
+        int             _playerMask;
+        bool            _hasDamagedThisContact;
 
         void Awake()
         {
-            meshFilter = GetComponent<MeshFilter>();
-            meshRenderer = GetComponent<MeshRenderer>();
-
-            // Assign Cylinder mesh if none
-            if (meshFilter.sharedMesh == null)
+            // mesh + material setup
+            _meshFilter   = GetComponent<MeshFilter>();
+            _meshRenderer = GetComponent<MeshRenderer>();
+            if (_meshFilter.sharedMesh == null)
             {
-                GameObject temp = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-                Mesh cylMesh = temp.GetComponent<MeshFilter>().sharedMesh;
-                DestroyImmediate(temp);
-                meshFilter.sharedMesh = cylMesh;
+                var tmp = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                _meshFilter.sharedMesh = tmp.GetComponent<MeshFilter>().sharedMesh;
+                DestroyImmediate(tmp);
+            }
+            if (_meshRenderer.sharedMaterial == null)
+            {
+                var mat = new Material(Shader.Find("Sprites/Default"));
+                mat.color = Color.red;
+                _meshRenderer.sharedMaterial = mat;
             }
 
-            // Assign red, unlit material if none
-            if (meshRenderer.sharedMaterial == null)
-            {
-                Material redMat = new Material(Shader.Find("Sprites/Default"));
-                redMat.color = Color.red;
-                meshRenderer.sharedMaterial = redMat;
-            }
+            // collider setup
+            _collider = GetComponent<CapsuleCollider>();
+            _collider.isTrigger = false;
+            _collider.direction = 2; // Z axis
 
-            // Configure CapsuleCollider for physical blocking
-            beamCollider = GetComponent<CapsuleCollider>();
-            beamCollider.isTrigger = false;
-            beamCollider.direction = 2; // Z axis
-
-            // Cache Player layer mask
-            playerLayerMask = 1 << LayerMask.NameToLayer("Player");
+            // cache mask
+            _playerMask = 1 << LayerMask.NameToLayer("Player");
         }
 
         void Update()
         {
-            Transform emitterOrigin = transform.parent;
-            Vector3 rayStart = emitterOrigin.position + emitterOrigin.forward * 0.01f;
-            Ray ray = new Ray(rayStart, emitterOrigin.forward);
+            // 1) Compute beam length via Default & Cube only
+            Transform origin = transform.parent;
+            Vector3 start = origin.position + origin.forward * 0.01f;
+            Vector3 dir   = origin.forward;
 
-            float beamLength = maxDistance;
+            // draw full‐length in Scene
+            Debug.DrawRay(start, dir * MaxDistance, Color.yellow);
 
-            int combinedMask = obstacleMask | playerLayerMask;
-            if (Physics.Raycast(ray, out RaycastHit hitInfo, maxDistance, combinedMask))
+            float length = MaxDistance;
+            if (Physics.Raycast(start, dir, out var blockHit, MaxDistance, ObstacleMask))
             {
-                beamLength = hitInfo.distance;
-
-                if (hitInfo.collider.CompareTag("Player"))
-                {
-                    PlayerHealth ph = hitInfo.collider.GetComponent<PlayerHealth>();
-                    if (ph != null)
-                    {
-                        float damageAmount = ph.CurrentHealth * damageFraction;
-                        ph.TakeDamage(damageAmount);
-                    }
-                }
+                length = blockHit.distance;
             }
 
-            // Update visual cylinder
-            Quaternion cylRotation = Quaternion.Euler(90f, 0f, 0f);
-            Vector3 newScale = new Vector3(beamRadius, beamLength * 0.5f, beamRadius);
-            Vector3 localMidpoint = new Vector3(0f, 0f, beamLength * 0.5f);
+            // 2) Raycast for player only within that length
+            bool hitPlayer = Physics.Raycast(start, dir, out var phHit, length, _playerMask);
 
-            transform.localRotation = cylRotation;
-            transform.localScale = newScale;
-            transform.localPosition = localMidpoint;
+            if (hitPlayer && !_hasDamagedThisContact)
+            {
+                // first frame of touching beam → apply damage
+                var ph = phHit.collider.GetComponent<PlayerHealth>();
+                if (ph != null)
+                {
+                    Debug.Log($"[Laser] Hitting Player: dealing {FlatDamage} damage");
+                    ph.TakeDamage(FlatDamage);
+                }
+                _hasDamagedThisContact = true;
+            }
+            else if (!hitPlayer)
+            {
+                // player has left the beam → reset for next entry
+                _hasDamagedThisContact = false;
+            }
 
-            // Update collider to match visual
-            beamCollider.radius = beamRadius;
-            beamCollider.height = beamLength;
-            beamCollider.center = new Vector3(0f, 0f, beamLength * 0.5f);
+            // 3) Resize & position the visual cylinder
+            transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
+            transform.localScale    = new Vector3(BeamRadius, length * 0.5f, BeamRadius);
+            transform.localPosition = new Vector3(0f, 0f, length * 0.5f);
+
+            // 4) Resize & position the capsule collider
+            _collider.radius = BeamRadius;
+            _collider.height = length;
+            _collider.center = new Vector3(0f, 0f, length * 0.5f);
         }
 
         void OnDrawGizmosSelected()
         {
-            if (transform.parent != null)
-            {
-                Gizmos.color = Color.red;
-                Gizmos.DrawLine(
-                    transform.parent.position,
-                    transform.parent.position + transform.parent.forward * maxDistance
-                );
-            }
+            if (transform.parent == null) return;
+            Gizmos.color = Color.red;
+            Gizmos.DrawLine(
+                transform.parent.position,
+                transform.parent.position + transform.parent.forward * MaxDistance
+            );
         }
     }
 }
