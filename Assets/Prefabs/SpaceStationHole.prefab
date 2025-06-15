@@ -4845,7 +4845,7 @@ GameObject:
   - component: {fileID: 4197020527582814682}
   - component: {fileID: 6362626998023063905}
   - component: {fileID: 861454026963323146}
-  - component: {fileID: 3438115827789791799}
+  - component: {fileID: 2258662575494650867}
   m_Layer: 0
   m_Name: SpaceStationHole
   m_TagString: Untagged
@@ -4944,7 +4944,7 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &3438115827789791799
+--- !u!114 &2258662575494650867
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -4957,7 +4957,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _pullRadius: 20
-  _pullForce: 20
+  _pullForce: 50
   _affectedLayers:
     serializedVersion: 2
     m_Bits: 4294967295
@@ -4966,17 +4966,17 @@ MonoBehaviour:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 1
+      value: 0
       inSlope: 0
-      outSlope: -1
+      outSlope: 1
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
       outWeight: 0
     - serializedVersion: 3
       time: 1
-      value: 0
-      inSlope: -1
+      value: 1
+      inSlope: 1
       outSlope: 0
       tangentMode: 0
       weightedMode: 0
