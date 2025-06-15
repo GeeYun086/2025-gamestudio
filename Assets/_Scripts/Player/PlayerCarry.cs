@@ -10,6 +10,7 @@ namespace GravityGame.Player
     {
         [SerializeField] Transform _carryPointTransform;
         [SerializeField] float _maxCarryDistance = 5f;
+        [SerializeField] float _maxCarryMass = 250f;
 
         Carryable _currentlyCarrying;
         PlayerMovement _playerMovement;
@@ -20,7 +21,7 @@ namespace GravityGame.Player
 
         public void AttemptPickUp(Carryable objectToCarry)
         {
-            if (!IsCarrying() && objectToCarry) {
+            if (!IsCarrying() && objectToCarry && objectToCarry.GetComponent<Rigidbody>().mass <= _maxCarryMass) {
                 _currentlyCarrying = objectToCarry;
                 _currentlyCarrying.PickUp(_carryPointTransform);
             }
