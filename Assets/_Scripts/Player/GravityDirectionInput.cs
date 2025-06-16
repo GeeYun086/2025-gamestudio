@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using GravityGame.Gravity;
 using GravityGame.UI;
 using JetBrains.Annotations;
@@ -15,11 +16,16 @@ namespace GravityGame.Player
     /// </summary>
     public class GravityDirectionInput : MonoBehaviour
     {
+        [SerializeField] Material _previewMaterial;
         [SerializeField] Axes _visualizationAxes;
         [SerializeField] float _maxObjectRange = 30;
         [SerializeField] float _aimBufferDuration = 0.25f;
         [SerializeField] float _previewDistance = 4f;
         [SerializeField] float _previewCycleDuration = 1.5f;
+        
+        [SerializeField] Camera _camera;
+        [SerializeField] Transform _playerTransform;
+        
         [CanBeNull] GravityModifier _aimedObject;
         [CanBeNull] GravityModifier _lastAimedObject;
         float _lastObjectAimedTime;
@@ -140,10 +146,12 @@ namespace GravityGame.Player
                 originalObjectToPreview.transform.rotation
             );
             _currentPreviewDirection = direction;
-            
+
             if (_previewCloneInstance) {
                 _previewCloneInstance.GetComponent<Rigidbody>().isKinematic = true;
                 _previewCloneInstance.GetComponent<GravityModifier>().enabled = false;
+                _previewCloneInstance.GetComponent<Renderer>().SetMaterials(new List<Material> { _previewMaterial });
+                _previewCloneInstance.transform.localScale *= .999f;
                 foreach (var component in _previewCloneInstance.GetComponentsInChildren<Collider>()) {
                     component.enabled = false;
                 }
@@ -191,8 +199,7 @@ namespace GravityGame.Player
         [CanBeNull]
         GameObject RaycastForSelectableObject()
         {
-            var cam = Camera.main!;
-            var ray = new Ray(cam.transform.position, cam.transform.forward);
+            var ray = new Ray(_camera.transform.position, _camera.transform.forward);
             // Note TG: other objects may block the hit, maybe need to ignore more layers in the future
             int layerMask = ~LayerMask.GetMask("AxisGizmo", "Player");
 
@@ -202,23 +209,19 @@ namespace GravityGame.Player
             return null;
         }
 
-        static Vector3? GetRadialMenuGravityDirection()
+        Vector3? GetRadialMenuGravityDirection()
         {
-            var cam = Camera.main!;
-            var screenCenter = cam.ViewportToScreenPoint(new Vector3(0.5f, 0.5f));
+            var screenCenter = _camera.ViewportToScreenPoint(new Vector3(0.5f, 0.5f));
             var mouseOffset = Input.mousePosition - screenCenter;
             float distance = mouseOffset.magnitude;
-
-            var up = Vector3.up;
-            var forward = GetClosestCardinalDirection(Vector3.ProjectOnPlane(cam.transform.forward, up).normalized);
-            var right = Vector3.Cross(up, forward).normalized;
-
             if (distance < GravityChangeMenu.DeadZoneRadius) return null;
 
-            if (distance < GravityChangeMenu.InnerRadius) return mouseOffset.y > 0 ? forward : -forward;
+            var up = GetClosestCardinalDirection(_playerTransform.up); 
+            var right = GetClosestCardinalDirection(_camera.transform.right);
+            var forward = Vector3.Cross(right, up).normalized;
 
-            if (Mathf.Abs(mouseOffset.x) > Mathf.Abs(mouseOffset.y)) return mouseOffset.x > 0 ? right : -right;
-
+            if (Mathf.Abs(mouseOffset.x) * 9 > Mathf.Abs(mouseOffset.y) * 16) return mouseOffset.x > 0 ? right : -right;
+            if (distance > GravityChangeMenu.InnerRadius) return mouseOffset.y > 0 ? forward : -forward;
             return mouseOffset.y > 0 ? up : -up;
         }
 

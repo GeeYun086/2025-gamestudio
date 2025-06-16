@@ -7234,6 +7234,10 @@ PrefabInstance:
       propertyPath: m_VersionIndex
       value: 9301
       objectReference: {fileID: 0}
+    - target: {fileID: 916756252774614313, guid: a5f50b62dd0c10245bb041081911707e, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 1245435126276617703, guid: a5f50b62dd0c10245bb041081911707e, type: 3}
       propertyPath: m_LocalPosition.x
       value: 7.432
@@ -7346,6 +7350,10 @@ PrefabInstance:
       propertyPath: m_Mesh
       value: 
       objectReference: {fileID: 659559875}
+    - target: {fileID: 7535328226007984627, guid: a5f50b62dd0c10245bb041081911707e, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8106710476399523830, guid: a5f50b62dd0c10245bb041081911707e, type: 3}
       propertyPath: m_Mesh
       value: 
@@ -7451,6 +7459,10 @@ PrefabInstance:
     - target: {fileID: 110922875008210662, guid: a37924c51dae52845be6b0c85f3245e5, type: 3}
       propertyPath: m_Name
       value: Door (Lever)
+      objectReference: {fileID: 0}
+    - target: {fileID: 110922875008210662, guid: a37924c51dae52845be6b0c85f3245e5, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 698142988124281327, guid: a37924c51dae52845be6b0c85f3245e5, type: 3}
       propertyPath: m_Mesh
