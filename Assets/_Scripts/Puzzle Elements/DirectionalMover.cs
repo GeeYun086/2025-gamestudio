@@ -4,9 +4,9 @@ using UnityEngine;
 namespace GravityGame.Puzzle_Elements
 {
     /// <summary>
-    /// Moves the GameObject back and forth between its initial start position and a target end point.
-    /// Reverses direction upon colliding with specified layers (excluding the Player).
-    /// Provides a solid surface for other physics objects (like players) to stand on.
+    ///     Moves the GameObject back and forth between its initial start position and a target end point.
+    ///     Reverses direction upon colliding with specified layers (excluding the Player).
+    ///     Provides a solid surface for other physics objects (like players) to stand on.
     /// </summary>
     [RequireComponent(typeof(Rigidbody))]
     [RequireComponent(typeof(Collider))]
@@ -36,8 +36,7 @@ namespace GravityGame.Puzzle_Elements
             _rigidbody.constraints = RigidbodyConstraints.FreezeRotation;
 
             _triggerCollider = GetComponent<Collider>();
-            if (!_triggerCollider)
-            {
+            if (!_triggerCollider) {
                 enabled = false;
                 return;
             }
@@ -49,8 +48,7 @@ namespace GravityGame.Puzzle_Elements
         void CreateSolidSurfaceChild()
         {
             var existingChild = transform.Find(gameObject.name + "_SolidSurface");
-            if (existingChild)
-            {
+            if (existingChild) {
                 _solidSurfaceChild = existingChild.gameObject;
                 return;
             }
@@ -62,24 +60,20 @@ namespace GravityGame.Puzzle_Elements
             _solidSurfaceChild.transform.localScale = Vector3.one;
             _solidSurfaceChild.layer = gameObject.layer;
 
-            switch (_triggerCollider)
-            {
-                case BoxCollider parentBox:
-                {
+            switch (_triggerCollider) {
+                case BoxCollider parentBox: {
                     var childBox = _solidSurfaceChild.AddComponent<BoxCollider>();
                     childBox.center = parentBox.center;
                     childBox.size = parentBox.size;
                     break;
                 }
-                case SphereCollider parentSphere:
-                {
+                case SphereCollider parentSphere: {
                     var childSphere = _solidSurfaceChild.AddComponent<SphereCollider>();
                     childSphere.center = parentSphere.center;
                     childSphere.radius = parentSphere.radius;
                     break;
                 }
-                case CapsuleCollider parentCapsule:
-                {
+                case CapsuleCollider parentCapsule: {
                     var childCapsule = _solidSurfaceChild.AddComponent<CapsuleCollider>();
                     childCapsule.center = parentCapsule.center;
                     childCapsule.radius = parentCapsule.radius;
@@ -87,8 +81,7 @@ namespace GravityGame.Puzzle_Elements
                     childCapsule.direction = parentCapsule.direction;
                     break;
                 }
-                case MeshCollider parentMesh:
-                {
+                case MeshCollider parentMesh: {
                     var childMesh = _solidSurfaceChild.AddComponent<MeshCollider>();
                     childMesh.sharedMesh = parentMesh.sharedMesh;
                     childMesh.convex = true;
@@ -97,7 +90,8 @@ namespace GravityGame.Puzzle_Elements
                 default:
                     Debug.LogWarning(
                         $"Collider type '{_triggerCollider.GetType()}' is not supported for solid surface creation",
-                        this);
+                        this
+                    );
                     break;
             }
         }
@@ -115,8 +109,12 @@ namespace GravityGame.Puzzle_Elements
         {
             if (!enabled) return;
 
-            _rigidbody.MovePosition(Vector3.MoveTowards(transform.position,
-                _currentDestination, _moveSpeed * Time.fixedDeltaTime));
+            _rigidbody.MovePosition(
+                Vector3.MoveTowards(
+                    transform.position,
+                    _currentDestination, _moveSpeed * Time.fixedDeltaTime
+                )
+            );
             if (Vector3.Distance(transform.position, _currentDestination) < ReachThreshold) SwitchDirection();
         }
 
@@ -142,13 +140,10 @@ namespace GravityGame.Puzzle_Elements
             Vector3 gizmoPathStart, gizmoPathEnd;
             var currentPosition = transform.position;
 
-            if (Application.isPlaying && enabled)
-            {
+            if (Application.isPlaying && enabled) {
                 gizmoPathStart = _pathStartPoint;
                 gizmoPathEnd = _pathEndPoint;
-            }
-            else
-            {
+            } else {
                 gizmoPathStart = currentPosition;
                 gizmoPathEnd = _targetPointTransform ? _targetPointTransform.position : _targetPointManual;
             }

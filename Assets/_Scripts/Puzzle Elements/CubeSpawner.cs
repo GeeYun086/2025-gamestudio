@@ -4,7 +4,7 @@ using UnityEngine;
 namespace GravityGame.Puzzle_Elements
 {
     /// <summary>
-    /// (Re)spawns assigned (<see cref="Cube"/>) cube on load and interact.
+    ///     (Re)spawns assigned (<see cref="Cube" />) cube on load and interact.
     /// </summary>
     public class CubeSpawner : MonoBehaviour
     {
@@ -20,7 +20,7 @@ namespace GravityGame.Puzzle_Elements
 
         public void Respawn()
         {
-            GameObject newCube = Instantiate(Cube, _cubePosition, transform.rotation, transform);
+            var newCube = Instantiate(Cube, _cubePosition, transform.rotation, transform);
             Destroy(_currentCube);
             _currentCube = newCube;
 

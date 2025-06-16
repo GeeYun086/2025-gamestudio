@@ -5,8 +5,11 @@ using UnityEngine;
 namespace GravityGame.Puzzle_Elements
 {
     /// <summary>
-    ///     Whenever an object of a <see cref="GravityModifier.GravityGroup" /> changes <see cref="GravityModifier.GravityDirection" />,
-    ///     the object invokes <see cref="AlertGravityGroup" />. All objects within the <see cref="GravityModifier.GravityGroup" /> are then notified to change their <see cref="GravityModifier.GravityDirection" /> respectivly.
+    ///     Whenever an object of a <see cref="GravityModifier.GravityGroup" /> changes
+    ///     <see cref="GravityModifier.GravityDirection" />,
+    ///     the object invokes <see cref="AlertGravityGroup" />. All objects within the
+    ///     <see cref="GravityModifier.GravityGroup" /> are then notified to change their
+    ///     <see cref="GravityModifier.GravityDirection" /> respectivly.
     /// </summary>
     public class GravityGroupHandler : SingletonMonoBehavior<GravityGroupHandler>
     {

@@ -4,7 +4,7 @@ using UnityEngine;
 namespace GravityGame.Player
 {
     /// <summary>
-    /// Manages the state of carrying a Carryable object.
+    ///     Manages the state of carrying a Carryable object.
     /// </summary>
     public class PlayerCarry : MonoBehaviour
     {

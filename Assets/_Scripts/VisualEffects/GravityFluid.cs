@@ -10,6 +10,7 @@ namespace GravityGame.VisualEffects
         [SerializeField] float _swooshDuration = 0.5f;
         float _startTime = -1;
         Vector3 _currentGravity;
+
         // Start is called once before the first execution of Update after the MonoBehaviour is created
         void Start()
         {
@@ -22,7 +23,7 @@ namespace GravityGame.VisualEffects
             if (!_renderer) _renderer = GetComponent<Renderer>();
             if (!_gravity) _gravity = GetComponent<GravityModifier>();
         }
-        
+
 
         // Update is called once per frame
         void Update()
@@ -34,14 +35,14 @@ namespace GravityGame.VisualEffects
                 }
                 float frac = (Time.time - _startTime) / _swooshDuration;
                 if (_renderer.materials.Length > 1) {
-                    foreach (Material m in _renderer.materials)
-                    {
+                    foreach (var m in _renderer.materials) {
                         if (m.name == "GravityFluid (Instance)") {
-                            m.SetVector("_GravityDirection", Vector3.Slerp(_currentGravity,_gravity.GravityDirection.normalized,frac));;    
+                            m.SetVector("_GravityDirection", Vector3.Slerp(_currentGravity, _gravity.GravityDirection.normalized, frac));
+                            ;
                         }
-                    }   
+                    }
                 } else {
-                    _renderer.material.SetVector("_GravityDirection", Vector3.Slerp(_currentGravity,_gravity.GravityDirection.normalized,frac));
+                    _renderer.material.SetVector("_GravityDirection", Vector3.Slerp(_currentGravity, _gravity.GravityDirection.normalized, frac));
                 }
                 if (frac >= 1) {
                     _startTime = -1;

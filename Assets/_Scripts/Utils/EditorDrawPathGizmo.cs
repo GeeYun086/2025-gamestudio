@@ -1,10 +1,10 @@
-using System;
 using UnityEngine;
 
 namespace GravityGame
 {
     /// <summary>
-    /// This script draws a yellow sphere around the attached object (unless <see cref="drawSphere"/> is unchecked in editor) and if the object has children, it will draw a line between them
+    ///     This script draws a yellow sphere around the attached object (unless <see cref="drawSphere" /> is unchecked in
+    ///     editor) and if the object has children, it will draw a line between them
     /// </summary>
     public class EditorDrawPathGizmo : MonoBehaviour
     {
@@ -19,8 +19,8 @@ namespace GravityGame
             if (count < 2) return;
 
             for (int i = 0; i < count - 1; i++) {
-                Transform a = transform.GetChild(i);
-                Transform b = transform.GetChild(i + 1);
+                var a = transform.GetChild(i);
+                var b = transform.GetChild(i + 1);
                 Gizmos.DrawLine(a.position, b.position);
             }
         }

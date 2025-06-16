@@ -4,7 +4,7 @@ using UnityEngine;
 namespace GravityGame.Puzzle_Elements
 {
     /// <summary>
-    /// Destroys GameObjects entering its trigger, or kills the player if _killPlayer is true.
+    ///     Destroys GameObjects entering its trigger, or kills the player if _killPlayer is true.
     /// </summary>
     [RequireComponent(typeof(Collider))]
     public class KillZone : MonoBehaviour

@@ -7,20 +7,24 @@ Shader "Outlines/OutlineStencilShader"
     }
     SubShader
     {
-        Tags { "RenderType"="Opaque" "RenderPipeline" = "UniversalPipeline" "Queue"="Geometry-1" }
-        
+        Tags
+        {
+            "RenderType"="Opaque" "RenderPipeline" = "UniversalPipeline" "Queue"="Geometry-1"
+        }
+
         Pass
         {
             Name "Stencil"
             Blend Zero One
             ZWrite Off
             cull front
-            Stencil{
+            Stencil
+            {
                 Ref 1
                 Comp Always
                 Pass Replace
             }
-            
+
             HLSLPROGRAM
             #pragma prefer_hlslcc gles
             #pragma exclude_renderers d3d11_9x
@@ -31,7 +35,6 @@ Shader "Outlines/OutlineStencilShader"
             #pragma shader_feature_local VISIBLE
 
             #include "OutlineShader.hlsl"
-            
             ENDHLSL
         }
     }

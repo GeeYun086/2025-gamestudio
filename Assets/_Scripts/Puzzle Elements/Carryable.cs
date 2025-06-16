@@ -5,8 +5,8 @@ using UnityEngine;
 namespace GravityGame.Puzzle_Elements
 {
     /// <summary>
-    /// GameObjects with this component can be picked up, carried, and released.
-    /// Gravity doesn't affect objects while being carried.
+    ///     GameObjects with this component can be picked up, carried, and released.
+    ///     Gravity doesn't affect objects while being carried.
     /// </summary>
     [RequireComponent(typeof(Rigidbody))]
     public class Carryable : MonoBehaviour, IInteractable
@@ -48,7 +48,8 @@ namespace GravityGame.Puzzle_Elements
 
         void MoveToCarryPoint() => _rigidbody.MovePosition(Vector3.Lerp(transform.position, _carryPoint.position, Time.fixedDeltaTime * MoveSpeed));
 
-        void AlignWithCarryPointRotation() => _rigidbody.MoveRotation(Quaternion.Slerp(_rigidbody.rotation, _carryPoint.rotation, Time.fixedDeltaTime * RotationSpeed));
+        void AlignWithCarryPointRotation() =>
+            _rigidbody.MoveRotation(Quaternion.Slerp(_rigidbody.rotation, _carryPoint.rotation, Time.fixedDeltaTime * RotationSpeed));
 
         void DisableGravity()
         {

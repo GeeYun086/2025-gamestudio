@@ -13,19 +13,19 @@ namespace GravityGame.Gravity
     public class GravityModifier : MonoBehaviour
     {
         public Vector3 Gravity => GravityDirection * GravityMagnitude;
-        
+
         public Vector3 GravityDirection
         {
             get => _gravityDirection.normalized;
             set {
                 if (value == _gravityDirection)
                     return;
-                if(Group != GravityGroup.None)
+                if (Group != GravityGroup.None)
                     GravityGroupHandler.Instance.AlertGravityGroup(Group, value);
                 _gravityDirection = value;
             }
         }
-        
+
         [SerializeField] Vector3 _gravityDirection = Vector3.down;
         public float GravityMagnitude = 9.81f;
         public GravityGroup Group = GravityGroup.None;
@@ -40,7 +40,7 @@ namespace GravityGame.Gravity
             _rigidbody.useGravity = false;
             GravityGroupHandler.Instance.OnGravityGroupDirectionChange += SetGravityDirectionWithoutGroupAlert;
         }
-        
+
         void OnDisable()
         {
             GravityGroupHandler.Instance.OnGravityGroupDirectionChange -= SetGravityDirectionWithoutGroupAlert;
@@ -48,7 +48,7 @@ namespace GravityGame.Gravity
 
         void FixedUpdate()
         {
-            if (GetComponent<PlayerMovement>() != null) return; 
+            if (GetComponent<PlayerMovement>() != null) return;
             _rigidbody.AddForce(GravityDirection.normalized * GravityMagnitude, ForceMode.Acceleration);
         }
 

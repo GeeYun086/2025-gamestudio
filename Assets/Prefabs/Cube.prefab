@@ -17,6 +17,8 @@ GameObject:
   - component: {fileID: 8030090321904850059}
   - component: {fileID: 5735985433874089844}
   - component: {fileID: 1294556758841930574}
+  - component: {fileID: 8273589724784435803}
+  - component: {fileID: 5522769443945218700}
   m_Layer: 6
   m_Name: Cube
   m_TagString: Cube
@@ -285,6 +287,34 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f555451c1a2fcbb48ae9d16f23635942, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &8273589724784435803
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4662317870626134877}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9ba4559d377f34eecb3989c3e38f5be1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ImpactVelocity: 2
+  ImpactParticle: {fileID: 1965451095842115414, guid: 72557beb4aa424131801fa9defc6c3f7, type: 3}
+--- !u!114 &5522769443945218700
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4662317870626134877}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 72bed89e9fab41b9992418725d7773ae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Prefab: {fileID: 0}
+  MaxPoolCount: 5
 --- !u!1 &7137379315236842017
 GameObject:
   m_ObjectHideFlags: 0
