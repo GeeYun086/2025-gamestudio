@@ -8,7 +8,7 @@ namespace GravityGame.VisualEffects
         Renderer _renderer;
         [SerializeField] GravityModifier _gravity;
         [SerializeField] float _swooshDuration = 0.5f;
-        float _startTime;
+        float _startTime = -1;
         Vector3 _currentGravity;
         // Start is called once before the first execution of Update after the MonoBehaviour is created
         void Start()
