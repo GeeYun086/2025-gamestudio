@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 4025616535383116723}
   - component: {fileID: 4376916976568858496}
   - component: {fileID: 441566092756746209}
-  - component: {fileID: 9221678561039675299}
   - component: {fileID: 4901931043490904103}
   m_Layer: 7
   m_Name: LaserBeamCylinder
@@ -88,29 +87,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!136 &9221678561039675299
-CapsuleCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1875168489481163592}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.5
-  m_Height: 1
-  m_Direction: 1
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &4901931043490904103
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -128,4 +104,6 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 73
   FlatDamage: 80
+  KnockbackForce: 5
+  HitCooldown: 0.5
   BeamRadius: 0.1
