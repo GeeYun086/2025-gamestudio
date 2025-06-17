@@ -5,9 +5,7 @@ namespace GravityGame.Puzzle_Elements
 {
     /// <summary>
     /// Creates a spherical area of effect that dampens the movement of dynamic Rigidbodies
-    /// entering its trigger zone. It gradually reduces their linear and angular velocities
-    /// based on the specified dampening factor.
-    /// Includes a visual representation of the effect radius.
+    /// entering its trigger zone. Includes a visual representation of the effect radius.
     /// </summary>
     [RequireComponent(typeof(SphereCollider))]
     public class GravityDumbingSphere : MonoBehaviour
@@ -31,11 +29,9 @@ namespace GravityGame.Puzzle_Elements
 
         void FixedUpdate()
         {
-            for (var i = _affectedRigidbodies.Count - 1; i >= 0; i--)
-            {
+            for (var i = _affectedRigidbodies.Count - 1; i >= 0; i--) {
                 var rb = _affectedRigidbodies[i];
-                if (!rb || rb.isKinematic)
-                {
+                if (!rb || rb.isKinematic) {
                     _affectedRigidbodies.RemoveAt(i);
                     continue;
                 }
@@ -67,11 +63,7 @@ namespace GravityGame.Puzzle_Elements
 
         void InitializeTriggerCollider()
         {
-            if (!_triggerCollider)
-            {
-                _triggerCollider = GetComponent<SphereCollider>();
-            }
-
+            if (!_triggerCollider) _triggerCollider = GetComponent<SphereCollider>();
             _triggerCollider.isTrigger = true;
             _triggerCollider.radius = _effectRadius;
         }
@@ -79,9 +71,8 @@ namespace GravityGame.Puzzle_Elements
         void InitializeVisualSphere()
         {
             _visualEffectSphereTransform = transform.Find(VisualSphereName);
-
-            if (!_visualEffectSphereTransform)
-            {
+            
+            if (!_visualEffectSphereTransform) {
                 var sphereGo = GameObject.CreatePrimitive(PrimitiveType.Sphere);
                 sphereGo.name = VisualSphereName;
                 sphereGo.transform.SetParent(transform);
@@ -99,6 +90,7 @@ namespace GravityGame.Puzzle_Elements
             _visualEffectSphereTransform.localScale = Vector3.one * Mathf.Max(0f, _effectRadius * 2f);
         }
 
-        bool IsLayerAffectable(int layer) => (_affectableLayers.value & 1 << layer) > 0;
+        bool IsLayerAffectable(int layer)
+            => (_affectableLayers.value & 1 << layer) > 0;
     }
 }
