@@ -13,8 +13,14 @@ namespace GravityGame.Puzzle_Elements
     {
         Rigidbody _rigidbody;
         Transform _carryPoint;
-        const float MoveSpeed = 15f;
-        const float RotationSpeed = 10f;
+        float _originalDrag;
+        float _originalAngularDrag;
+
+        // Note FS: These have been tested and look the best. (still a bit of jittering)
+        const float Force = 5000f;
+        const float Damping = 10f;
+        const float PositionThreshold = 0.2f;
+        const float RotationThreshold = 2f;
 
         void Awake() => _rigidbody = GetComponent<Rigidbody>();
 
@@ -29,12 +35,23 @@ namespace GravityGame.Puzzle_Elements
         public void PickUp(Transform carryPoint)
         {
             _carryPoint = carryPoint;
+
+            _originalDrag = _rigidbody.linearDamping;
+            _originalAngularDrag = _rigidbody.angularDamping;
+
+            _rigidbody.linearDamping = Damping;
+            _rigidbody.angularDamping = Damping;
+
             DisableGravity();
         }
 
         public void Release()
         {
             _carryPoint = null;
+
+            _rigidbody.linearDamping = _originalDrag;
+            _rigidbody.angularDamping = _originalAngularDrag;
+
             ReactivateGravity();
         }
 
@@ -46,9 +63,26 @@ namespace GravityGame.Puzzle_Elements
             }
         }
 
-        void MoveToCarryPoint() => _rigidbody.MovePosition(Vector3.Lerp(transform.position, _carryPoint.position, Time.fixedDeltaTime * MoveSpeed));
+        void MoveToCarryPoint()
+        {
+            if (!_carryPoint) return;
+            var directionToCarryPoint = _carryPoint.position - _rigidbody.position;
 
-        void AlignWithCarryPointRotation() => _rigidbody.MoveRotation(Quaternion.Slerp(_rigidbody.rotation, _carryPoint.rotation, Time.fixedDeltaTime * RotationSpeed));
+            if (directionToCarryPoint.magnitude < PositionThreshold) return;
+            _rigidbody.AddForce(directionToCarryPoint.normalized * Force, ForceMode.Force);
+        }
+
+        void AlignWithCarryPointRotation()
+        {
+            if (!_carryPoint) return;
+
+            var rotationDifference = _carryPoint.rotation * Quaternion.Inverse(_rigidbody.rotation);
+            rotationDifference.ToAngleAxis(out float angle, out var rotationAxis);
+            if (angle > 180f) angle -= 360f;
+
+            if (Mathf.Abs(angle) < RotationThreshold) return;
+            _rigidbody.AddTorque(rotationAxis.normalized * (angle * Mathf.Deg2Rad * Force), ForceMode.Force);
+        }
 
         void DisableGravity()
         {
