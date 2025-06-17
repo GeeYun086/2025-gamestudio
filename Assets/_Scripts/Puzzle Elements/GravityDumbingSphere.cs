@@ -10,7 +10,7 @@ namespace GravityGame.Puzzle_Elements
     /// Includes a visual representation of the effect radius.
     /// </summary>
     [RequireComponent(typeof(SphereCollider))]
-    public class BlackHole : MonoBehaviour
+    public class GravityDumbingSphere : MonoBehaviour
     {
         [SerializeField] float _effectRadius = 10f;
         [SerializeField] LayerMask _affectableLayers = ~0;
@@ -21,7 +21,7 @@ namespace GravityGame.Puzzle_Elements
         readonly List<Rigidbody> _affectedRigidbodies = new();
         Transform _visualEffectSphereTransform;
 
-        const string VisualSphereName = "BlackHoleEffectSphere";
+        const string VisualSphereName = nameof(GravityDumbingSphere);
 
         void Awake()
         {
