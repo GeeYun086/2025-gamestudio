@@ -37,7 +37,7 @@ namespace GravityGame.CheckpointSystem
         }
 
         void HandleHasBeenReachedChanged(bool isReached) => HandleStateChange(isReached, _checkpoint.IsActiveCheckpoint);
-        
+
         void HandleIsActiveCheckpointChanged(bool isActive) => HandleStateChange(_checkpoint.HasBeenReached, isActive);
 
         void HandleStateChange(bool isReached, bool isActive)

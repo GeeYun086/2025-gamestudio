@@ -5,8 +5,8 @@ using UnityEngine;
 namespace GravityGame.Puzzle_Elements
 {
     /// <summary>
-    /// GameObjects with this component can be picked up, carried, and released.
-    /// Gravity doesn't affect objects while being carried.
+    ///     GameObjects with this component can be picked up, carried, and released.
+    ///     Gravity doesn't affect objects while being carried.
     /// </summary>
     [RequireComponent(typeof(Rigidbody))]
     public class Carryable : MonoBehaviour, IInteractable
