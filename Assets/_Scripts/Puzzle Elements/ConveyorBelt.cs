@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using GravityGame.Player;
 using UnityEngine;
 
@@ -18,7 +19,7 @@ namespace GravityGame.Puzzle_Elements
 
         void FixedUpdate()
         {
-            foreach (var rb in _onBelt.Keys) {
+            foreach (var rb in _onBelt.Keys.Where(rb => rb)) {
                 if (rb.GetComponent<PlayerMovement>()) {
                     rb.AddForce(_speed * transform.forward, ForceMode.VelocityChange);
                 } else {
