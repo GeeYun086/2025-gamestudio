@@ -32,11 +32,9 @@ namespace GravityGame.CheckpointSystem
         readonly List<Checkpoint> _checkpoints = new();
         PlayerMovement _playerMovementScript;
         FirstPersonCameraController _cameraController;
+        static string _lastActiveCheckpointID;
 
-        void Awake()
-        {
-            SceneManager.sceneLoaded += OnSceneLoaded;
-        }
+        void Awake() => SceneManager.sceneLoaded += OnSceneLoaded;
 
         void OnEnable()
         {
@@ -55,8 +53,46 @@ namespace GravityGame.CheckpointSystem
         void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
             SetupCheckpointsFromGameObjects();
-            if (!_checkpoints.FirstOrDefault(cp => cp.IsActiveCheckpoint))
-                CreateAndSetInitialSpawnCheckpointAtPlayerPosition();
+
+            var activeCheckpoint = FindCheckpointByID(_lastActiveCheckpointID);
+            if (activeCheckpoint) {
+                RestoreCheckpointState(activeCheckpoint);
+                PositionPlayerAtCheckpoint(activeCheckpoint);
+            } else {
+                if (!_checkpoints.FirstOrDefault(cp => cp.IsActiveCheckpoint))
+                    CreateAndSetInitialSpawnCheckpointAtPlayerPosition();
+            }
+        }
+
+        void RestoreCheckpointState(Checkpoint lastActiveCheckpoint)
+        {
+            DeactivateAllCheckpoints();
+            foreach (var checkpoint in _checkpoints.Where(checkpoint => checkpoint)) {
+                checkpoint.HasBeenReached = true;
+                if (checkpoint == lastActiveCheckpoint) {
+                    checkpoint.IsActiveCheckpoint = true;
+                    break;
+                }
+            }
+        }
+
+        void PositionPlayerAtCheckpoint(Checkpoint checkpoint)
+        {
+            _playerMovementScript.enabled = false;
+
+            _playerObject.transform.rotation = Quaternion.identity;
+            var checkpointRotation = checkpoint.transform.rotation.eulerAngles;
+            _cameraController.LookRightRotation = checkpointRotation.y;
+            _cameraController.LookDownRotation = Mathf.Clamp(checkpointRotation.x, -90f, 90f);
+
+            var playerRb = _playerObject.GetComponent<Rigidbody>();
+            playerRb.MovePosition(checkpoint.transform.position + Vector3.up * _respawnHeightOffset);
+
+            playerRb.linearVelocity = Vector3.zero;
+            var playerGravity = _playerObject.GetComponent<GravityModifier>();
+            if (playerGravity) playerGravity.GravityDirection = Vector3.down;
+
+            _playerMovementScript.enabled = true;
         }
 
         void DeactivateAllCheckpoints()
@@ -107,34 +143,10 @@ namespace GravityGame.CheckpointSystem
             DeactivateAllCheckpoints();
             targetCheckpoint.IsActiveCheckpoint = true;
             targetCheckpoint.HasBeenReached = true;
+            _lastActiveCheckpointID = targetCheckpoint.CheckpointID;
         }
 
-        public void RespawnPlayer()
-        {
-            var activeCheckpoint = _checkpoints.FirstOrDefault(cp => cp.IsActiveCheckpoint);
-            if (!activeCheckpoint) {
-                Debug.LogError("No active checkpoint");
-                return;
-            }
-            _playerMovementScript.enabled = false;
-            
-            _playerObject.transform.rotation = Quaternion.identity;
-            var checkpointRotation = activeCheckpoint.transform.rotation.eulerAngles;
-            _cameraController.LookRightRotation = checkpointRotation.y;
-            _cameraController.LookDownRotation = Mathf.Clamp(checkpointRotation.x, -90f, 90f);
-            
-            var playerRb = _playerObject.GetComponent<Rigidbody>();
-            playerRb.MovePosition(
-                activeCheckpoint.transform.position + Vector3.up * _respawnHeightOffset
-            );
-            
-            playerRb.linearVelocity = Vector3.zero;
-            var playerGravity = _playerObject.GetComponent<GravityModifier>();
-            playerGravity.GravityDirection = Vector3.down;
-
-            _playerMovementScript.enabled = true;
-            PlayerHealth.Instance.Heal(PlayerHealth.MaxHealth);
-        }
+        public static void RespawnPlayer() => SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
 
         Checkpoint FindCheckpointByID(string id) =>
             string.IsNullOrEmpty(id)
