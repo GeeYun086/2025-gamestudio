@@ -61,5 +61,11 @@ namespace GravityGame.CheckpointSystem
             if (!other.GetComponent<PlayerMovement>()) return;
             if (CheckpointController.Instance) CheckpointController.Instance.TriggerCheckpointById(CheckpointID);
         }
+        
+        void OnDrawGizmosSelected()
+        {
+            Gizmos.color = Color.red;
+            Gizmos.DrawLine(transform.position, transform.position + transform.forward * 3);
+        }
     }
 }
