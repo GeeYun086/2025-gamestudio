@@ -5,15 +5,14 @@ using UnityEngine;
 namespace GravityGame.Puzzle_Elements
 {
     /// <summary>
-    /// Sends a short power pulse to one or more RedstoneComponents when pressed,
-    /// and tints the button green while active, red when idle.
+    ///     Sends a short power pulse to one or more RedstoneComponents when pressed,
+    ///     and tints the button green while active, red when idle.
     /// </summary>
-   
     public class RedstoneButton : MonoBehaviour
     {
         [Header("Redstone Targets")]
         [Tooltip("All components that should receive the pulse.")]
-        public List<RedstoneComponent> Targets = new List<RedstoneComponent>();
+        public List<RedstoneComponent> Targets = new();
 
         [Tooltip("How long (seconds) the button stays ‘on’")]
         public float PulseDuration = 0.2f;
@@ -28,7 +27,7 @@ namespace GravityGame.Puzzle_Elements
         [Tooltip("Tint while powered.")]
         public Color ActiveColor = Color.green;
 
-        private Coroutine _pulseRoutine;
+        Coroutine _pulseRoutine;
 
         void Awake()
         {
@@ -36,8 +35,7 @@ namespace GravityGame.Puzzle_Elements
             if (ButtonRenderer == null)
                 ButtonRenderer = GetComponentInChildren<MeshRenderer>();
 
-            if (ButtonRenderer != null)
-            {
+            if (ButtonRenderer != null) {
                 // Instance the material so we can safely tint
                 ButtonRenderer.material = new Material(ButtonRenderer.material);
                 ButtonRenderer.material.color = IdleColor;
@@ -45,11 +43,11 @@ namespace GravityGame.Puzzle_Elements
         }
 
         /// <summary>
-        /// Called by an Interactable event. Ignored if a pulse is still active.
+        ///     Called by an Interactable event. Ignored if a pulse is still active.
         /// </summary>
         public void Press()
         {
-            if (_pulseRoutine != null) return;  // ignore rapid re-presses
+            if (_pulseRoutine != null) return; // ignore rapid re-presses
 
             // Only pulse components that are not null
             Targets.RemoveAll(t => t == null);
@@ -58,7 +56,7 @@ namespace GravityGame.Puzzle_Elements
             _pulseRoutine = StartCoroutine(PulseCoroutine());
         }
 
-        private IEnumerator PulseCoroutine()
+        IEnumerator PulseCoroutine()
         {
             // Visual: active color
             if (ButtonRenderer != null)
