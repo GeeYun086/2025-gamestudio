@@ -8,7 +8,7 @@ namespace GravityGame.Puzzle_Elements
     /// entering its trigger zone. Includes a visual representation of the effect radius.
     /// </summary>
     [RequireComponent(typeof(SphereCollider))]
-    public class GravityDumbingSphere : MonoBehaviour
+    public class GravityDampingSphere : MonoBehaviour
     {
         [SerializeField] float _effectRadius = 10f;
         [SerializeField] LayerMask _affectableLayers = ~0;
@@ -19,7 +19,7 @@ namespace GravityGame.Puzzle_Elements
         readonly List<Rigidbody> _affectedRigidbodies = new();
         Transform _visualEffectSphereTransform;
 
-        const string VisualSphereName = nameof(GravityDumbingSphere);
+        const string VisualSphereName = nameof(GravityDampingSphere);
 
         void Awake()
         {
@@ -85,7 +85,7 @@ namespace GravityGame.Puzzle_Elements
             if (visualCollider) visualCollider.enabled = false;
 
             var visualRenderer = _visualEffectSphereTransform.GetComponent<MeshRenderer>();
-            if (visualRenderer) visualRenderer.sharedMaterial = _effectSphereMaterial;
+            if (visualRenderer && _effectSphereMaterial) visualRenderer.sharedMaterial = _effectSphereMaterial;
 
             _visualEffectSphereTransform.localScale = Vector3.one * Mathf.Max(0f, _effectRadius * 2f);
         }
