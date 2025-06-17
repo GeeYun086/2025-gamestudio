@@ -6,7 +6,7 @@ namespace GravityGame.Puzzle_Elements
     /// Applies a pull force to Rigidbodies within a defined hemispherical area.
     /// The force strength is modulated by distance using an AnimationCurve.
     /// </summary>
-    [RequireComponent(typeof(Collider))]
+    [RequireComponent(typeof(BoxCollider))]
     public class SpaceHole : MonoBehaviour
     {
         [SerializeField] float _pullRadius = 20f;
@@ -14,16 +14,12 @@ namespace GravityGame.Puzzle_Elements
         [SerializeField] LayerMask _affectedLayers = -1;
         [SerializeField] AnimationCurve _forceCurve = AnimationCurve.Linear(0f, 0f, 1f, 1f);
 
-        float _calculatedHoleRadius;
+        float _surfacePullRadius;
 
         void Awake()
         {
-            var scale = transform.lossyScale;
-            if (TryGetComponent<SphereCollider>(out var sphere)) {
-                _calculatedHoleRadius = sphere.radius * Mathf.Max(scale.x, scale.y, scale.z);
-            } else if (TryGetComponent<BoxCollider>(out var box)) {
-                _calculatedHoleRadius = Mathf.Max(box.size.x * scale.x, box.size.y * scale.y) / 2f;
-            }
+            var boxCollider = GetComponent<BoxCollider>();
+            _surfacePullRadius = Mathf.Max(boxCollider.size.x * transform.lossyScale.x, boxCollider.size.y * transform.lossyScale.y) / 2f;
         }
 
         void FixedUpdate()
@@ -44,8 +40,8 @@ namespace GravityGame.Puzzle_Elements
                 if (Vector3.Dot(rb.position - transform.position, transform.forward) <= 0) continue;
 
                 var vectorFromCenter = pullPlane.ClosestPointOnPlane(rb.position) - transform.position;
-                var target = vectorFromCenter.sqrMagnitude > _calculatedHoleRadius * _calculatedHoleRadius
-                    ? transform.position + vectorFromCenter.normalized * _calculatedHoleRadius
+                var target = vectorFromCenter.sqrMagnitude > _surfacePullRadius * _surfacePullRadius
+                    ? transform.position + vectorFromCenter.normalized * _surfacePullRadius
                     : pullPlane.ClosestPointOnPlane(rb.position);
 
                 var pullVector = target - rb.position;
