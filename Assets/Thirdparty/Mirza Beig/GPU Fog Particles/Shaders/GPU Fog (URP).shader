@@ -111,7 +111,7 @@ Shader "Mirza Beig/GPU Fog (URP)"
         }
 
         float4 DistanceBasedTess(float4 v0, float4 v1, float4 v2, float tess, float minDist, float maxDist,
-                                                          float4x4 o2w, float3 cameraPos)
+                                 float4x4 o2w, float3 cameraPos)
         {
             float3 f;
             f.x = CalcDistanceTessFactor(v0, minDist, maxDist, tess, o2w, cameraPos);
@@ -122,7 +122,7 @@ Shader "Mirza Beig/GPU Fog (URP)"
         }
 
         float4 EdgeLengthBasedTess(float4 v0, float4 v1, float4 v2, float edgeLength, float4x4 o2w, float3 cameraPos,
-            float4 scParams)
+          float4 scParams)
         {
             float3 pos0 = mul(o2w, v0).xyz;
             float3 pos1 = mul(o2w, v1).xyz;
@@ -576,8 +576,8 @@ Shader "Mirza Beig/GPU Fog (URP)"
                 float4 screenPos = IN.ase_texcoord4;
                 float4 ase_screenPosNorm = screenPos / screenPos.w;
                 ase_screenPosNorm.z = (UNITY_NEAR_CLIP_VALUE >= 0)
-                                        ? ase_screenPosNorm.z
-                                        : ase_screenPosNorm.z * 0.5 + 0.5;
+                                          ? ase_screenPosNorm.z
+                                          : ase_screenPosNorm.z * 0.5 + 0.5;
                 float screenDepth50 = LinearEyeDepth(
                     SHADERGRAPH_SAMPLE_SCENE_DEPTH(ase_screenPosNorm.xy), _ZBufferParams);
                 float distanceDepth50 = abs(
@@ -1048,8 +1048,8 @@ Shader "Mirza Beig/GPU Fog (URP)"
                 float4 screenPos = IN.ase_texcoord3;
                 float4 ase_screenPosNorm = screenPos / screenPos.w;
                 ase_screenPosNorm.z = (UNITY_NEAR_CLIP_VALUE >= 0)
-                                       ? ase_screenPosNorm.z
-                                       : ase_screenPosNorm.z * 0.5 + 0.5;
+                                          ? ase_screenPosNorm.z
+                                          : ase_screenPosNorm.z * 0.5 + 0.5;
                 float screenDepth50 = LinearEyeDepth(
                     SHADERGRAPH_SAMPLE_SCENE_DEPTH(ase_screenPosNorm.xy), _ZBufferParams);
                 float distanceDepth50 = abs(
@@ -1486,8 +1486,8 @@ Shader "Mirza Beig/GPU Fog (URP)"
                 float4 screenPos = IN.ase_texcoord3;
                 float4 ase_screenPosNorm = screenPos / screenPos.w;
                 ase_screenPosNorm.z = (UNITY_NEAR_CLIP_VALUE >= 0)
-                              ? ase_screenPosNorm.z
-                              : ase_screenPosNorm.z * 0.5 + 0.5;
+                                          ? ase_screenPosNorm.z
+                                          : ase_screenPosNorm.z * 0.5 + 0.5;
                 float screenDepth50 = LinearEyeDepth(
                     SHADERGRAPH_SAMPLE_SCENE_DEPTH(ase_screenPosNorm.xy), _ZBufferParams);
                 float distanceDepth50 = abs(

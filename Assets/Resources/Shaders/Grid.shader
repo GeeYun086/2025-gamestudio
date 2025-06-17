@@ -395,16 +395,16 @@ Shader "Outlines/CubeShader"
                                              _Multiply_6a903e5d12154e4080e98ea478e2f962_Out_2_Vector3);
                 float3 _Multiply_50e8ceba1cfd406ea39a3dc194b0ac35_Out_2_Vector3;
                 Unity_Multiply_float3_float3(IN.ObjectSpaceNormal, float3(
-                                                              length(float3(
-                                                                  UNITY_MATRIX_M[0].x, UNITY_MATRIX_M[1].x,
-                                                                  UNITY_MATRIX_M[2].x)),
-                                                              length(float3(
-                                                                  UNITY_MATRIX_M[0].y, UNITY_MATRIX_M[1].y,
-                                                                  UNITY_MATRIX_M[2].y)),
-                                                              length(float3(
-                                                                  UNITY_MATRIX_M[0].z, UNITY_MATRIX_M[1].z,
-                                                                  UNITY_MATRIX_M[2].z))),
-                                                          _Multiply_50e8ceba1cfd406ea39a3dc194b0ac35_Out_2_Vector3);
+                                                 length(float3(
+                                                     UNITY_MATRIX_M[0].x, UNITY_MATRIX_M[1].x,
+                                                     UNITY_MATRIX_M[2].x)),
+                                                 length(float3(
+                                                     UNITY_MATRIX_M[0].y, UNITY_MATRIX_M[1].y,
+                                                     UNITY_MATRIX_M[2].y)),
+                                                 length(float3(
+                                                     UNITY_MATRIX_M[0].z, UNITY_MATRIX_M[1].z,
+                                                     UNITY_MATRIX_M[2].z))),
+                                             _Multiply_50e8ceba1cfd406ea39a3dc194b0ac35_Out_2_Vector3);
                 float3 Triplanar_69fe678cc2744e9a9c255d76d3db86ff_UV =
                     _Multiply_6a903e5d12154e4080e98ea478e2f962_Out_2_Vector3 * float(1);
                 float3 Triplanar_69fe678cc2744e9a9c255d76d3db86ff_Blend = SafePositivePow_float(
@@ -456,6 +456,7 @@ Shader "Outlines/CubeShader"
                 #else // TODO: XR support for procedural instancing because in this case UNITY_ANY_INSTANCING_ENABLED is not defined and instanceID is incorrect.
 
 
+
                 #endif
 
                 return output;
@@ -497,6 +498,7 @@ Shader "Outlines/CubeShader"
 
                 #if UNITY_ANY_INSTANCING_ENABLED
                 #else // TODO: XR support for procedural instancing because in this case UNITY_ANY_INSTANCING_ENABLED is not defined and instanceID is incorrect.
+
 
 
                 #endif
@@ -881,25 +883,28 @@ Shader "Outlines/CubeShader"
                     UnityBuildTexture2DStructNoScale(_BaseMap);
                 float3 _Multiply_6a903e5d12154e4080e98ea478e2f962_Out_2_Vector3;
                 Unity_Multiply_float3_float3(IN.ObjectSpacePosition, float3(
-                                             length(float3(
-                                                 UNITY_MATRIX_M[0].x, UNITY_MATRIX_M[1].x, UNITY_MATRIX_M[2].x)),
-                                             length(float3(
-                                                 UNITY_MATRIX_M[0].y, UNITY_MATRIX_M[1].y, UNITY_MATRIX_M[2].y)),
-                                             length(float3(
-                                                 UNITY_MATRIX_M[0].z, UNITY_MATRIX_M[1].z, UNITY_MATRIX_M[2].z))),
-                                         _Multiply_6a903e5d12154e4080e98ea478e2f962_Out_2_Vector3);
+                                                 length(float3(
+                                                     UNITY_MATRIX_M[0].x, UNITY_MATRIX_M[1].x, UNITY_MATRIX_M[2].x)),
+                                                 length(float3(
+                                                     UNITY_MATRIX_M[0].y, UNITY_MATRIX_M[1].y, UNITY_MATRIX_M[2].y)),
+                                                 length(float3(
+                                                     UNITY_MATRIX_M[0].z, UNITY_MATRIX_M[1].z, UNITY_MATRIX_M[2].z))),
+                                             _Multiply_6a903e5d12154e4080e98ea478e2f962_Out_2_Vector3);
                 float3 _Multiply_50e8ceba1cfd406ea39a3dc194b0ac35_Out_2_Vector3;
                 Unity_Multiply_float3_float3(IN.ObjectSpaceNormal, float3(
-                                                       length(float3(
-                                                           UNITY_MATRIX_M[0].x, UNITY_MATRIX_M[1].x,
-                                                           UNITY_MATRIX_M[2].x)),
-                                                       length(float3(
-                                                           UNITY_MATRIX_M[0].y, UNITY_MATRIX_M[1].y,
-                                                           UNITY_MATRIX_M[2].y)),
-                                                       length(float3(
-                                                           UNITY_MATRIX_M[0].z, UNITY_MATRIX_M[1].z,
-                                                           UNITY_MATRIX_M[2].z))),
-                                                   _Multiply_50e8ceba1cfd406ea39a3dc194b0ac35_Out_2_Vector3);
+                                                                             length(float3(
+                                                                                 UNITY_MATRIX_M[0].x,
+                                                                                 UNITY_MATRIX_M[1].x,
+                                                                                 UNITY_MATRIX_M[2].x)),
+                                                                             length(float3(
+                                                                                 UNITY_MATRIX_M[0].y,
+                                                                                 UNITY_MATRIX_M[1].y,
+                                                                                 UNITY_MATRIX_M[2].y)),
+                                                                             length(float3(
+                                                                                 UNITY_MATRIX_M[0].z,
+                                                                                 UNITY_MATRIX_M[1].z,
+                                                                                 UNITY_MATRIX_M[2].z))),
+                                                                         _Multiply_50e8ceba1cfd406ea39a3dc194b0ac35_Out_2_Vector3);
                 float3 Triplanar_69fe678cc2744e9a9c255d76d3db86ff_UV =
                     _Multiply_6a903e5d12154e4080e98ea478e2f962_Out_2_Vector3 * float(1);
                 float3 Triplanar_69fe678cc2744e9a9c255d76d3db86ff_Blend = SafePositivePow_float(
@@ -951,6 +956,7 @@ Shader "Outlines/CubeShader"
                 #else // TODO: XR support for procedural instancing because in this case UNITY_ANY_INSTANCING_ENABLED is not defined and instanceID is incorrect.
 
 
+
                 #endif
 
                 return output;
@@ -959,7 +965,7 @@ Shader "Outlines/CubeShader"
             SurfaceDescriptionInputs BuildSurfaceDescriptionInputs(Varyings input)
             {
                 SurfaceDescriptionInputs output;
-                    ZERO_INITIALIZE(SurfaceDescriptionInputs, output);
+                ZERO_INITIALIZE(SurfaceDescriptionInputs, output);
 
                 #ifdef HAVE_VFX_MODIFICATION
                 #if VFX_USE_GRAPH_VALUES
@@ -992,6 +998,7 @@ Shader "Outlines/CubeShader"
 
                 #if UNITY_ANY_INSTANCING_ENABLED
                 #else // TODO: XR support for procedural instancing because in this case UNITY_ANY_INSTANCING_ENABLED is not defined and instanceID is incorrect.
+
 
 
                 #endif
@@ -1279,6 +1286,7 @@ Shader "Outlines/CubeShader"
                 #else // TODO: XR support for procedural instancing because in this case UNITY_ANY_INSTANCING_ENABLED is not defined and instanceID is incorrect.
 
 
+
                 #endif
 
                 return output;
@@ -1306,6 +1314,7 @@ Shader "Outlines/CubeShader"
 
                 #if UNITY_ANY_INSTANCING_ENABLED
                 #else // TODO: XR support for procedural instancing because in this case UNITY_ANY_INSTANCING_ENABLED is not defined and instanceID is incorrect.
+
 
 
                 #endif
@@ -1575,6 +1584,7 @@ Shader "Outlines/CubeShader"
                 #else // TODO: XR support for procedural instancing because in this case UNITY_ANY_INSTANCING_ENABLED is not defined and instanceID is incorrect.
 
 
+
                 #endif
 
                 return output;
@@ -1602,6 +1612,7 @@ Shader "Outlines/CubeShader"
 
                 #if UNITY_ANY_INSTANCING_ENABLED
                 #else // TODO: XR support for procedural instancing because in this case UNITY_ANY_INSTANCING_ENABLED is not defined and instanceID is incorrect.
+
 
 
                 #endif
@@ -1883,6 +1894,7 @@ Shader "Outlines/CubeShader"
                 #else // TODO: XR support for procedural instancing because in this case UNITY_ANY_INSTANCING_ENABLED is not defined and instanceID is incorrect.
 
 
+
                 #endif
 
                 return output;
@@ -1910,6 +1922,7 @@ Shader "Outlines/CubeShader"
 
                 #if UNITY_ANY_INSTANCING_ENABLED
                 #else // TODO: XR support for procedural instancing because in this case UNITY_ANY_INSTANCING_ENABLED is not defined and instanceID is incorrect.
+
 
 
                 #endif
@@ -2206,6 +2219,7 @@ Shader "Outlines/CubeShader"
                 #else // TODO: XR support for procedural instancing because in this case UNITY_ANY_INSTANCING_ENABLED is not defined and instanceID is incorrect.
 
 
+
                 #endif
 
                 return output;
@@ -2236,6 +2250,7 @@ Shader "Outlines/CubeShader"
 
                 #if UNITY_ANY_INSTANCING_ENABLED
                 #else // TODO: XR support for procedural instancing because in this case UNITY_ANY_INSTANCING_ENABLED is not defined and instanceID is incorrect.
+
 
 
                 #endif
@@ -2537,19 +2552,28 @@ Shader "Outlines/CubeShader"
                     UnityBuildTexture2DStructNoScale(_BaseMap);
                 float3 _Multiply_6a903e5d12154e4080e98ea478e2f962_Out_2_Vector3;
                 Unity_Multiply_float3_float3(IN.ObjectSpacePosition, float3(
-                                             length(float3(
-                                                 UNITY_MATRIX_M[0].x, UNITY_MATRIX_M[1].x, UNITY_MATRIX_M[2].x)),
-                                             length(float3(
-                                                 UNITY_MATRIX_M[0].y, UNITY_MATRIX_M[1].y, UNITY_MATRIX_M[2].y)),
-                                             length(float3(
-                                                 UNITY_MATRIX_M[0].z, UNITY_MATRIX_M[1].z, UNITY_MATRIX_M[2].z))),
-                                         _Multiply_6a903e5d12154e4080e98ea478e2f962_Out_2_Vector3);
+                                                 length(float3(
+                                                     UNITY_MATRIX_M[0].x, UNITY_MATRIX_M[1].x, UNITY_MATRIX_M[2].x)),
+                                                 length(float3(
+                                                     UNITY_MATRIX_M[0].y, UNITY_MATRIX_M[1].y, UNITY_MATRIX_M[2].y)),
+                                                 length(float3(
+                                                     UNITY_MATRIX_M[0].z, UNITY_MATRIX_M[1].z, UNITY_MATRIX_M[2].z))),
+                                             _Multiply_6a903e5d12154e4080e98ea478e2f962_Out_2_Vector3);
                 float3 _Multiply_50e8ceba1cfd406ea39a3dc194b0ac35_Out_2_Vector3;
                 Unity_Multiply_float3_float3(IN.ObjectSpaceNormal, float3(
-                          length(float3(UNITY_MATRIX_M[0].x, UNITY_MATRIX_M[1].x, UNITY_MATRIX_M[2].x)),
-                          length(float3(UNITY_MATRIX_M[0].y, UNITY_MATRIX_M[1].y, UNITY_MATRIX_M[2].y)),
-                          length(float3(UNITY_MATRIX_M[0].z, UNITY_MATRIX_M[1].z, UNITY_MATRIX_M[2].z))),
-                      _Multiply_50e8ceba1cfd406ea39a3dc194b0ac35_Out_2_Vector3);
+                                                                             length(float3(
+                                                                                 UNITY_MATRIX_M[0].x,
+                                                                                 UNITY_MATRIX_M[1].x,
+                                                                                 UNITY_MATRIX_M[2].x)),
+                                                                             length(float3(
+                                                                                 UNITY_MATRIX_M[0].y,
+                                                                                 UNITY_MATRIX_M[1].y,
+                                                                                 UNITY_MATRIX_M[2].y)),
+                                                                             length(float3(
+                                                                                 UNITY_MATRIX_M[0].z,
+                                                                                 UNITY_MATRIX_M[1].z,
+                                                                                 UNITY_MATRIX_M[2].z))),
+                                                                         _Multiply_50e8ceba1cfd406ea39a3dc194b0ac35_Out_2_Vector3);
                 float3 Triplanar_69fe678cc2744e9a9c255d76d3db86ff_UV =
                     _Multiply_6a903e5d12154e4080e98ea478e2f962_Out_2_Vector3 * float(1);
                 float3 Triplanar_69fe678cc2744e9a9c255d76d3db86ff_Blend = SafePositivePow_float(
@@ -2588,13 +2612,14 @@ Shader "Outlines/CubeShader"
             VertexDescriptionInputs BuildVertexDescriptionInputs(Attributes input)
             {
                 VertexDescriptionInputs output;
-                    ZERO_INITIALIZE(VertexDescriptionInputs, output);
+                ZERO_INITIALIZE(VertexDescriptionInputs, output);
 
                 output.ObjectSpaceNormal = input.normalOS;
                 output.ObjectSpaceTangent = input.tangentOS.xyz;
                 output.ObjectSpacePosition = input.positionOS;
                 #if UNITY_ANY_INSTANCING_ENABLED
                 #else // TODO: XR support for procedural instancing because in this case UNITY_ANY_INSTANCING_ENABLED is not defined and instanceID is incorrect.
+
 
 
                 #endif
@@ -2605,7 +2630,7 @@ Shader "Outlines/CubeShader"
             SurfaceDescriptionInputs BuildSurfaceDescriptionInputs(Varyings input)
             {
                 SurfaceDescriptionInputs output;
-                ZERO_INITIALIZE(SurfaceDescriptionInputs, output);
+                    ZERO_INITIALIZE(SurfaceDescriptionInputs, output);
 
                 #ifdef HAVE_VFX_MODIFICATION
                 #if VFX_USE_GRAPH_VALUES
@@ -2637,6 +2662,7 @@ Shader "Outlines/CubeShader"
 
                 #if UNITY_ANY_INSTANCING_ENABLED
                 #else // TODO: XR support for procedural instancing because in this case UNITY_ANY_INSTANCING_ENABLED is not defined and instanceID is incorrect.
+
 
 
                 #endif
@@ -2916,6 +2942,7 @@ Shader "Outlines/CubeShader"
                 #else // TODO: XR support for procedural instancing because in this case UNITY_ANY_INSTANCING_ENABLED is not defined and instanceID is incorrect.
 
 
+
                 #endif
 
                 return output;
@@ -2943,6 +2970,7 @@ Shader "Outlines/CubeShader"
 
                 #if UNITY_ANY_INSTANCING_ENABLED
                 #else // TODO: XR support for procedural instancing because in this case UNITY_ANY_INSTANCING_ENABLED is not defined and instanceID is incorrect.
+
 
 
                 #endif
@@ -3234,10 +3262,13 @@ Shader "Outlines/CubeShader"
                                              _Multiply_6a903e5d12154e4080e98ea478e2f962_Out_2_Vector3);
                 float3 _Multiply_50e8ceba1cfd406ea39a3dc194b0ac35_Out_2_Vector3;
                 Unity_Multiply_float3_float3(IN.ObjectSpaceNormal, float3(
-         length(float3(UNITY_MATRIX_M[0].x, UNITY_MATRIX_M[1].x, UNITY_MATRIX_M[2].x)),
-         length(float3(UNITY_MATRIX_M[0].y, UNITY_MATRIX_M[1].y, UNITY_MATRIX_M[2].y)),
-         length(float3(UNITY_MATRIX_M[0].z, UNITY_MATRIX_M[1].z, UNITY_MATRIX_M[2].z))),
-     _Multiply_50e8ceba1cfd406ea39a3dc194b0ac35_Out_2_Vector3);
+                                                 length(float3(
+                                                     UNITY_MATRIX_M[0].x, UNITY_MATRIX_M[1].x, UNITY_MATRIX_M[2].x)),
+                                                 length(float3(
+                                                     UNITY_MATRIX_M[0].y, UNITY_MATRIX_M[1].y, UNITY_MATRIX_M[2].y)),
+                                                 length(float3(
+                                                     UNITY_MATRIX_M[0].z, UNITY_MATRIX_M[1].z, UNITY_MATRIX_M[2].z))),
+                                             _Multiply_50e8ceba1cfd406ea39a3dc194b0ac35_Out_2_Vector3);
                 float3 Triplanar_69fe678cc2744e9a9c255d76d3db86ff_UV =
                     _Multiply_6a903e5d12154e4080e98ea478e2f962_Out_2_Vector3 * float(1);
                 float3 Triplanar_69fe678cc2744e9a9c255d76d3db86ff_Blend = SafePositivePow_float(
@@ -3284,6 +3315,7 @@ Shader "Outlines/CubeShader"
                 #else // TODO: XR support for procedural instancing because in this case UNITY_ANY_INSTANCING_ENABLED is not defined and instanceID is incorrect.
 
 
+
                 #endif
 
                 return output;
@@ -3324,6 +3356,7 @@ Shader "Outlines/CubeShader"
 
                 #if UNITY_ANY_INSTANCING_ENABLED
                 #else // TODO: XR support for procedural instancing because in this case UNITY_ANY_INSTANCING_ENABLED is not defined and instanceID is incorrect.
+
 
 
                 #endif
@@ -3618,16 +3651,16 @@ Shader "Outlines/CubeShader"
                                              _Multiply_6a903e5d12154e4080e98ea478e2f962_Out_2_Vector3);
                 float3 _Multiply_50e8ceba1cfd406ea39a3dc194b0ac35_Out_2_Vector3;
                 Unity_Multiply_float3_float3(IN.ObjectSpaceNormal, float3(
-                                                       length(float3(
-                                                           UNITY_MATRIX_M[0].x, UNITY_MATRIX_M[1].x,
-                                                           UNITY_MATRIX_M[2].x)),
-                                                       length(float3(
-                                                           UNITY_MATRIX_M[0].y, UNITY_MATRIX_M[1].y,
-                                                           UNITY_MATRIX_M[2].y)),
-                                                       length(float3(
-                                                           UNITY_MATRIX_M[0].z, UNITY_MATRIX_M[1].z,
-                                                           UNITY_MATRIX_M[2].z))),
-                                                   _Multiply_50e8ceba1cfd406ea39a3dc194b0ac35_Out_2_Vector3);
+                                                 length(float3(
+                                                     UNITY_MATRIX_M[0].x, UNITY_MATRIX_M[1].x,
+                                                     UNITY_MATRIX_M[2].x)),
+                                                 length(float3(
+                                                     UNITY_MATRIX_M[0].y, UNITY_MATRIX_M[1].y,
+                                                     UNITY_MATRIX_M[2].y)),
+                                                 length(float3(
+                                                     UNITY_MATRIX_M[0].z, UNITY_MATRIX_M[1].z,
+                                                     UNITY_MATRIX_M[2].z))),
+                                             _Multiply_50e8ceba1cfd406ea39a3dc194b0ac35_Out_2_Vector3);
                 float3 Triplanar_69fe678cc2744e9a9c255d76d3db86ff_UV =
                     _Multiply_6a903e5d12154e4080e98ea478e2f962_Out_2_Vector3 * float(1);
                 float3 Triplanar_69fe678cc2744e9a9c255d76d3db86ff_Blend = SafePositivePow_float(
@@ -3665,13 +3698,14 @@ Shader "Outlines/CubeShader"
             VertexDescriptionInputs BuildVertexDescriptionInputs(Attributes input)
             {
                 VertexDescriptionInputs output;
-                    ZERO_INITIALIZE(VertexDescriptionInputs, output);
+                ZERO_INITIALIZE(VertexDescriptionInputs, output);
 
                 output.ObjectSpaceNormal = input.normalOS;
                 output.ObjectSpaceTangent = input.tangentOS.xyz;
                 output.ObjectSpacePosition = input.positionOS;
                 #if UNITY_ANY_INSTANCING_ENABLED
                 #else // TODO: XR support for procedural instancing because in this case UNITY_ANY_INSTANCING_ENABLED is not defined and instanceID is incorrect.
+
 
 
                 #endif
@@ -3682,7 +3716,7 @@ Shader "Outlines/CubeShader"
             SurfaceDescriptionInputs BuildSurfaceDescriptionInputs(Varyings input)
             {
                 SurfaceDescriptionInputs output;
-                    ZERO_INITIALIZE(SurfaceDescriptionInputs, output);
+                ZERO_INITIALIZE(SurfaceDescriptionInputs, output);
 
                 #ifdef HAVE_VFX_MODIFICATION
                 #if VFX_USE_GRAPH_VALUES
@@ -3714,6 +3748,7 @@ Shader "Outlines/CubeShader"
 
                 #if UNITY_ANY_INSTANCING_ENABLED
                 #else // TODO: XR support for procedural instancing because in this case UNITY_ANY_INSTANCING_ENABLED is not defined and instanceID is incorrect.
+
 
 
                 #endif

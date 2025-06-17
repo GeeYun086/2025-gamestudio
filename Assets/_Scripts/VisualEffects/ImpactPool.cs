@@ -1,15 +1,23 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace GravityGame
 {
-    [RequireComponent(typeof(Rigidbody))]
+    /// <summary>
+    /// Implements GameObject pool enabling reuse of generic GameObjects instead of destroying and instantiating all the time
+    /// </summary>
     public class ImpactPool : MonoBehaviour
     {
         public GameObject Prefab;
         public int MaxPoolCount = 5;
         readonly Queue<GameObject> _pool = new();
         int _total;
+
+        void Start()
+        {
+            _total = 0;
+        }
 
         public GameObject GetObject()
         {

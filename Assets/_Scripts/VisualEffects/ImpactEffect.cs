@@ -2,17 +2,20 @@ using UnityEngine;
 
 namespace GravityGame
 {
+    /// <summary>
+    ///     Implements Impact effect:
+    ///     spawns particle effects system at point of impact, taking object from object pool to improve performance (5 systems per effect system)
+    ///     Impact Particle is set by prefab particle system
+    /// </summary>
     [RequireComponent(typeof(Rigidbody))]
     public class ImpactEffect : MonoBehaviour
     {
-        Rigidbody _rigidbody;
         public float ImpactVelocity = 1;
         public GameObject ImpactParticle;
         ImpactPool _pool;
 
         void Start()
         {
-            _rigidbody = GetComponent<Rigidbody>();
             _pool = GetComponent<ImpactPool>();
             _pool.Prefab = ImpactParticle;
         }
