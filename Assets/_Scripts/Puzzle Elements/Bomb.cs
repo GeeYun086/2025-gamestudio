@@ -6,10 +6,10 @@ using UnityEngine;
 namespace GravityGame.Puzzle_Elements
 {
     /// <summary>
-    /// Represents a bomb that will be armed upon its trigger being entered.
-    /// After a configurable duration <see cref="_fuseTime"/>, it detonates,
-    /// either killing or pushing back the player, depending on the configured radii.
-    /// Also pushes other physics objects, kills enemies, and breaks destructibles.
+    ///     Represents a bomb that will be armed upon its trigger being entered.
+    ///     After a configurable duration <see cref="_fuseTime" />, it detonates,
+    ///     either killing or pushing back the player, depending on the configured radii.
+    ///     Also pushes other physics objects, kills enemies, and breaks destructibles.
     /// </summary>
     [RequireComponent(typeof(GravityModifier))]
     [RequireComponent(typeof(Rigidbody))]

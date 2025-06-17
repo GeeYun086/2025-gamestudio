@@ -1,7 +1,6 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
-using UnityEngine.Serialization;
 
 namespace GravityGame
 {
@@ -12,7 +11,7 @@ namespace GravityGame
     public class NavMeshPatrol : MonoBehaviour
     {
         public enum PatrolMode { PingPong, Loop }
-        
+
         [Header("Path definition")]
         [Tooltip("Waypoint parent")]
         public Transform WaypointsRoot;
