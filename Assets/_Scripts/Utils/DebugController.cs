@@ -102,6 +102,6 @@ namespace GravityGame.Utils
             Instantiate(_debugGravityObject, spawnPos, Quaternion.identity);
         }
 
-        static void TeleportPlayerToActiveCheckpoint() => CheckpointController.Instance.RespawnPlayer();
+        static void TeleportPlayerToActiveCheckpoint() => CheckpointController.RespawnPlayer();
     }
 }
