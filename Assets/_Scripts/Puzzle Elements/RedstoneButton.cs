@@ -1,34 +1,84 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace GravityGame.Puzzle_Elements
 {
     /// <summary>
-    ///     Sends a short power pulse to a target RedstoneComponent when pressed.
+    /// Sends a short power pulse to one or more RedstoneComponents when pressed,
+    /// and tints the button green while active, red when idle.
     /// </summary>
+   
     public class RedstoneButton : MonoBehaviour
     {
-        [Tooltip("The RedstoneComponent that will receive the pulse.")]
-        public RedstoneComponent Target;
+        [Header("Redstone Targets")]
+        [Tooltip("All components that should receive the pulse.")]
+        public List<RedstoneComponent> Targets = new List<RedstoneComponent>();
 
-        [Tooltip("How long the power stays on (seconds).")]
+        [Tooltip("How long (seconds) the button stays ‘on’")]
         public float PulseDuration = 0.2f;
 
-        /// <summary>
-        ///     Call this (e.g. via an Interactable event) to press the button.
-        /// </summary>
-        public void Press()
+        [Header("Visuals")]
+        [Tooltip("Renderer on the button mesh to tint.")]
+        public MeshRenderer ButtonRenderer;
+
+        [Tooltip("Idle tint color.")]
+        public Color IdleColor = Color.red;
+
+        [Tooltip("Tint while powered.")]
+        public Color ActiveColor = Color.green;
+
+        private Coroutine _pulseRoutine;
+
+        void Awake()
         {
-            if (Target != null) {
-                StartCoroutine(PowerPulse());
+            // Auto-assign the renderer if missing
+            if (ButtonRenderer == null)
+                ButtonRenderer = GetComponentInChildren<MeshRenderer>();
+
+            if (ButtonRenderer != null)
+            {
+                // Instance the material so we can safely tint
+                ButtonRenderer.material = new Material(ButtonRenderer.material);
+                ButtonRenderer.material.color = IdleColor;
             }
         }
 
-        IEnumerator PowerPulse()
+        /// <summary>
+        /// Called by an Interactable event. Ignored if a pulse is still active.
+        /// </summary>
+        public void Press()
         {
-            Target.IsPowered = true;
+            if (_pulseRoutine != null) return;  // ignore rapid re-presses
+
+            // Only pulse components that are not null
+            Targets.RemoveAll(t => t == null);
+            if (Targets.Count == 0) return;
+
+            _pulseRoutine = StartCoroutine(PulseCoroutine());
+        }
+
+        private IEnumerator PulseCoroutine()
+        {
+            // Visual: active color
+            if (ButtonRenderer != null)
+                ButtonRenderer.material.color = ActiveColor;
+
+            // Power on all targets
+            foreach (var t in Targets)
+                t.IsPowered = true;
+
             yield return new WaitForSeconds(PulseDuration);
-            Target.IsPowered = false;
+
+            // Power off all targets
+            foreach (var t in Targets)
+                t.IsPowered = false;
+
+            // Visual: back to idle
+            if (ButtonRenderer != null)
+                ButtonRenderer.material.color = IdleColor;
+
+            _pulseRoutine = null;
         }
     }
 }

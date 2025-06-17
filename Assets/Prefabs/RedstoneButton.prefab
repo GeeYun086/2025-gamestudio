@@ -70,6 +70,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Target: {fileID: 0}
   PulseDuration: 0.2
+  ButtonRenderer: {fileID: 0}
+  IdleColor: {r: 1, g: 0, b: 0, a: 1}
+  ActiveColor: {r: 0, g: 1, b: 0, a: 1}
 --- !u!114 &7944884020301198270
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -164,7 +167,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 212e33e83ebf5c147b63251a942773af, type: 2}
+  - {fileID: 0}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
