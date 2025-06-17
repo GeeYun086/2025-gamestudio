@@ -1,3 +1,4 @@
+using System;
 using GravityGame.Puzzle_Elements;
 using UnityEngine;
 
@@ -11,13 +12,20 @@ namespace GravityGame.Player
         [SerializeField] Transform _carryPointTransform;
         [SerializeField] float _maxCarryDistance = 5f;
         [SerializeField] float _maxCarryMass = 250f;
+        [SerializeField] float _maxVerticalAngular = 67f;
 
         Carryable _currentlyCarrying;
         PlayerMovement _playerMovement;
+        FirstPersonCameraController _cameraController;
 
-        void Awake() => _playerMovement = GetComponent<PlayerMovement>();
+        void Awake()
+        {
+            _playerMovement = GetComponent<PlayerMovement>();
+            _cameraController = GetComponentInChildren<FirstPersonCameraController>();
+        }
 
-        public bool IsCarrying() => _currentlyCarrying;
+        public bool IsCarrying()
+            => _currentlyCarrying;
 
         public void AttemptPickUp(Carryable objectToCarry)
         {
@@ -46,6 +54,12 @@ namespace GravityGame.Player
                 if (_playerMovement.Ground.Hit.collider &&
                     _playerMovement.Ground.Hit.collider.gameObject == _currentlyCarrying.gameObject) {
                     AttemptRelease();
+                }
+
+                if (Math.Abs(_cameraController.LookDownRotation) >= _maxVerticalAngular) {
+                    Debug.Log("Out of range");
+                } else {
+                    Debug.Log("Within range");
                 }
             }
         }
