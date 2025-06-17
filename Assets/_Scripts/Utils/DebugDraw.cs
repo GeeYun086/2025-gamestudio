@@ -68,8 +68,7 @@ namespace GravityGame.Utils
             }
         }
 
-        public static void DrawOnUI(Action<MeshGenerationContext> drawNextFrame)
-            => Instance._drawActionsNextFrame.Add(drawNextFrame);
+        public static void DrawOnUI(Action<MeshGenerationContext> drawNextFrame) => Instance._drawActionsNextFrame.Add(drawNextFrame);
 
         public static void DrawUICircle(MeshGenerationContext ctx, Vector2 center, float radius, Color color)
         {

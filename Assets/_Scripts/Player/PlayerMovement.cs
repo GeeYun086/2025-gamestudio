@@ -108,7 +108,7 @@ namespace GravityGame.Player
             _lastGroundVelocity = groundVelocity;
             
             // Get jump velocity
-            bool jumped = TryJump(out var jumpVelocity);
+            bool jumped = TryJump();
 
             // Friction and Slopes
             if (Ground.HasAnyGround) {
@@ -200,10 +200,17 @@ namespace GravityGame.Player
                 var jumpForwardVelocity = Mathf.Max(Mathf.Min(MaxMoveSpeed, planeVelocity.magnitude), planeVelocityInInputDir.magnitude);
                 var jumpForward = _inputDirection.normalized * jumpForwardVelocity;
                 
-                velocity = jumpVelocity + jumpForward + onlyUpVelocity + groundVelocity;
-                
+                float jumpUpVelocity = Mathf.Sqrt(JumpHeight * 2f * Gravity.magnitude);
+                var jumpUp = transform.up * jumpUpVelocity;
+                velocity = jumpUp + jumpForward + onlyUpVelocity + groundVelocity;
+            
+                // un-ground yourself
+                Ground = default; 
                 // push ground down
-                dynamicGround?.AddForceAtPosition(-jumpVelocity * _rigidbody.mass, Ground.Hit.point, ForceMode.Impulse);
+                // Note TG: calculate velocity assuming normal gravity magnitude. The actual jump velocity is way higher and would push objects too far, since player has naturally higher gravity
+                float pushDownVelocity = Mathf.Sqrt(JumpHeight * 2f * 9.8f);
+                var pushDown = -transform.up * pushDownVelocity;
+                dynamicGround?.AddForceAtPosition(pushDown * _rigidbody.mass, transform.position, ForceMode.Impulse);
             }
 
             // Apply Force
@@ -232,21 +239,14 @@ namespace GravityGame.Player
             }
         }
 
-        bool TryJump(out Vector3 jumpVelocity)
+        bool TryJump()
         {
-            jumpVelocity = Vector3.zero;
             if (Ground.HasStableGround) _coyoteLastGroundedTime = Time.time;
             bool hasJumpInput = _lastJumpInputTime + JumpPreGroundedGraceTime > Time.time;
             bool canJump = _coyoteLastGroundedTime + JumpPostGroundedGraceTime > Time.time && _lastJumpTime + MinTimeBetweenJumps < Time.time;
             if (!hasJumpInput || !canJump) return false;
             _coyoteLastGroundedTime = 0;
             _lastJumpTime = Time.time;
-
-            float jumpUpSpeed = Mathf.Sqrt(JumpHeight * 2f * Gravity.magnitude);
-            jumpVelocity = transform.up * jumpUpSpeed;
-            
-            // un-ground yourself
-            Ground = default; 
             return true;
         }
 

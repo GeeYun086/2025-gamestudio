@@ -4,8 +4,8 @@ using UnityEngine;
 namespace GravityGame.Player
 {
     /// <summary>
-    /// Pressing the interact key attempts to release a carried object if held,
-    /// otherwise, it will try to interact with or pick up an object the player is looking at.
+    ///     Pressing the interact key attempts to release a carried object if held,
+    ///     otherwise, it will try to interact with or pick up an object the player is looking at.
     /// </summary>
     public class PlayerInteraction : MonoBehaviour
     {

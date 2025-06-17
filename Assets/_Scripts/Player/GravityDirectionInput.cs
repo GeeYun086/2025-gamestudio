@@ -22,10 +22,10 @@ namespace GravityGame.Player
         [SerializeField] float _aimBufferDuration = 0.25f;
         [SerializeField] float _previewDistance = 4f;
         [SerializeField] float _previewCycleDuration = 1.5f;
-        
+
         [SerializeField] Camera _camera;
         [SerializeField] Transform _playerTransform;
-        
+
         [CanBeNull] GravityModifier _aimedObject;
         [CanBeNull] GravityModifier _lastAimedObject;
         float _lastObjectAimedTime;
@@ -216,7 +216,7 @@ namespace GravityGame.Player
             float distance = mouseOffset.magnitude;
             if (distance < GravityChangeMenu.DeadZoneRadius) return null;
 
-            var up = GetClosestCardinalDirection(_playerTransform.up); 
+            var up = GetClosestCardinalDirection(_playerTransform.up);
             var right = GetClosestCardinalDirection(_camera.transform.right);
             var forward = Vector3.Cross(right, up).normalized;
 
