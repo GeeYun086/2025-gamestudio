@@ -32,11 +32,11 @@ namespace GravityGame.Player
         
         public void AttemptPickUp(Carryable objectToCarry)
         {
-            if (IsCarrying() || !objectToCarry || objectToCarry.GetComponent<Rigidbody>().mass > _maxCarryMass) return;
-
-            _currentlyCarrying = objectToCarry;
-            _currentlyCarrying.PickUp(_carryPointTransform);
-            IgnorePlayerCollision(true);
+            if (!IsCarrying() && objectToCarry && objectToCarry.GetComponent<Rigidbody>() && objectToCarry.GetComponent<Rigidbody>().mass <= _maxCarryMass) {
+                _currentlyCarrying = objectToCarry;
+                _currentlyCarrying.PickUp(_carryPointTransform);
+                IgnorePlayerCollision(true);
+            }
         }
         
         public void AttemptRelease()
@@ -44,7 +44,7 @@ namespace GravityGame.Player
             if (IsCarrying()) {
                 _isYPositionFrozen = false;
                 IgnorePlayerCollision(false);
-                _currentlyCarrying.Release();
+                if (_currentlyCarrying.GetComponent<Rigidbody>()) _currentlyCarrying.Release();
                 _currentlyCarrying = null;
             }
         }
