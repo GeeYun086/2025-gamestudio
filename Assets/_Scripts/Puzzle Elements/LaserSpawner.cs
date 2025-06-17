@@ -1,50 +1,66 @@
-﻿using UnityEngine;
-using UnityEngine.Serialization;
+﻿using System;
+using UnityEngine;
 
+/// <summary>
+///     Spawns a laser beam prefab at a specified local-space offset from this GameObject.
+///     Optionally auto-spawns on Start, allows manual spawn/destruction, and fires an event when a laser is spawned.
+/// </summary>
+[RequireComponent(typeof(Transform))]
 public class LaserSpawner : MonoBehaviour
 {
-    [FormerlySerializedAs("laserPrefab")]
     [Header("Laser Prefab")]
     [Tooltip("Drag your LaserBeam prefab here.")]
-    public GameObject LaserPrefab;
+    [SerializeField]
+    GameObject _laserPrefab;
 
-    [FormerlySerializedAs("spawnOffset")]
     [Header("Spawn Settings")]
     [Tooltip("Offset from this GameObject’s position to spawn the beam origin.")]
-    public Vector3 SpawnOffset = Vector3.zero;
+    [SerializeField]
+    Vector3 _spawnOffset = Vector3.zero;
 
-    [FormerlySerializedAs("spawnOnStart")] [Tooltip("Automatically spawn the laser when the scene starts?")]
-    public bool SpawnOnStart = true;
+    [Tooltip("Automatically spawn the laser when the scene starts?")]
+    [SerializeField]
+    bool _spawnOnStart = true;
 
     GameObject _spawnedLaser;
 
+    /// <summary>
+    ///     Called in the Editor when values change—warns if required references are missing.
+    /// </summary>
+    void OnValidate()
+    {
+        if (_laserPrefab == null)
+            Debug.LogWarning($"{nameof(LaserSpawner)}: Laser Prefab is not assigned.", this);
+    }
+
     void Start()
     {
-        if (SpawnOnStart)
+        if (_spawnOnStart)
             SpawnLaser();
     }
 
     /// <summary>
-    ///     Instantiates the laser prefab at this transform’s position + offset, with same rotation.
+    ///     Instantiates (or replaces) the laser prefab at this transform’s position plus the configured offset.
+    ///     Fires <see cref="OnLaserSpawned" /> after instantiation.
     /// </summary>
     public void SpawnLaser()
     {
-        if (LaserPrefab == null) {
-            Debug.LogError("LaserSpawner: laserPrefab is not assigned!", this);
+        if (_laserPrefab == null) {
+            Debug.LogError($"{nameof(LaserSpawner)}: Cannot spawn – no prefab assigned.", this);
             return;
         }
 
-        if (_spawnedLaser != null) {
-            Destroy(_spawnedLaser);
-        }
+        DestroyLaser();
 
-        var worldPos = transform.TransformPoint(SpawnOffset);
-        _spawnedLaser = Instantiate(LaserPrefab, worldPos, transform.rotation);
-        _spawnedLaser.transform.parent = transform;
+        var worldPos = transform.TransformPoint(_spawnOffset);
+        _spawnedLaser = Instantiate(_laserPrefab, worldPos, transform.rotation);
+        _spawnedLaser.transform.SetParent(transform, worldPositionStays: true);
+
+        OnLaserSpawned?.Invoke(_spawnedLaser);
     }
 
     /// <summary>
-    ///     Destroys the spawned laser instance.
+    ///     Destroys the last spawned laser instance, if one exists.
     /// </summary>
     public void DestroyLaser()
     {
@@ -53,4 +69,9 @@ public class LaserSpawner : MonoBehaviour
             _spawnedLaser = null;
         }
     }
+
+    /// <summary>
+    ///     Invoked immediately after a new laser instance is spawned.
+    /// </summary>
+    public event Action<GameObject> OnLaserSpawned;
 }

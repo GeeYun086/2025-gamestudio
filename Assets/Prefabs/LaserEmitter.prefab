@@ -44,9 +44,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f1da79f79fca409fb77d9a70037403cc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  LaserPrefab: {fileID: 1875168489481163592, guid: 07ebac89ea5ccd542845a9a64b70ddcc, type: 3}
-  SpawnOffset: {x: 0, y: 0, z: 0}
-  SpawnOnStart: 1
+  _laserPrefab: {fileID: 1875168489481163592, guid: 07ebac89ea5ccd542845a9a64b70ddcc, type: 3}
+  _spawnOffset: {x: 0, y: 0, z: 0}
+  _spawnOnStart: 1
 --- !u!1 &1240764995133012528
 GameObject:
   m_ObjectHideFlags: 0
@@ -57,7 +57,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1682645185086417255}
   m_Layer: 7
-  m_Name: 'LaserEmitter '
+  m_Name: LaserEmitter
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
