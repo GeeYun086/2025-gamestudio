@@ -192,6 +192,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _carryPointTransform: {fileID: 7671548427145666092}
+  _maxCarryDistance: 5
+  _maxCarryMass: 250
 --- !u!114 &4356562832223538105
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -534,7 +536,7 @@ Transform:
   m_GameObject: {fileID: 6467587918198617616}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 2.5}
+  m_LocalPosition: {x: 0, y: -0.75, z: 1.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
