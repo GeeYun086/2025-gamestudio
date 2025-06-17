@@ -27,14 +27,14 @@ namespace GravityGame.Puzzle_Elements
             var pullPlane = new Plane(transform.forward, transform.position);
 
             var hitColliders = new Collider[100];
-            int collidersFound = Physics.OverlapSphereNonAlloc(
+            int colliders = Physics.OverlapSphereNonAlloc(
                 transform.position,
                 _pullRadius,
                 hitColliders,
                 _affectedLayers
             );
 
-            for (int i = 0; i < collidersFound; i++) {
+            for (int i = 0; i < colliders; i++) {
                 var rb = hitColliders[i].GetComponent<Rigidbody>();
                 if (!rb || rb.gameObject == gameObject) continue;
                 if (Vector3.Dot(rb.position - transform.position, transform.forward) <= 0) continue;
@@ -56,6 +56,8 @@ namespace GravityGame.Puzzle_Elements
         {
             Gizmos.color = Color.cyan;
             Gizmos.DrawWireSphere(transform.position, _pullRadius);
+            Gizmos.color = Color.red;
+            Gizmos.DrawLine(transform.position, transform.position + transform.forward * _pullRadius);
         }
     }
 }
