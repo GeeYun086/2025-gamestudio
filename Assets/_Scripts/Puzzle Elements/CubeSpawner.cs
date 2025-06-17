@@ -23,7 +23,6 @@ namespace GravityGame.Puzzle_Elements
         {
             // Calculate spawn position 1 unit above the spawner
             _cubePosition = transform.position + transform.up;
-         
         }
 
         /// <summary>
