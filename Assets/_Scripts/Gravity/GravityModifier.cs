@@ -43,7 +43,7 @@ namespace GravityGame.Gravity
 
         void OnDisable()
         {
-            GravityGroupHandler.Instance.OnGravityGroupDirectionChange -= SetGravityDirectionWithoutGroupAlert;
+            if(GravityGroupHandler.Instance) GravityGroupHandler.Instance.OnGravityGroupDirectionChange -= SetGravityDirectionWithoutGroupAlert;
         }
 
         void FixedUpdate()

@@ -16,15 +16,9 @@ namespace GravityGame.Puzzle_Elements
         public float RespawnDelay = 1f;
 
         GameObject _currentCube;
-        Vector3 _cubePosition;
         bool _isPowered;
-
-        void Start()
-        {
-            // Calculate spawn position 1 unit above the spawner
-            _cubePosition = transform.position + transform.up;
-        }
-
+        Vector3 CubePosition => transform.position + 1.0f * transform.up;
+        
         /// <summary>
         ///     Called whenever redstone power changes.
         ///     Spawns a cube on the rising edge (false→true) only once per pulse.
@@ -35,17 +29,9 @@ namespace GravityGame.Puzzle_Elements
             set {
                 if (value && !_isPowered) {
                     Respawn();
-                    // Cooldown so holding power only spawns once
-                    StartCoroutine(ResetPowerAfterDelay());
                 }
                 _isPowered = value;
             }
-        }
-
-        IEnumerator ResetPowerAfterDelay()
-        {
-            yield return new WaitForSeconds(RespawnDelay);
-            _isPowered = false;
         }
 
         /// <summary>
@@ -59,7 +45,7 @@ namespace GravityGame.Puzzle_Elements
 
             _currentCube = Instantiate(
                 Cube,
-                _cubePosition,
+                CubePosition,
                 transform.rotation,
                 transform
             );
