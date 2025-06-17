@@ -30,6 +30,7 @@ namespace GravityGame.CheckpointSystem
 
         readonly List<Checkpoint> _checkpoints = new();
         PlayerMovement _playerMovementScript;
+        FirstPersonCameraController _cameraController;
 
         void Awake()
         {
@@ -39,6 +40,7 @@ namespace GravityGame.CheckpointSystem
         void OnEnable()
         {
             _playerMovementScript = _playerObject.GetComponent<PlayerMovement>();
+            _cameraController = _playerObject.GetComponentInChildren<FirstPersonCameraController>();
             PlayerHealth.Instance.OnPlayerDied.AddListener(RespawnPlayer);
         }
 
@@ -108,17 +110,27 @@ namespace GravityGame.CheckpointSystem
 
         public void RespawnPlayer()
         {
+            var activeCheckpoint = _checkpoints.FirstOrDefault(cp => cp.IsActiveCheckpoint);
+            if (!activeCheckpoint) {
+                Debug.LogError("No active checkpoint");
+                return;
+            }
             _playerMovementScript.enabled = false;
+            
+            _playerObject.transform.rotation = Quaternion.identity;
+            var checkpointRotation = activeCheckpoint.transform.rotation.eulerAngles;
+            _cameraController.LookRightRotation = checkpointRotation.y;
+            _cameraController.LookDownRotation = Mathf.Clamp(checkpointRotation.x, -90f, 90f);
+            
             var playerRb = _playerObject.GetComponent<Rigidbody>();
             playerRb.MovePosition(
-                _checkpoints.Count == 0
-                    ? Vector3.zero
-                    : _checkpoints.First(cp => cp.IsActiveCheckpoint).transform.position +
-                      Vector3.up * _respawnHeightOffset
+                activeCheckpoint.transform.position + Vector3.up * _respawnHeightOffset
             );
+            
             playerRb.linearVelocity = Vector3.zero;
             var playerGravity = _playerObject.GetComponent<GravityModifier>();
             playerGravity.GravityDirection = Vector3.down;
+
             _playerMovementScript.enabled = true;
             PlayerHealth.Instance.Heal(PlayerHealth.MaxHealth);
         }
