@@ -13,12 +13,11 @@ GameObject:
   - component: {fileID: 2258594981198270857}
   - component: {fileID: 8924753189787194153}
   - component: {fileID: 9181645947103299050}
-  - component: {fileID: 701094689451312738}
   - component: {fileID: 8030090321904850059}
   - component: {fileID: 5735985433874089844}
   - component: {fileID: 1294556758841930574}
   m_Layer: 6
-  m_Name: Cube
+  m_Name: Normal Cube
   m_TagString: Cube
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -72,7 +71,7 @@ MeshRenderer:
   m_Materials:
   - {fileID: 2100000, guid: d0ab5033fa04f461799f6abd0b6935e3, type: 2}
   - {fileID: 2100000, guid: 38278bc06bc1b4f3d8ce2a998c48bfb9, type: 2}
-  - {fileID: 2100000, guid: 981abf7a53e6a964fba6bc48555ec31a, type: 2}
+  - {fileID: 2100000, guid: 9618c6b42230db7408b3b734da21470a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -142,20 +141,6 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!114 &701094689451312738
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4662317870626134877}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1390bb0118c849048dad3280a9f58cd9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  GravityMagnitude: 9.81
-  Group: 0
 --- !u!114 &8030090321904850059
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -282,4 +267,3 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f555451c1a2fcbb48ae9d16f23635942, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _player: {fileID: 0}
