@@ -3,13 +3,13 @@
 
 #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
 float _Thickness;
-            
+
 struct Attributes
 {
     float4 posO : POSITION;
     float4 posN : NORMAL;
 };
-            
+
 struct VertexOutput
 {
     float4 pos: SV_POSITION;

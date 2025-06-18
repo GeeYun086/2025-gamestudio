@@ -5,7 +5,7 @@ using UnityEngine.Events;
 namespace GravityGame.Player
 {
     /// <summary>
-    /// Manages the player's health, including taking damage, healing, and death.
+    ///     Manages the player's health, including taking damage, healing, and death.
     /// </summary>
     [RequireComponent(typeof(PlayerMovement))]
     public class PlayerHealth : SingletonMonoBehavior<PlayerHealth>
@@ -16,6 +16,7 @@ namespace GravityGame.Player
         bool IsDead => CurrentHealth <= 0;
 
         void Awake() => OnEnable();
+
         void OnEnable()
         {
             CurrentHealth = MaxHealth;
