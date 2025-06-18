@@ -34,7 +34,9 @@ namespace GravityGame.Puzzle_Elements
             UpdateState();
         }
         
-        bool TriggersOverlap(Collider other) => other.CompareTag("Cube");
+        bool TriggersOverlap(Collider other) =>
+            other.CompareTag("Cube") || other.CompareTag("Player");
+
 
         void UpdateState()
         {

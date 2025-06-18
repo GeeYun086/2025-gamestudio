@@ -65,7 +65,7 @@ GameObject:
   - component: {fileID: 4573077508993898264}
   m_Layer: 3
   m_Name: Player
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -209,6 +209,8 @@ MonoBehaviour:
   _interactableLayer:
     serializedVersion: 2
     m_Bits: 4294967295
+  _playerCamera: {fileID: 0}
+  _showDebugRays: 1
 --- !u!114 &5880869433627786739
 MonoBehaviour:
   m_ObjectHideFlags: 0
