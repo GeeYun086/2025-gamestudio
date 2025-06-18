@@ -1,68 +1,87 @@
 using GravityGame.Gravity;
+using GravityGame.Player;
 using UnityEngine;
 
 namespace GravityGame.Puzzle_Elements
 {
     /// <summary>
-    ///     GameObjects with this component can be picked up, carried and released.
-    ///     Gravity doesn't affect objects while being carried.
+    /// GameObjects with this component can be picked up, carried, and released.
+    /// Gravity doesn't affect objects while being carried.
     /// </summary>
     [RequireComponent(typeof(Rigidbody))]
-    public class Carryable : MonoBehaviour
+    public class Carryable : MonoBehaviour, IInteractable
     {
         Rigidbody _rigidbody;
-        Transform _carryPointTransform;
+        Transform _carryPoint;
+        float _originalDrag;
+        float _originalAngularDrag;
 
-        void Awake()
+        // Note FS: These have been tested and look the best. (still a bit of jittering)
+        const float Force = 5000f;
+        const float Damping = 10f;
+        const float PositionThreshold = 0.2f;
+        const float RotationThreshold = 2f;
+
+        void Awake() => _rigidbody = GetComponent<Rigidbody>();
+
+        public void Interact()
         {
-            _rigidbody = GetComponent<Rigidbody>();
+            var playerCarry = FindFirstObjectByType<PlayerCarry>();
+            if (playerCarry) playerCarry.AttemptPickUp(this);
         }
 
-        public void PickUp(Transform carryPointTransform)
+        public bool IsInteractable => true;
+
+        public void PickUp(Transform carryPoint)
         {
-            _carryPointTransform = carryPointTransform;
+            _carryPoint = carryPoint;
+
+            _originalDrag = _rigidbody.linearDamping;
+            _originalAngularDrag = _rigidbody.angularDamping;
+
+            _rigidbody.linearDamping = Damping;
+            _rigidbody.angularDamping = Damping;
+
             DisableGravity();
         }
 
         public void Release()
         {
-            _carryPointTransform = null;
+            _carryPoint = null;
+
+            _rigidbody.linearDamping = _originalDrag;
+            _rigidbody.angularDamping = _originalAngularDrag;
+
             ReactivateGravity();
         }
 
         void FixedUpdate()
         {
-            if (_carryPointTransform)
+            if (_carryPoint) {
                 MoveToCarryPoint();
+                AlignWithCarryPointRotation();
+            }
         }
 
         void MoveToCarryPoint()
         {
-            float followSpeed = 6f;
-            float velocitySmoothing = 12f;
-            float stopThreshold = 0.02f;
-            float maxSpeed = 8f;
+            if (!_carryPoint) return;
+            var directionToCarryPoint = _carryPoint.position - _rigidbody.position;
 
-            Vector3 toTarget = _carryPointTransform.position - transform.position;
+            if (directionToCarryPoint.magnitude < PositionThreshold) return;
+            _rigidbody.AddForce(directionToCarryPoint.normalized * Force, ForceMode.Force);
+        }
 
-            if (toTarget.magnitude < stopThreshold)
-            {
-                _rigidbody.linearVelocity = Vector3.zero;
-                return;
-            }
+        void AlignWithCarryPointRotation()
+        {
+            if (!_carryPoint) return;
 
-            // Calculate target velocity
-            Vector3 targetVelocity = toTarget * followSpeed;
+            var rotationDifference = _carryPoint.rotation * Quaternion.Inverse(_rigidbody.rotation);
+            rotationDifference.ToAngleAxis(out float angle, out var rotationAxis);
+            if (angle > 180f) angle -= 360f;
 
-            // Smooth current velocity toward target velocity
-            Vector3 smoothedVelocity = Vector3.Lerp(_rigidbody.linearVelocity, targetVelocity,
-                Time.fixedDeltaTime * velocitySmoothing);
-
-            // Clamp speed to avoid overshooting or jitter
-            if (smoothedVelocity.magnitude > maxSpeed)
-                smoothedVelocity = smoothedVelocity.normalized * maxSpeed;
-
-            _rigidbody.linearVelocity = smoothedVelocity;
+            if (Mathf.Abs(angle) < RotationThreshold) return;
+            _rigidbody.AddTorque(rotationAxis.normalized * (angle * Mathf.Deg2Rad * Force), ForceMode.Force);
         }
 
         void DisableGravity()

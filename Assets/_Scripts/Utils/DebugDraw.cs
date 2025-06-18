@@ -14,11 +14,10 @@ namespace GravityGame.Utils
     ///     pixel's location on the screen)
     /// </summary>
     [RequireComponent(typeof(UIDocument))]
-    public class DebugDraw : MonoBehaviour
+    public class DebugDraw : SingletonMonoBehavior<DebugDraw>
     {
         readonly List<Action<MeshGenerationContext>> _drawActionsNextFrame = new();
 
-        static DebugDraw Instance => FindFirstObjectByType<DebugDraw>();
         static VisualElement DebugElement => GameUI.Instance.Elements.DebugElement; // Element to draw on
 
         void Update()
