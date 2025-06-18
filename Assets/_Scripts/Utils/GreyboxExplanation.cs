@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace GravityGame.Utils
 {
-    public class GreyboxDescriptionExplanation : MonoBehaviour
+    public class GreyboxExplanation : MonoBehaviour
     {
         [Header("Greybox Explanation")]
         [TextArea]
