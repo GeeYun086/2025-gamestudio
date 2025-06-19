@@ -10,12 +10,27 @@ namespace GravityGame.Puzzle_Elements
         [SerializeField] float _speed;
         [SerializeField] float _nonPlayerSpeedModifier = 0.5f;
         readonly Dictionary<Rigidbody, RigidbodyConstraints> _onBelt = new();
+        readonly Dictionary<Rigidbody, Quaternion> _settlingObjects = new();
+
+        // Note FS: This is tested and looks the best
+        const float SettleSpeed = 20f;
+        const float TextureScrollMultiplier = 7f;
 
         Material _material;
         void Start() => _material = GetComponent<MeshRenderer>().material;
 
-        // Note FS: This is tested and looks the best
-        void Update() => _material.mainTextureOffset += new Vector2(0, 1) * (_speed * 7f * Time.deltaTime);
+        void Update()
+        {
+            _material.mainTextureOffset += new Vector2(0, 1) * (_speed * TextureScrollMultiplier * Time.deltaTime);
+
+            foreach (var rb in _settlingObjects.Keys.ToList().Where(rb => rb)) {
+                rb.transform.rotation = Quaternion.Lerp(rb.transform.rotation, _settlingObjects[rb], SettleSpeed * Time.deltaTime);
+                if (Quaternion.Angle(rb.transform.rotation, _settlingObjects[rb]) < 0.1f) {
+                    rb.transform.rotation = _settlingObjects[rb];
+                    _settlingObjects.Remove(rb);
+                }
+            }
+        }
 
         void FixedUpdate()
         {
@@ -33,17 +48,33 @@ namespace GravityGame.Puzzle_Elements
             var rb = collision.rigidbody;
             if (rb && !_onBelt.ContainsKey(rb)) {
                 _onBelt.Add(rb, rb.constraints);
-                if (!rb.GetComponent<PlayerMovement>()) rb.constraints = RigidbodyConstraints.FreezeRotation;
+
+                if (!rb.GetComponent<PlayerMovement>()) {
+                    rb.constraints = RigidbodyConstraints.FreezeRotation;
+
+                    var currentAngles = rb.transform.eulerAngles;
+                    var targetAngles = new Vector3(
+                        RoundToNearestAngle(currentAngles.x),
+                        RoundToNearestAngle(currentAngles.y),
+                        RoundToNearestAngle(currentAngles.z)
+                    );
+                    _settlingObjects.Add(rb, Quaternion.Euler(targetAngles));
+                }
             }
         }
 
         void OnCollisionExit(Collision collision)
         {
             var rb = collision.rigidbody;
-            if (rb && _onBelt.TryGetValue(rb, out var originalConstraints)) {
-                rb.constraints = originalConstraints;
-                _onBelt.Remove(rb);
+            if (rb) {
+                if (_onBelt.TryGetValue(rb, out var originalConstraint)) {
+                    rb.constraints = originalConstraint;
+                    _onBelt.Remove(rb);
+                }
+                _settlingObjects.Remove(rb);
             }
         }
+
+        static float RoundToNearestAngle(float angle) => Mathf.Round(angle / 90.0f) * 90.0f;
     }
 }
