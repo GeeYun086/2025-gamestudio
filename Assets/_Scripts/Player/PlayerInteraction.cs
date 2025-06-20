@@ -31,7 +31,7 @@ namespace GravityGame.Player
             CheckForAimedInteractable();
 
             if (Input.GetKeyDown(_interactKey)) {
-                if (_playerCarry && _playerCarry.IsCarrying()) {
+                if (_playerCarry && _playerCarry.IsCarrying) {
                     _playerCarry.AttemptRelease();
                 } else if (_currentlyAimedInteractable is { IsInteractable: true }) {
                     _currentlyAimedInteractable.Interact();

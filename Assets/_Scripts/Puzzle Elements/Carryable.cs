@@ -1,3 +1,4 @@
+using System;
 using GravityGame.Gravity;
 using GravityGame.Player;
 using UnityEngine;
@@ -11,10 +12,16 @@ namespace GravityGame.Puzzle_Elements
     [RequireComponent(typeof(Rigidbody))]
     public class Carryable : MonoBehaviour, IInteractable
     {
-        Rigidbody _rigidbody;
+        [NonSerialized] public Rigidbody Rigidbody;
         Transform _carryPoint;
-        float _originalDrag;
-        float _originalAngularDrag;
+
+        struct CarryState
+        {
+            public float Drag;
+            public float AngularDrag;
+            public float Mass;
+        }
+        CarryState _preCarryState;
 
         // Note FS: These have been tested and look the best. (still a bit of jittering)
         const float Force = 5000f;
@@ -22,7 +29,7 @@ namespace GravityGame.Puzzle_Elements
         const float PositionThreshold = 0.2f;
         const float RotationThreshold = 2f;
 
-        void Awake() => _rigidbody = GetComponent<Rigidbody>();
+        void OnEnable() => Rigidbody = GetComponent<Rigidbody>();
 
         public void Interact()
         {
@@ -32,56 +39,46 @@ namespace GravityGame.Puzzle_Elements
 
         public bool IsInteractable => true;
 
-        public void PickUp(Transform carryPoint)
+        int _previousLayer;
+
+        public void PickUp()
         {
-            _carryPoint = carryPoint;
+            //
+            // _preCarryState = new CarryState {
+            //     Drag = _rigidbody.linearDamping,
+            //     AngularDrag = _rigidbody.angularDamping,
+            //     Mass = _rigidbody.mass,
+            // };
+            //
+            // _rigidbody.linearDamping = Damping;
+            // _rigidbody.angularDamping = Damping;
+            // _rigidbody.mass = 0;
 
-            _originalDrag = _rigidbody.linearDamping;
-            _originalAngularDrag = _rigidbody.angularDamping;
-
-            _rigidbody.linearDamping = Damping;
-            _rigidbody.angularDamping = Damping;
+            _previousLayer = gameObject.layer;
+            gameObject.layer = LayerMask.NameToLayer("Player");
 
             DisableGravity();
         }
 
         public void Release()
         {
-            _carryPoint = null;
-
-            _rigidbody.linearDamping = _originalDrag;
-            _rigidbody.angularDamping = _originalAngularDrag;
-
+            // _rigidbody.linearDamping = _preCarryState.Drag;
+            // _rigidbody.angularDamping = _preCarryState.AngularDrag;
+            // _rigidbody.mass = _preCarryState.Mass;
+            gameObject.layer = _previousLayer;
             ReactivateGravity();
-        }
-
-        void FixedUpdate()
-        {
-            if (_carryPoint) {
-                MoveToCarryPoint();
-                AlignWithCarryPointRotation();
-            }
-        }
-
-        void MoveToCarryPoint()
-        {
-            if (!_carryPoint) return;
-            var directionToCarryPoint = _carryPoint.position - _rigidbody.position;
-
-            if (directionToCarryPoint.magnitude < PositionThreshold) return;
-            _rigidbody.AddForce(directionToCarryPoint.normalized * Force, ForceMode.Force);
         }
 
         void AlignWithCarryPointRotation()
         {
             if (!_carryPoint) return;
 
-            var rotationDifference = _carryPoint.rotation * Quaternion.Inverse(_rigidbody.rotation);
+            var rotationDifference = _carryPoint.rotation * Quaternion.Inverse(Rigidbody.rotation);
             rotationDifference.ToAngleAxis(out float angle, out var rotationAxis);
             if (angle > 180f) angle -= 360f;
 
             if (Mathf.Abs(angle) < RotationThreshold) return;
-            _rigidbody.AddTorque(rotationAxis.normalized * (angle * Mathf.Deg2Rad * Force), ForceMode.Force);
+            Rigidbody.AddTorque(rotationAxis.normalized * (angle * Mathf.Deg2Rad * Force), ForceMode.Force);
         }
 
         void DisableGravity()
@@ -89,7 +86,7 @@ namespace GravityGame.Puzzle_Elements
             if (transform.TryGetComponent(out GravityModifier gravityModifier))
                 gravityModifier.enabled = false;
             else
-                _rigidbody.useGravity = false;
+                Rigidbody.useGravity = false;
         }
 
         void ReactivateGravity()
@@ -97,7 +94,7 @@ namespace GravityGame.Puzzle_Elements
             if (transform.TryGetComponent(out GravityModifier gravityModifier))
                 gravityModifier.enabled = true;
             else
-                _rigidbody.useGravity = true;
+                Rigidbody.useGravity = true;
         }
     }
 }
