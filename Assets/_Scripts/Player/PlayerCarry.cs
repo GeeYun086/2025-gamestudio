@@ -48,7 +48,7 @@ namespace GravityGame.Player
 
         /* ---------------------------- settings end ----------------------------- */
 
-        PlayerMovement _playerMovement;
+        Rigidbody _rigidbody;
         FirstPersonCameraController _camera;
         Collider[] _playerColliders;
 
@@ -58,9 +58,9 @@ namespace GravityGame.Player
         
         void OnEnable()
         {
-            _playerMovement = GetComponent<PlayerMovement>();
             _camera = GetComponentInChildren<FirstPersonCameraController>();
             _playerColliders = GetComponentsInChildren<Collider>();
+            _rigidbody = GetComponent<Rigidbody>();
         }
         
         public bool AttemptPickUp(Carryable obj)
@@ -107,12 +107,6 @@ namespace GravityGame.Player
             if (!_carry.Object) return false;
             // Too far away
             if (Vector3.Distance(transform.position, _carry.Object.transform.position) > MaxCarryDistance) {
-                return true;
-            }
-
-            // Standing on carried object
-            var ground = _playerMovement.Ground.Hit.collider;
-            if (ground && ground == _carry.Object.Collider) {
                 return true;
             }
             return false;

@@ -35,7 +35,6 @@ namespace GravityGame.Player
 
             if (Input.GetKeyDown(_interactKey)) {
                 _interactBuffer.Start();
-                Debug.Log("Interact");
             }
 
             if (_interactBuffer.IsActive) {
@@ -44,7 +43,6 @@ namespace GravityGame.Player
                 } else if (_currentlyAimedInteractable is { IsInteractable: true }) {
                     _currentlyAimedInteractable.Interact();
                     _interactBuffer.Stop();
-                    Debug.Log("consume");
                 }
             }
         }
