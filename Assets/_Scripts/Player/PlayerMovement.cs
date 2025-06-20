@@ -240,13 +240,15 @@ namespace GravityGame.Player
                 if (DebugStepDetection) Debug.Log("Player Stepped!");
                 var difference = step.Hit.point - transform.position;
                 var up = Vector3.Project(difference, transform.up);
-                var fwd = difference - up;
                 // Move up
                 _rigidbody.MovePosition(transform.position + up.normalized * (up.magnitude + 0.05f));
 
+                // Note TG: I think this is no longer needed (?)
                 // Add fwd speed so you have enough to climb stair
-                float climbStairFwdBoost = 1.0f;
-                _rigidbody.AddForce(fwd.normalized * climbStairFwdBoost, ForceMode.VelocityChange);
+                // float climbStairFwdBoost = 1.0f;
+                // var fwd = difference - up;
+                // _rigidbody.AddForce(fwd.normalized * climbStairFwdBoost, ForceMode.VelocityChange);
+                
                 // eliminate downwards velocity
                 var upVelocity = Vector3.Project(_rigidbody.linearVelocity, transform.up);
                 var onlyUpVelocity = Vector3.Dot(upVelocity, transform.up) > 0 ? upVelocity : Vector3.zero;
