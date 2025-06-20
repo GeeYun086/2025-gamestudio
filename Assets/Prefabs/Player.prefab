@@ -207,7 +207,7 @@ MonoBehaviour:
   RotationSpeed: 20
   CarryPhysicsState:
     PhysicsMaterial: {fileID: 13400000, guid: 54ac114d008c7284c90195a582069c6b, type: 2}
-    Mass: 0.5
+    Mass: 0.2
     EnableGravity: 0
   BackpackDelay:
     Duration: 0.1
