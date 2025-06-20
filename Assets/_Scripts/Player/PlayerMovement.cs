@@ -113,6 +113,13 @@ namespace GravityGame.Player
             if (_ground.HasAnyGround) {
                 // Ground Friction
                 var velocityRelativeToGround = velocity - groundVelocity;
+                if (_inputDirection != Vector3.zero) {
+                    var velocityInInputDir = Vector3.Dot(velocityRelativeToGround, _inputDirection.normalized);
+                    if (velocityInInputDir > 0 && velocityInInputDir < MaxMoveSpeed) {
+                        // No friction in input direction
+                        velocityRelativeToGround -= velocityInInputDir * _inputDirection.normalized;
+                    }
+                }
                 velocity -= Vector3.ProjectOnPlane(velocityRelativeToGround, _ground.Normal) * (GroundFriction * deltaTime);
 
                 // On even ground or walkable slope
@@ -262,8 +269,8 @@ namespace GravityGame.Player
 
         GroundInfo CheckGround(Vector3 position)
         {
-            const float margin = 0.05f;
-            const float groundDistance = 0.15f;
+            const float margin = 0.3f;
+            const float groundDistance = margin + 0.10f;
             int layerMask = ~LayerMask.GetMask("Player");
             float radius = _collider.radius * 0.9f;
             var feetPosition = position + (radius + margin) * transform.up;
@@ -273,12 +280,20 @@ namespace GravityGame.Player
             GroundInfo ground = default;
             var results = new RaycastHit[4];
             int numResults = Physics.SphereCastNonAlloc(feetPosition, radius, down, results, distance, layerMask, QueryTriggerInteraction.Ignore);
-            foreach (var hit in results.Take(numResults).OrderBy(hit => hit.distance)) {
-                if (_carry.CarriedObject?.Collider == hit.collider)
+            foreach (var originalHit in results.Take(numResults).OrderBy(hit => hit.distance)) {
+                if (_carry.CarriedObject?.Collider == originalHit.collider)
                     continue;
+                var verifiedHit = originalHit;
+                if (originalHit.point == Vector3.zero) {
+                    // Hit point is zero, the sphere cast may have started inside an object
+                    continue;
+                }
+                if (Physics.Raycast(originalHit.point + margin * transform.up, down, out var hit, distance, layerMask, QueryTriggerInteraction.Ignore)) {
+                    verifiedHit = hit; // Note TG: recast, because spherecast sometimes does not get the actual ground normal for some reason 
+                }
                 var info = new GroundInfo();
-                info.Hit = hit;
-                info.Normal = hit.normal.normalized;
+                info.Hit = verifiedHit;
+                info.Normal = verifiedHit.normal;
                 info.HasAnyGround = true;
                 info.Angle = Vector3.Angle(info.Normal, transform.up);
                 info.HasStableGround = info.Angle <= MaxSlopeAngle;
@@ -286,6 +301,8 @@ namespace GravityGame.Player
                 break;
             }
 
+            DebugDraw.DrawSphere(feetPosition, radius, ground.HasAnyGround ? Color.green : Color.red);
+            Debug.DrawRay(feetPosition, down * distance);
             DebugDraw.DrawSphere(feetPosition + down * distance, radius, ground.HasAnyGround ? Color.green : Color.red);
             return ground;
         }
