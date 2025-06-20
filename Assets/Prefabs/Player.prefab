@@ -197,14 +197,14 @@ MonoBehaviour:
   BackpackCarryPoint: {fileID: 5950629897803535775}
   MaxAngle: 60
   MinAngle: -30
-  MinBackpackAngle: -77
+  MinBackpackAngle: -82
   MinHeight: 0.55
   MaxHeight: 2.5
   MoveSpeed: 30
   RotationSpeed: 20
   CarryPhysicsState:
     PhysicsMaterial: {fileID: 13400000, guid: 54ac114d008c7284c90195a582069c6b, type: 2}
-    Mass: 5
+    Mass: 0.5
     EnableGravity: 0
   BackpackDelay:
     Duration: 0.1

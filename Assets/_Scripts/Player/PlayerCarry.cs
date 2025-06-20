@@ -80,6 +80,7 @@ namespace GravityGame.Player
         {
             if (!_carry.Object) return false;
             if (_carry.ShouldUseBackpack || _carry.UsingBackpack) return false;
+            if (_carry.IsOtherwiseOverlappingWithPlayer) return false;
             var obj = _carry.Object;
             _carry.Object = null;
             _carry.PreCarryPhysicsState.ApplyTo(obj);
@@ -162,7 +163,9 @@ namespace GravityGame.Player
 
         bool ShouldUseBackpack()
         {
+            if (!_carry.Object) return false;
             _carry.ObstructedCarryPosition = FindObstructedCarryPosition();
+            _carry.IsOtherwiseOverlappingWithPlayer = IsOverlappingWithPlayer(_carry.Object.Rigidbody.position);
             if (IsOverlappingWithPlayer(_carry.Position)) {
                 return true;
             }
@@ -222,8 +225,12 @@ namespace GravityGame.Player
                 var rb = _carry.Object.Rigidbody;
                 var newPosition = Vector3.MoveTowards(rb.position, _carry.Position, MoveSpeed * deltaTime);
                 var velocity = (newPosition - rb.position) / deltaTime;
-                if (_carry is { UsingBackpack: false, ObstructedCarryPosition: not null }) {
-                    velocity = Vector3.ClampMagnitude(velocity, 5f); // avoid cramming box into wall with too much speed
+                if (_carry.ObstructedCarryPosition is {} obs) {
+                    bool closeToObstacle = Vector3.Distance(rb.position, newPosition) < Vector3.Distance(rb.position, obs);
+                    if(_carry.ShouldUseBackpack == false && closeToObstacle)
+                        velocity = Vector3.ClampMagnitude(velocity, 5f); // avoid cramming box into wall with too much speed
+                    else
+                        velocity = Vector3.ClampMagnitude(velocity, 10f);
                 }
                 rb.linearVelocity = velocity;
             }
@@ -288,6 +295,8 @@ namespace GravityGame.Player
             public Vector3? ObstructedCarryPosition;
             public bool ShouldUseBackpack;
             public bool UsingBackpack;
+            // (literal) edge case (at edges) where box sweep does not collide will wall
+            public bool IsOtherwiseOverlappingWithPlayer; 
 
             public CarryPhysicsState PreCarryPhysicsState;
         }
