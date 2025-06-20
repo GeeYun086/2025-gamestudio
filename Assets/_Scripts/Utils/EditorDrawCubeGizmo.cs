@@ -7,6 +7,9 @@ namespace GravityGame.Utils
     /// </summary>
     public class EditorDrawCubeGizmo : MonoBehaviour
     {
-        void OnDrawGizmos() => Gizmos.DrawWireCube(transform.position, transform.localScale);
+        void OnDrawGizmos()
+        {
+            if(enabled) Gizmos.DrawWireCube(transform.position, transform.localScale);
+        }
     }
 }

@@ -193,17 +193,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6f6924c2c24955c4e971cfc68d7c11bb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  MinCarryPoint: {fileID: 5950629897803535775}
-  MaxCarryPoint: {fileID: 7671548427145666092}
-  CarryDistance: 2
+  CarryPoint: {fileID: 7671548427145666092}
+  MaxAngle: 60
+  MinAngle: -60
+  MinHeight: 0.2
+  MaxHeight: 2.5
+  HiddenCarryPoint: {fileID: 5950629897803535775}
   MaxCarryDistance: 5
   MaxCarryMass: 250
-  MaxVerticalCarryAngle: 60
-  MinVerticalCarryAngle: -60
   CarrySpeed: 30
-  ExcludeCarryObstaclesLayer:
-    serializedVersion: 2
-    m_Bits: 8
 --- !u!114 &4356562832223538105
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -662,7 +660,7 @@ GameObject:
   - component: {fileID: 7671548427145666092}
   - component: {fileID: 4552945934170128606}
   m_Layer: 0
-  m_Name: MaxCarryPoint
+  m_Name: CarryPoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
