@@ -101,16 +101,13 @@ namespace GravityGame.Player
 
             // Get ground velocity (e.g. moving platform)
             var dynamicGround = Ground.Hit.rigidbody; // or null
-            var groundVelocity = Ground.HasStableGround && dynamicGround
-                ? Vector3.ProjectOnPlane(dynamicGround.linearVelocity, transform.up)
-                : Vector3.zero;
+            var groundVelocity = Ground.HasStableGround && dynamicGround ? dynamicGround.linearVelocity : Vector3.zero;
             var groundVelocityDelta = groundVelocity - _lastGroundVelocity;
 
             float platformStopThreshold = 1.0f;
             bool groundStoppedImmediately = Vector3.Dot(groundVelocityDelta, _lastGroundVelocity) < 0
                                             && groundVelocityDelta.magnitude > platformStopThreshold;
             _lastGroundVelocity = groundVelocity;
-            var originalInputDirection = _inputDirection;
 
             // Get jump velocity
             bool jumped = TryJump();
@@ -197,14 +194,15 @@ namespace GravityGame.Player
                 var jumpForward = Vector3.zero;
                 if (_inputDirection != Vector3.zero) {
                     var velocityRelativeToGround = velocity - groundVelocity;
-                    var velocityInInputDir = Vector3.Dot(velocityRelativeToGround, originalInputDirection.normalized);
+                    var velocityInInputDir = Vector3.Dot(velocityRelativeToGround, _inputDirection);
                     // if jump angle < 90
                     if (velocityInInputDir > 0) {
                         var jumpForwardVelocity = Mathf.Max(
                             velocityInInputDir, // Either preserve all speed in current input dir (possibly faster than MoveSpeed)
                             Mathf.Min(velocityRelativeToGround.magnitude, MaxMoveSpeed) // or if jumping at a larger angle, the total velocity up to MaxMoveSpeed
                         ); 
-                        jumpForward = _inputDirection.normalized * jumpForwardVelocity;
+                        jumpForward = _inputDirection * jumpForwardVelocity;
+                        jumpForward = Vector3.ProjectOnPlane(jumpForward, transform.up); // no additional up on slops
                     }
                 }
 
