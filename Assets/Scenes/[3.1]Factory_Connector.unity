@@ -15968,6 +15968,11 @@ MonoBehaviour:
   m_SelectedFaces: 
   m_SelectedEdges: []
   m_SelectedVertices: 
+--- !u!1 &595560176 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2226919736400839381, guid: d14ed915d8690b843ab2dfeb6b0c175b, type: 3}
+  m_PrefabInstance: {fileID: 1927848857}
+  m_PrefabAsset: {fileID: 0}
 --- !u!43 &613223701
 Mesh:
   m_ObjectHideFlags: 0
@@ -23585,6 +23590,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 367653db18c865e43af9c5f654988225, type: 3}
+--- !u!1 &853268875 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2226919736400839381, guid: d14ed915d8690b843ab2dfeb6b0c175b, type: 3}
+  m_PrefabInstance: {fileID: 769104988}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &857544519
 GameObject:
   m_ObjectHideFlags: 0
@@ -23635,6 +23645,18 @@ PrefabInstance:
       propertyPath: m_Name
       value: GameSystems
       objectReference: {fileID: 0}
+    - target: {fileID: 7299615098542892910, guid: 0a647846d34407d4a957e3f21e7eacdf, type: 3}
+      propertyPath: _gameObjectCheckpoints.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7299615098542892910, guid: 0a647846d34407d4a957e3f21e7eacdf, type: 3}
+      propertyPath: '_gameObjectCheckpoints.Array.data[0]'
+      value: 
+      objectReference: {fileID: 595560176}
+    - target: {fileID: 7299615098542892910, guid: 0a647846d34407d4a957e3f21e7eacdf, type: 3}
+      propertyPath: '_gameObjectCheckpoints.Array.data[1]'
+      value: 
+      objectReference: {fileID: 853268875}
     - target: {fileID: 7831933943372801945, guid: 0a647846d34407d4a957e3f21e7eacdf, type: 3}
       propertyPath: m_LocalPosition.x
       value: -44
