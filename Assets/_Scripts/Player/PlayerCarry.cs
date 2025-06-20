@@ -15,46 +15,45 @@ namespace GravityGame.Player
     {
         [Header("Carry Position Settings")]
         public Transform CarryPoint;
+        public Transform BackpackCarryPoint;
+
         public float MaxAngle = 60f;
         public float MinAngle = -30f;
         public float MinBackpackAngle = -52f;
+
         public float MinHeight = 0.55f;
         public float MaxHeight = 2.5f;
-        public Transform BackpackCarryPoint;
 
-        [Header("Carry Filter Settings")]
-        public float MaxCarryDistance = 5f;
-        public float MaxCarryMass = 250f;
-
-        [Header("Other")]
-        public float CarrySpeed = 30f;
-        public float BackpackDelay = 0.5f;
+        public float MoveSpeed = 10f;
+        public float RotationSpeed = 3f;
+        
+        [Header("Carry Physics")]
         public CarryPhysicsState CarryPhysicsState = new() {
             PhysicsMaterial = null,
             Mass = 5,
             EnableCollider = false,
-            EnableGravity = false,
+            EnableGravity = false
         };
+
+        [Header("Other")]
+        public Timer BackpackDelay = new(0.5f);
+        
+        [Tooltip("Carry Threshold")]
+        public float MaxCarryMass = 250f;
+        [Tooltip("Max distance before carry disconnects")]
+        public float MaxCarryDistance = 5f;
+
+        /// Used for box casts. Should be the (absolute) scale of the carried cube
+        /// Note TG: We currently rely on the carried object being a cube mesh of size (1,1,1), which can then be scaled in unity
+        Vector3 CarryBoxScale => _carry.Object?.transform.lossyScale ?? Vector3.one; 
+
+        /* ---------------------------- settings end ----------------------------- */
 
         PlayerMovement _playerMovement;
         FirstPersonCameraController _camera;
         Collider[] _playerColliders;
-        
-        Vector3 CarryBoxScale => CarryPoint.localScale;
 
-        struct CarryInfo
-        {
-            [CanBeNull] public Carryable Object;
-
-            public Vector3 Position;
-            public Quaternion Rotation;
-            public bool ShouldUseBackpack;
-            public float LastUnobstructedTime;
-            
-            public CarryPhysicsState PreCarryPhysicsState;
-        }
-
-        CarryInfo _carry;
+        CarryInfo _carry; // All information on the current carry operation
 
         void OnEnable()
         {
@@ -65,21 +64,23 @@ namespace GravityGame.Player
 
         public bool IsCarrying => _carry.Object != null;
 
-        public void AttemptPickUp(Carryable obj)
+        public bool AttemptPickUp(Carryable obj)
         {
-            if (_carry.Object) return;
-            if (!obj || obj.Rigidbody.mass > MaxCarryMass) return;
+            if (_carry.Object) return false;
+            if (!obj || obj.Rigidbody.mass > MaxCarryMass) return false;
 
+            _carry.Object = obj;
             _carry.PreCarryPhysicsState = CarryPhysicsState.Get(obj);
             CarryPhysicsState.ApplyTo(obj);
             IgnorePlayerCollision(obj.gameObject, true);
-            _carry.Object = obj;
+            _carry.UsingBackpack = false;
+            return true;
         }
 
-        public void AttemptRelease()
+        public bool AttemptRelease()
         {
-            if (!_carry.Object) return;
-            if (_carry.ShouldUseBackpack) return;
+            if (!_carry.Object) return false;
+            if (_carry.ShouldUseBackpack) return false;
             var obj = _carry.Object;
             _carry.Object = null;
             _carry.PreCarryPhysicsState.ApplyTo(obj);
@@ -88,6 +89,7 @@ namespace GravityGame.Player
             obj.Rigidbody.angularVelocity = Vector3.zero;
 
             obj.Collider.enabled = true;
+            return true;
         }
 
         void Update()
@@ -96,23 +98,25 @@ namespace GravityGame.Player
             _carry.Rotation = GetCarryRotation();
 
             if (_carry.Object) {
-                _carry.ShouldUseBackpack = ShouldUseBackpack();
-                _carry.Object.Collider.enabled = !_carry.ShouldUseBackpack;
-
-                if (_carry.ShouldUseBackpack) {
-                    _carry.Position = BackpackCarryPoint.position;
-                }
-
-                if (Vector3.Distance(transform.position, _carry.Object.transform.position) > MaxCarryDistance) {
-                    AttemptRelease();
-                    return;
-                }
-
-                var ground = _playerMovement.Ground.Hit.collider;
-                if (ground && ground == _carry.Object.Collider) {
-                    AttemptRelease();
-                }
+                UpdateBackpackState();
+                if (IsReleaseNecessary()) AttemptRelease();
             }
+        }
+
+        bool IsReleaseNecessary()
+        {
+            if (!_carry.Object) return false;
+            // Too far away
+            if (Vector3.Distance(transform.position, _carry.Object.transform.position) > MaxCarryDistance) {
+                return true;
+            }
+
+            // Standing on carried object
+            var ground = _playerMovement.Ground.Hit.collider;
+            if (ground && ground == _carry.Object.Collider) {
+                return true;
+            }
+            return false;
         }
 
         Vector3 GetCarryPosition()
@@ -139,6 +143,28 @@ namespace GravityGame.Player
             var right = _camera.transform.right;
             var forward = Vector3.Cross(right, transform.up);
             return Quaternion.LookRotation(forward, transform.up);
+        }
+        
+        void UpdateBackpackState()
+        {
+            if (!_carry.Object) return;
+            var hadUsedBackpack = _carry.ShouldUseBackpack;
+            _carry.ShouldUseBackpack = ShouldUseBackpack();
+            if (_carry.UsingBackpack != _carry.ShouldUseBackpack) {
+                if (BackpackDelay.IsActive) {
+                    return; // waiting
+                }
+                if (hadUsedBackpack != _carry.ShouldUseBackpack) {
+                    BackpackDelay.Start(); // just switched -> start timer
+                } 
+                if (!BackpackDelay.IsActive) {
+                    _carry.UsingBackpack = _carry.ShouldUseBackpack; // timer over -> switch
+                }
+            }
+                
+            // Match backpack state
+            _carry.Object.Collider.enabled = !_carry.UsingBackpack;
+            if (_carry.UsingBackpack) _carry.Position = BackpackCarryPoint.position;
         }
 
         bool ShouldUseBackpack()
@@ -200,7 +226,7 @@ namespace GravityGame.Player
             {
                 if (_carry.Object == null) return;
                 var rb = _carry.Object.Rigidbody;
-                var newPosition = Vector3.MoveTowards(rb.position, _carry.Position, CarrySpeed * deltaTime);
+                var newPosition = Vector3.MoveTowards(rb.position, _carry.Position, MoveSpeed * deltaTime);
                 var velocity = (newPosition - rb.position) / deltaTime;
                 rb.linearVelocity = velocity;
             }
@@ -221,7 +247,7 @@ namespace GravityGame.Player
                 // Only apply if rotation is meaningful
                 if (Mathf.Abs(angleInRadians) > 0.001f) {
                     // Smoothly rotate toward the target at a constant angular speed
-                    float angularSpeed = CarrySpeed;
+                    float angularSpeed = RotationSpeed;
                     float rotationThisFrame = Mathf.Min(angleInRadians, angularSpeed * deltaTime);
                     var angularVelocity = axis * rotationThisFrame / deltaTime;
                     rb.angularVelocity = angularVelocity;
@@ -255,6 +281,18 @@ namespace GravityGame.Player
                 Gizmos.matrix = Matrix4x4.identity;
             }
         }
+        
+        struct CarryInfo
+        {
+            [CanBeNull] public Carryable Object;
+
+            public Vector3 Position;
+            public Quaternion Rotation;
+            public bool ShouldUseBackpack;
+            public bool UsingBackpack;
+
+            public CarryPhysicsState PreCarryPhysicsState;
+        }
     }
 
     [Serializable]
@@ -270,7 +308,7 @@ namespace GravityGame.Player
                 PhysicsMaterial = carryable.Collider.material,
                 Mass = carryable.Rigidbody.mass,
                 EnableGravity = true,
-                EnableCollider = true,
+                EnableCollider = true
             };
 
         public void ApplyTo(Carryable carryable)

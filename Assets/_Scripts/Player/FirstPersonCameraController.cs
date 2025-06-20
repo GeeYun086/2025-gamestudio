@@ -22,6 +22,9 @@ namespace GravityGame.Player
         {
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
+            // Don't render player
+            // Note TG: may need to change in the future
+            GetComponent<Camera>().cullingMask &= ~LayerMask.GetMask("Player"); 
         }
 
         void Update()

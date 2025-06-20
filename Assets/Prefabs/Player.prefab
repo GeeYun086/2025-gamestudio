@@ -194,21 +194,22 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   CarryPoint: {fileID: 7671548427145666092}
+  BackpackCarryPoint: {fileID: 5950629897803535775}
   MaxAngle: 60
   MinAngle: -30
-  MinBackpackAngle: -52
+  MinBackpackAngle: -77
   MinHeight: 0.55
   MaxHeight: 2.5
-  BackpackCarryPoint: {fileID: 5950629897803535775}
-  MaxCarryDistance: 5
-  MaxCarryMass: 250
   CarrySpeed: 30
-  BackpackDelay: 0.5
   CarryPhysicsState:
     PhysicsMaterial: {fileID: 13400000, guid: 54ac114d008c7284c90195a582069c6b, type: 2}
     Mass: 5
     EnableCollider: 0
     EnableGravity: 0
+  BackpackDelay:
+    Duration: 0.2
+  MaxCarryMass: 250
+  MaxCarryDistance: 5
 --- !u!114 &4356562832223538105
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -226,6 +227,8 @@ MonoBehaviour:
   _interactableLayer:
     serializedVersion: 2
     m_Bits: 4294967295
+  _interactBuffer:
+    Duration: 0.3
 --- !u!114 &5880869433627786739
 MonoBehaviour:
   m_ObjectHideFlags: 0

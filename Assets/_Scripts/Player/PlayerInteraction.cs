@@ -1,4 +1,5 @@
 using GravityGame.Puzzle_Elements;
+using GravityGame.Utils;
 using UnityEngine;
 
 namespace GravityGame.Player
@@ -13,6 +14,8 @@ namespace GravityGame.Player
         [SerializeField] float _interactDistance = 3f;
         [SerializeField] KeyCode _interactKey = KeyCode.E;
         [SerializeField] LayerMask _interactableLayer;
+        [SerializeField] Timer _interactBuffer = new(0.5f);
+
 
         [Header("References")]
         Camera _playerCamera;
@@ -31,10 +34,18 @@ namespace GravityGame.Player
             CheckForAimedInteractable();
 
             if (Input.GetKeyDown(_interactKey)) {
+                _interactBuffer.Start();
+                Debug.Log("Interact");
+            }
+
+            if (_interactBuffer.IsActive) {
                 if (_playerCarry && _playerCarry.IsCarrying) {
-                    _playerCarry.AttemptRelease();
+                    bool released = _playerCarry.AttemptRelease();
+                    if (released) _interactBuffer.Stop();
                 } else if (_currentlyAimedInteractable is { IsInteractable: true }) {
                     _currentlyAimedInteractable.Interact();
+                    _interactBuffer.Stop();
+                    Debug.Log("consume");
                 }
             }
         }
