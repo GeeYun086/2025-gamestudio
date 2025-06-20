@@ -22,6 +22,9 @@ namespace GravityGame.Player
         {
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
+            // Don't render player
+            // Note TG: may need to change in the future
+            GetComponent<Camera>().cullingMask &= ~LayerMask.GetMask("Player"); 
         }
 
         void Update()
@@ -45,9 +48,12 @@ namespace GravityGame.Player
             LookDownRotation += lookInputDelta.y;
             LookDownRotation = Mathf.Clamp(LookDownRotation, -90f, 90f);
 
-            transform.localRotation = Quaternion.Euler(LookDownRotation, LookRightRotation, 0f);
-
-            // _playerBody.Rotate(Vector3.up * lookInputDelta.x);
+            if (_playerBody == null || _playerBody == transform) {
+                transform.localRotation = Quaternion.Euler(LookDownRotation, LookRightRotation, 0f);
+            } else {
+                transform.localRotation = Quaternion.Euler(LookDownRotation, 0f, 0f);
+                _playerBody.localRotation = Quaternion.Euler(0f, LookRightRotation, 0f);
+            }
         }
     }
 }
