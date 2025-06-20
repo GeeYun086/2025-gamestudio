@@ -15,16 +15,7 @@ namespace GravityGame.Puzzle_Elements
         [NonSerialized] public Rigidbody Rigidbody;
         [NonSerialized] public Collider Collider;
         Transform _carryPoint;
-
-        struct CarryState
-        {
-            public float Drag;
-            public float AngularDrag;
-            public float Mass;
-        }
-        CarryState _preCarryState;
-
-
+        
         void OnEnable()
         {
             Rigidbody = GetComponent<Rigidbody>();
@@ -38,13 +29,5 @@ namespace GravityGame.Puzzle_Elements
         }
 
         public bool IsInteractable => true;
-
-        public void SetGravityEnabled(bool active)
-        {
-            if (transform.TryGetComponent(out GravityModifier gravityModifier))
-                gravityModifier.enabled = active;
-            else
-                Rigidbody.useGravity = active;
-        }
     }
 }
