@@ -26,7 +26,7 @@ namespace GravityGame.Player
 
         public float MoveSpeed = 10f;
         public float RotationSpeed = 3f;
-        
+
         [Header("Carry Physics")]
         public CarryPhysicsState CarryPhysicsState = new() {
             PhysicsMaterial = null,
@@ -36,7 +36,7 @@ namespace GravityGame.Player
 
         [Header("Other")]
         public Timer BackpackDelay = new(0.5f);
-        
+
         [Tooltip("Carry Threshold")]
         public float MaxCarryMass = 250f;
         [Tooltip("Max distance before carry disconnects")]
@@ -44,7 +44,7 @@ namespace GravityGame.Player
 
         /// Used for box casts. Should be the (absolute) scale of the carried cube
         /// Note TG: We currently rely on the carried object being a cube mesh of size (1,1,1), which can then be scaled in unity
-        Vector3 CarryBoxScale => _carry.Object?.transform.lossyScale ?? Vector3.one; 
+        Vector3 CarryBoxScale => _carry.Object?.transform.lossyScale ?? Vector3.one;
 
         /* ---------------------------- settings end ----------------------------- */
 
@@ -55,14 +55,14 @@ namespace GravityGame.Player
         CarryInfo _carry; // All information on the current carry operation
 
         public Carryable CarriedObject => _carry.Object;
-        
+
         void OnEnable()
         {
             _camera = GetComponentInChildren<FirstPersonCameraController>();
             _playerColliders = GetComponentsInChildren<Collider>();
             _rigidbody = GetComponent<Rigidbody>();
         }
-        
+
         public bool AttemptPickUp(Carryable obj)
         {
             if (_carry.Object) return false;
@@ -138,11 +138,11 @@ namespace GravityGame.Player
             var forward = Vector3.Cross(right, transform.up);
             return Quaternion.LookRotation(forward, transform.up);
         }
-        
+
         void UpdateBackpackState()
         {
             if (!_carry.Object) return;
-            var hadUsedBackpack = _carry.ShouldUseBackpack;
+            bool hadUsedBackpack = _carry.ShouldUseBackpack;
             _carry.ShouldUseBackpack = ShouldUseBackpack();
             if (_carry.UsingBackpack != _carry.ShouldUseBackpack) {
                 if (BackpackDelay.IsActive) {
@@ -150,12 +150,12 @@ namespace GravityGame.Player
                 }
                 if (hadUsedBackpack != _carry.ShouldUseBackpack) {
                     BackpackDelay.Start(); // just switched -> start timer
-                } 
+                }
                 if (!BackpackDelay.IsActive) {
                     _carry.UsingBackpack = _carry.ShouldUseBackpack; // timer over -> switch
                 }
             }
-                
+
             // Match backpack state
             _carry.Object.Collider.enabled = !_carry.UsingBackpack;
             if (_carry.UsingBackpack) _carry.Position = BackpackCarryPoint.position;
@@ -169,7 +169,7 @@ namespace GravityGame.Player
             if (IsOverlappingWithPlayer(_carry.Position)) {
                 return true;
             }
-            if (_carry.ObstructedCarryPosition is {} pos && IsOverlappingWithPlayer(pos)) {
+            if (_carry.ObstructedCarryPosition is { } pos && IsOverlappingWithPlayer(pos)) {
                 return true;
             }
             if (-_camera.LookDownRotation < MinBackpackAngle) {
@@ -189,7 +189,6 @@ namespace GravityGame.Player
             Vector3? FindObstructedCarryPosition()
             {
                 if (_carry.Object == null) return null;
-                var rb = _carry.Object.Rigidbody;
                 var start = _camera.transform.position;
                 var direction = _carry.Position - start;
                 int layerMask = ~LayerMask.GetMask("Player");
@@ -197,11 +196,11 @@ namespace GravityGame.Player
 
                 var results = new RaycastHit[10];
                 int hitCount = Physics.BoxCastNonAlloc(
-                    start, halfExtents, direction.normalized, results, _carry.Rotation, direction.magnitude, layerMask
+                    start, halfExtents, direction.normalized, results, _carry.Rotation, direction.magnitude, layerMask, QueryTriggerInteraction.Ignore
                 );
                 foreach (var hit in results.Take(hitCount)) {
                     if (hit.collider == _carry.Object.Collider) continue;
-                    if (hit.collider.enabled == false || hit.collider.isTrigger) continue;
+                    if (hit.collider.enabled == false) continue;
                     if (hit.collider.gameObject.TryGetComponent<Carryable>(out _)) continue; // ignore other cubes
                     var hitPos = start + direction.normalized * hit.distance;
                     DebugDraw.DrawCube(hitPos, 1f);
@@ -225,9 +224,9 @@ namespace GravityGame.Player
                 var rb = _carry.Object.Rigidbody;
                 var newPosition = Vector3.MoveTowards(rb.position, _carry.Position, MoveSpeed * deltaTime);
                 var velocity = (newPosition - rb.position) / deltaTime;
-                if (_carry.ObstructedCarryPosition is {} obs) {
+                if (_carry.ObstructedCarryPosition is { } obs) {
                     bool closeToObstacle = Vector3.Distance(rb.position, newPosition) < Vector3.Distance(rb.position, obs);
-                    if(_carry.ShouldUseBackpack == false && closeToObstacle)
+                    if (_carry.ShouldUseBackpack == false && closeToObstacle)
                         velocity = Vector3.ClampMagnitude(velocity, 5f); // avoid cramming box into wall with too much speed
                     else
                         velocity = Vector3.ClampMagnitude(velocity, 10f);
@@ -284,19 +283,19 @@ namespace GravityGame.Player
                 Gizmos.matrix = Matrix4x4.identity;
             }
         }
-        
+
         struct CarryInfo
         {
             [CanBeNull] public Carryable Object;
 
             public Vector3 Position;
             public Quaternion Rotation;
-            
+
             public Vector3? ObstructedCarryPosition;
             public bool ShouldUseBackpack;
             public bool UsingBackpack;
             // (literal) edge case (at edges) where box sweep does not collide will wall
-            public bool IsOtherwiseOverlappingWithPlayer; 
+            public bool IsOtherwiseOverlappingWithPlayer;
 
             public CarryPhysicsState PreCarryPhysicsState;
         }
@@ -313,7 +312,7 @@ namespace GravityGame.Player
             new() {
                 PhysicsMaterial = carryable.Collider.sharedMaterial,
                 Mass = carryable.Rigidbody.mass,
-                EnableGravity = true,
+                EnableGravity = true
             };
 
         public void ApplyTo(Carryable carryable)

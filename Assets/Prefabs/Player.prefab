@@ -110,9 +110,12 @@ MonoBehaviour:
   AirAcceleration: 30
   AirDrag: 0.1
   JumpHeight: 1.4
-  JumpPreGroundedGraceTime: 0.15
-  JumpPostGroundedGraceTime: 0.15
-  MinTimeBetweenJumps: 0.2
+  JumpPreGroundedGraceTime:
+    Duration: 0.15
+  JumpPostGroundedGraceTime:
+    Duration: 0.15
+  JumpCooldown:
+    Duration: 0.2
   MoveInput: {fileID: -1680190386980627800, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   JumpInput: {fileID: -2099379676528639254, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   DebugStepDetection: 0
@@ -395,7 +398,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3644912071924156095}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0e3ab07433574a34bae5136e2991ad95, type: 3}
   m_Name: 
@@ -698,7 +701,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6467587918198617616}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0e3ab07433574a34bae5136e2991ad95, type: 3}
   m_Name: 
@@ -914,6 +917,30 @@ PrefabInstance:
     - target: {fileID: 1991700683236326326, guid: 5dfd7d84d21bc2c48bcdd06adb32c656, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3836796474501888986, guid: 5dfd7d84d21bc2c48bcdd06adb32c656, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 4033371392340181403, guid: 5dfd7d84d21bc2c48bcdd06adb32c656, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 4080177843080401979, guid: 5dfd7d84d21bc2c48bcdd06adb32c656, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 5901526890900656660, guid: 5dfd7d84d21bc2c48bcdd06adb32c656, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 6837632829880336541, guid: 5dfd7d84d21bc2c48bcdd06adb32c656, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8991912606789490805, guid: 5dfd7d84d21bc2c48bcdd06adb32c656, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 2
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
