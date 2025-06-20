@@ -54,15 +54,15 @@ namespace GravityGame.Player
 
         CarryInfo _carry; // All information on the current carry operation
 
+        public Carryable CarriedObject => _carry.Object;
+        
         void OnEnable()
         {
             _playerMovement = GetComponent<PlayerMovement>();
             _camera = GetComponentInChildren<FirstPersonCameraController>();
             _playerColliders = GetComponentsInChildren<Collider>();
         }
-
-        public bool IsCarrying => _carry.Object != null;
-
+        
         public bool AttemptPickUp(Carryable obj)
         {
             if (_carry.Object) return false;
@@ -72,7 +72,7 @@ namespace GravityGame.Player
             _carry.Object = obj;
             _carry.PreCarryPhysicsState = CarryPhysicsState.Get(obj);
             CarryPhysicsState.ApplyTo(obj);
-            IgnorePlayerCollision(obj.gameObject, true);
+            IgnorePlayerCollision(obj, true);
             return true;
         }
 
@@ -86,7 +86,7 @@ namespace GravityGame.Player
             obj.Rigidbody.linearVelocity = Vector3.zero;
             obj.Rigidbody.angularVelocity = Vector3.zero;
             obj.Collider.enabled = true;
-            IgnorePlayerCollision(obj.gameObject, false);
+            IgnorePlayerCollision(obj, false);
 
             return true;
         }
@@ -260,10 +260,9 @@ namespace GravityGame.Player
             }
         }
 
-        void IgnorePlayerCollision(GameObject obj, bool ignore)
+        void IgnorePlayerCollision(Carryable obj, bool ignore)
         {
-            if (!obj.TryGetComponent<Collider>(out var objCollider)) return;
-            foreach (var playerCollider in _playerColliders) Physics.IgnoreCollision(playerCollider, objCollider, ignore);
+            foreach (var playerCollider in _playerColliders) Physics.IgnoreCollision(playerCollider, obj.Collider, ignore);
         }
 
         void OnDrawGizmos()

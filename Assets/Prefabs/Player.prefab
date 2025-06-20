@@ -207,7 +207,7 @@ MonoBehaviour:
     Mass: 5
     EnableGravity: 0
   BackpackDelay:
-    Duration: 0.2
+    Duration: 0.1
   MaxCarryMass: 250
   MaxCarryDistance: 5
 --- !u!114 &4356562832223538105

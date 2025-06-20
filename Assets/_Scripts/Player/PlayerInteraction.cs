@@ -39,9 +39,8 @@ namespace GravityGame.Player
             }
 
             if (_interactBuffer.IsActive) {
-                if (_playerCarry && _playerCarry.IsCarrying) {
-                    bool released = _playerCarry.AttemptRelease();
-                    if (released) _interactBuffer.Stop();
+                if (_playerCarry.AttemptRelease()) {
+                    _interactBuffer.Stop();
                 } else if (_currentlyAimedInteractable is { IsInteractable: true }) {
                     _currentlyAimedInteractable.Interact();
                     _interactBuffer.Stop();

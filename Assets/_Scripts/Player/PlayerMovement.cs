@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using GravityGame.Gravity;
 using GravityGame.Utils;
 using UnityEngine;
@@ -40,7 +41,9 @@ namespace GravityGame.Player
 
         Rigidbody _rigidbody;
         CapsuleCollider _collider;
+        PlayerCarry _carry;
         Camera _camera;
+        
         float _lastJumpInputTime;
         float _lastJumpTime;
         float _coyoteLastGroundedTime;
@@ -65,6 +68,7 @@ namespace GravityGame.Player
             _collider = GetComponent<CapsuleCollider>();
             _rigidbody = GetComponent<Rigidbody>();
             _camera = GetComponentInChildren<Camera>();
+            _carry = GetComponent<PlayerCarry>();
 
             _rigidbody.constraints |= RigidbodyConstraints.FreezeRotation;
             _rigidbody.interpolation = RigidbodyInterpolation.Interpolate;
@@ -106,6 +110,7 @@ namespace GravityGame.Player
             bool groundStoppedImmediately = Vector3.Dot(groundVelocityDelta, _lastGroundVelocity) < 0 
                                             && groundVelocityDelta.magnitude > platformStopThreshold;
             _lastGroundVelocity = groundVelocity;
+            var originalInputDirection = _inputDirection;
             
             // Get jump velocity
             bool jumped = TryJump();
@@ -261,7 +266,11 @@ namespace GravityGame.Player
             var down = -transform.up;
 
             GroundInfo ground = default;
-            if (Physics.SphereCast(feetPosition, radius, down, out var hit, distance, layerMask)) {
+            var results = new RaycastHit[8];
+            var numResults = Physics.SphereCastNonAlloc(feetPosition, radius, down, results, distance, layerMask);
+            foreach (var hit in results.Take(numResults)) {
+                if (hit.collider.isTrigger || _carry.CarriedObject?.Collider == hit.collider)
+                    continue;
                 var info = new GroundInfo();
                 info.Hit = hit;
                 info.Normal = hit.normal;
@@ -269,6 +278,7 @@ namespace GravityGame.Player
                 info.Angle = Vector3.Angle(info.Normal, transform.up);
                 info.HasStableGround = info.Angle <= MaxSlopeAngle;
                 ground = info;
+                break;
             }
 
             DebugDraw.DrawSphere(feetPosition + down * distance, radius, ground.HasAnyGround ? Color.green : Color.red);
