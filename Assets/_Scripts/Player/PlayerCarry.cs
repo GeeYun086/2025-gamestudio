@@ -190,7 +190,6 @@ namespace GravityGame.Player
                 var start = _camera.transform.position;
                 var direction = _carry.Position - start;
                 int layerMask = ~LayerMask.GetMask("Player");
-                // if (rb.SweepTest(direction, out var hit, direction.magnitude)) {
                 var halfExtents = CarryBoxScale * 0.5f;
 
                 var results = new RaycastHit[10];
@@ -200,6 +199,7 @@ namespace GravityGame.Player
                 foreach (var hit in results.Take(hitCount)) {
                     if (hit.collider == _carry.Object.Collider) continue;
                     if (hit.collider.enabled == false || hit.collider.isTrigger) continue;
+                    if (hit.collider.gameObject.TryGetComponent<Carryable>(out _)) continue; // ignore other cubes
                     var hitPos = start + direction.normalized * hit.distance;
                     DebugDraw.DrawCube(hitPos, 1f);
                     Debug.DrawRay(start, direction, Color.yellow);
