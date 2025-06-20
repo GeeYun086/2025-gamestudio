@@ -31,7 +31,6 @@ namespace GravityGame.Player
         public CarryPhysicsState CarryPhysicsState = new() {
             PhysicsMaterial = null,
             Mass = 5,
-            EnableCollider = false,
             EnableGravity = false
         };
 
@@ -69,11 +68,11 @@ namespace GravityGame.Player
             if (_carry.Object) return false;
             if (!obj || obj.Rigidbody.mass > MaxCarryMass) return false;
 
+            _carry.UsingBackpack = false;
             _carry.Object = obj;
             _carry.PreCarryPhysicsState = CarryPhysicsState.Get(obj);
             CarryPhysicsState.ApplyTo(obj);
             IgnorePlayerCollision(obj.gameObject, true);
-            _carry.UsingBackpack = false;
             return true;
         }
 
@@ -84,11 +83,11 @@ namespace GravityGame.Player
             var obj = _carry.Object;
             _carry.Object = null;
             _carry.PreCarryPhysicsState.ApplyTo(obj);
-            IgnorePlayerCollision(obj.gameObject, false);
             obj.Rigidbody.linearVelocity = Vector3.zero;
             obj.Rigidbody.angularVelocity = Vector3.zero;
-
             obj.Collider.enabled = true;
+            IgnorePlayerCollision(obj.gameObject, false);
+
             return true;
         }
 
@@ -169,10 +168,11 @@ namespace GravityGame.Player
 
         bool ShouldUseBackpack()
         {
+            _carry.ObstructedCarryPosition = FindObstructedCarryPosition();
             if (IsOverlappingWithPlayer(_carry.Position)) {
                 return true;
             }
-            if (FindObstructedCarryPosition() is { } pos && IsOverlappingWithPlayer(pos)) {
+            if (_carry.ObstructedCarryPosition is {} pos && IsOverlappingWithPlayer(pos)) {
                 return true;
             }
             if (-_camera.LookDownRotation < MinBackpackAngle) {
@@ -228,6 +228,9 @@ namespace GravityGame.Player
                 var rb = _carry.Object.Rigidbody;
                 var newPosition = Vector3.MoveTowards(rb.position, _carry.Position, MoveSpeed * deltaTime);
                 var velocity = (newPosition - rb.position) / deltaTime;
+                if (_carry is { UsingBackpack: false, ObstructedCarryPosition: not null }) {
+                    velocity = Vector3.ClampMagnitude(velocity, 5f); // avoid cramming box into wall with too much speed
+                }
                 rb.linearVelocity = velocity;
             }
 
@@ -288,6 +291,8 @@ namespace GravityGame.Player
 
             public Vector3 Position;
             public Quaternion Rotation;
+            
+            public Vector3? ObstructedCarryPosition;
             public bool ShouldUseBackpack;
             public bool UsingBackpack;
 
@@ -300,22 +305,19 @@ namespace GravityGame.Player
     {
         public PhysicsMaterial PhysicsMaterial;
         public float Mass;
-        public bool EnableCollider;
         public bool EnableGravity;
 
         public static CarryPhysicsState Get(Carryable carryable) =>
             new() {
-                PhysicsMaterial = carryable.Collider.material,
+                PhysicsMaterial = carryable.Collider.sharedMaterial,
                 Mass = carryable.Rigidbody.mass,
                 EnableGravity = true,
-                EnableCollider = true
             };
 
         public void ApplyTo(Carryable carryable)
         {
-            carryable.Collider.material = PhysicsMaterial;
+            carryable.Collider.sharedMaterial = PhysicsMaterial;
             carryable.Rigidbody.mass = Mass;
-            carryable.Collider.enabled = EnableCollider;
 
             if (carryable.TryGetComponent(out GravityModifier gravityModifier)) gravityModifier.enabled = EnableGravity;
             else carryable.Rigidbody.useGravity = EnableGravity;
