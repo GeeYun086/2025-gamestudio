@@ -1,4 +1,9 @@
+using System;
+using System.Linq;
+using GravityGame.Gravity;
 using GravityGame.Puzzle_Elements;
+using GravityGame.Utils;
+using JetBrains.Annotations;
 using UnityEngine;
 
 namespace GravityGame.Player
@@ -8,89 +13,316 @@ namespace GravityGame.Player
     /// </summary>
     public class PlayerCarry : MonoBehaviour
     {
-        [SerializeField] Transform _carryPointTransform;
-        [SerializeField] float _maxCarryDistance = 5f;
-        [SerializeField] float _maxCarryMass = 250f;
-        [SerializeField] float _maxVerticalRotation = 50f;
+        [Header("Carry Position Settings")]
+        public Transform CarryPoint;
+        public Transform BackpackCarryPoint;
 
-        Carryable _currentlyCarrying;
-        PlayerMovement _playerMovement;
-        FirstPersonCameraController _cameraController;
+        public float MaxAngle = 60f;
+        public float MinAngle = -30f;
+        public float MinBackpackAngle = -52f;
+
+        public float MinHeight = 0.55f;
+        public float MaxHeight = 2.5f;
+
+        public float MoveSpeed = 10f;
+        public float RotationSpeed = 3f;
+        
+        [Header("Carry Physics")]
+        public CarryPhysicsState CarryPhysicsState = new() {
+            PhysicsMaterial = null,
+            Mass = 5,
+            EnableGravity = false
+        };
+
+        [Header("Other")]
+        public Timer BackpackDelay = new(0.5f);
+        
+        [Tooltip("Carry Threshold")]
+        public float MaxCarryMass = 250f;
+        [Tooltip("Max distance before carry disconnects")]
+        public float MaxCarryDistance = 5f;
+
+        /// Used for box casts. Should be the (absolute) scale of the carried cube
+        /// Note TG: We currently rely on the carried object being a cube mesh of size (1,1,1), which can then be scaled in unity
+        Vector3 CarryBoxScale => _carry.Object?.transform.lossyScale ?? Vector3.one; 
+
+        /* ---------------------------- settings end ----------------------------- */
+
+        Rigidbody _rigidbody;
+        FirstPersonCameraController _camera;
         Collider[] _playerColliders;
 
-        bool _isYPositionFrozen;
-        float _yOffset;
+        CarryInfo _carry; // All information on the current carry operation
 
-        void Awake()
+        public Carryable CarriedObject => _carry.Object;
+        
+        void OnEnable()
         {
-            _playerMovement = GetComponent<PlayerMovement>();
-            _cameraController = GetComponentInChildren<FirstPersonCameraController>();
+            _camera = GetComponentInChildren<FirstPersonCameraController>();
             _playerColliders = GetComponentsInChildren<Collider>();
+            _rigidbody = GetComponent<Rigidbody>();
+        }
+        
+        public bool AttemptPickUp(Carryable obj)
+        {
+            if (_carry.Object) return false;
+            if (!obj || obj.Rigidbody.mass > MaxCarryMass) return false;
+
+            _carry.UsingBackpack = false;
+            _carry.Object = obj;
+            _carry.PreCarryPhysicsState = CarryPhysicsState.Get(obj);
+            CarryPhysicsState.ApplyTo(obj);
+            IgnorePlayerCollision(obj, true);
+            return true;
         }
 
-        public bool IsCarrying() => _currentlyCarrying;
-        
-        public void AttemptPickUp(Carryable objectToCarry)
+        public bool AttemptRelease()
         {
-            if (!IsCarrying() && objectToCarry && objectToCarry.GetComponent<Rigidbody>() && objectToCarry.GetComponent<Rigidbody>().mass <= _maxCarryMass) {
-                _currentlyCarrying = objectToCarry;
-                _currentlyCarrying.PickUp(_carryPointTransform);
-                IgnorePlayerCollision(true);
-            }
+            if (!_carry.Object) return false;
+            if (_carry.ShouldUseBackpack || _carry.UsingBackpack) return false;
+            if (_carry.IsOtherwiseOverlappingWithPlayer) return false;
+            var obj = _carry.Object;
+            _carry.Object = null;
+            _carry.PreCarryPhysicsState.ApplyTo(obj);
+            obj.Rigidbody.linearVelocity = Vector3.zero;
+            obj.Rigidbody.angularVelocity = Vector3.zero;
+            obj.Collider.enabled = true;
+            IgnorePlayerCollision(obj, false);
+
+            return true;
         }
-        
-        public void AttemptRelease()
-        {
-            if (IsCarrying()) {
-                _isYPositionFrozen = false;
-                IgnorePlayerCollision(false);
-                if (_currentlyCarrying.GetComponent<Rigidbody>()) _currentlyCarrying.Release();
-                _currentlyCarrying = null;
-            }
-        }
-        
+
         void Update()
         {
-            if (IsCarrying()) {
-                if (Vector3.Distance(transform.position, _currentlyCarrying.transform.position) > _maxCarryDistance) {
-                    AttemptRelease();
-                    return;
-                }
+            _carry.Position = GetCarryPosition();
+            _carry.Rotation = GetCarryRotation();
 
-                if (_playerMovement.Ground.Hit.collider &&
-                    _playerMovement.Ground.Hit.collider.gameObject == _currentlyCarrying.gameObject) {
-                    AttemptRelease();
+            if (_carry.Object) {
+                UpdateBackpackState();
+                if (IsReleaseNecessary()) AttemptRelease();
+            }
+        }
+
+        bool IsReleaseNecessary()
+        {
+            if (!_carry.Object) return false;
+            // Too far away
+            if (Vector3.Distance(transform.position, _carry.Object.transform.position) > MaxCarryDistance) {
+                return true;
+            }
+            return false;
+        }
+
+        Vector3 GetCarryPosition()
+        {
+            // Clamp Min Max Carry Angle
+            var right = _camera.transform.right;
+            float clampedLookDownAngle = Mathf.Clamp(_camera.LookDownRotation, -MaxAngle, -MinAngle);
+            var clampedLookDown = Quaternion.AngleAxis(clampedLookDownAngle, right);
+            var lookRight = Quaternion.AngleAxis(_camera.LookRightRotation, transform.up);
+            var localCarryPosition = clampedLookDown * lookRight * CarryPoint.localPosition;
+            var carryPosition = _camera.transform.position + localCarryPosition;
+            // Clamp Min Max Carry Height
+            var playerToCarryPos = carryPosition - transform.position;
+            float carryUp = Vector3.Dot(playerToCarryPos, transform.up);
+            float clampedCarryUp = Mathf.Clamp(carryUp, MinHeight, MaxHeight);
+            playerToCarryPos += transform.up * (clampedCarryUp - carryUp);
+            carryPosition = playerToCarryPos + transform.position;
+
+            return carryPosition;
+        }
+
+        Quaternion GetCarryRotation()
+        {
+            var right = _camera.transform.right;
+            var forward = Vector3.Cross(right, transform.up);
+            return Quaternion.LookRotation(forward, transform.up);
+        }
+        
+        void UpdateBackpackState()
+        {
+            if (!_carry.Object) return;
+            var hadUsedBackpack = _carry.ShouldUseBackpack;
+            _carry.ShouldUseBackpack = ShouldUseBackpack();
+            if (_carry.UsingBackpack != _carry.ShouldUseBackpack) {
+                if (BackpackDelay.IsActive) {
+                    return; // waiting
+                }
+                if (hadUsedBackpack != _carry.ShouldUseBackpack) {
+                    BackpackDelay.Start(); // just switched -> start timer
+                } 
+                if (!BackpackDelay.IsActive) {
+                    _carry.UsingBackpack = _carry.ShouldUseBackpack; // timer over -> switch
+                }
+            }
+                
+            // Match backpack state
+            _carry.Object.Collider.enabled = !_carry.UsingBackpack;
+            if (_carry.UsingBackpack) _carry.Position = BackpackCarryPoint.position;
+        }
+
+        bool ShouldUseBackpack()
+        {
+            if (!_carry.Object) return false;
+            _carry.ObstructedCarryPosition = FindObstructedCarryPosition();
+            _carry.IsOtherwiseOverlappingWithPlayer = IsOverlappingWithPlayer(_carry.Object.Rigidbody.position);
+            if (IsOverlappingWithPlayer(_carry.Position)) {
+                return true;
+            }
+            if (_carry.ObstructedCarryPosition is {} pos && IsOverlappingWithPlayer(pos)) {
+                return true;
+            }
+            if (-_camera.LookDownRotation < MinBackpackAngle) {
+                return true;
+            }
+            return false;
+
+            bool IsOverlappingWithPlayer(Vector3 position)
+            {
+                var halfExtents = CarryBoxScale * 0.5f;
+                int layerMask = LayerMask.GetMask("Player");
+                var results = new Collider[1];
+                int overlappingObjects = Physics.OverlapBoxNonAlloc(position, halfExtents, results, _carry.Rotation, layerMask);
+                return overlappingObjects > 0;
+            }
+
+            Vector3? FindObstructedCarryPosition()
+            {
+                if (_carry.Object == null) return null;
+                var rb = _carry.Object.Rigidbody;
+                var start = _camera.transform.position;
+                var direction = _carry.Position - start;
+                int layerMask = ~LayerMask.GetMask("Player");
+                var halfExtents = CarryBoxScale * 0.5f;
+
+                var results = new RaycastHit[10];
+                int hitCount = Physics.BoxCastNonAlloc(
+                    start, halfExtents, direction.normalized, results, _carry.Rotation, direction.magnitude, layerMask
+                );
+                foreach (var hit in results.Take(hitCount)) {
+                    if (hit.collider == _carry.Object.Collider) continue;
+                    if (hit.collider.enabled == false || hit.collider.isTrigger) continue;
+                    if (hit.collider.gameObject.TryGetComponent<Carryable>(out _)) continue; // ignore other cubes
+                    var hitPos = start + direction.normalized * hit.distance;
+                    DebugDraw.DrawCube(hitPos, 1f);
+                    Debug.DrawRay(start, direction, Color.yellow);
+                    return hitPos;
+                }
+                Debug.DrawRay(start, direction, Color.blue);
+                return null;
+            }
+        }
+
+        void FixedUpdate()
+        {
+            MoveCarriedObject(Time.fixedDeltaTime);
+            RotateCarriedObject(Time.fixedDeltaTime);
+            return;
+
+            void MoveCarriedObject(float deltaTime)
+            {
+                if (_carry.Object == null) return;
+                var rb = _carry.Object.Rigidbody;
+                var newPosition = Vector3.MoveTowards(rb.position, _carry.Position, MoveSpeed * deltaTime);
+                var velocity = (newPosition - rb.position) / deltaTime;
+                if (_carry.ObstructedCarryPosition is {} obs) {
+                    bool closeToObstacle = Vector3.Distance(rb.position, newPosition) < Vector3.Distance(rb.position, obs);
+                    if(_carry.ShouldUseBackpack == false && closeToObstacle)
+                        velocity = Vector3.ClampMagnitude(velocity, 5f); // avoid cramming box into wall with too much speed
+                    else
+                        velocity = Vector3.ClampMagnitude(velocity, 10f);
+                }
+                rb.linearVelocity = velocity;
+            }
+
+            void RotateCarriedObject(float deltaTime)
+            {
+                if (_carry.Object == null) return;
+                var rb = _carry.Object.Rigidbody;
+                var deltaRotation = _carry.Rotation * Quaternion.Inverse(rb.rotation);
+                deltaRotation.ToAngleAxis(out float angleInDegrees, out var axis);
+
+                if (angleInDegrees > 180f) angleInDegrees -= 360f;
+
+                // Convert to radians and normalize axis
+                float angleInRadians = angleInDegrees * Mathf.Deg2Rad;
+                axis.Normalize();
+
+                // Only apply if rotation is meaningful
+                if (Mathf.Abs(angleInRadians) > 0.001f) {
+                    // Smoothly rotate toward the target at a constant angular speed
+                    float angularSpeed = RotationSpeed;
+                    float rotationThisFrame = Mathf.Min(angleInRadians, angularSpeed * deltaTime);
+                    var angularVelocity = axis * rotationThisFrame / deltaTime;
+                    rb.angularVelocity = angularVelocity;
+                } else {
+                    rb.angularVelocity = Vector3.zero;
                 }
             }
         }
-        
-        void LateUpdate()
+
+        void IgnorePlayerCollision(Carryable obj, bool ignore)
         {
-            if (!IsCarrying()) {
-                _isYPositionFrozen = false;
-                return;
+            foreach (var playerCollider in _playerColliders) Physics.IgnoreCollision(playerCollider, obj.Collider, ignore);
+        }
+
+        void OnDrawGizmos()
+        {
+            if (Application.isPlaying) {
+                DrawGizmoCube(_carry.Position, _carry.Rotation, CarryBoxScale);
             }
+            return;
 
-            if (Mathf.Abs(_cameraController.LookDownRotation) > _maxVerticalRotation) {
-                if (!_isYPositionFrozen) {
-                    _isYPositionFrozen = true;
-                    _yOffset = _carryPointTransform.position.y - _playerMovement.transform.position.y;
+            void DrawGizmoCube(Vector3 position, Quaternion rotation, Vector3 scale, bool filled = false)
+            {
+                Gizmos.matrix = Matrix4x4.TRS(position, rotation, scale);
+                if (filled) {
+                    Gizmos.DrawCube(Vector3.zero, Vector3.one);
+                } else {
+                    Gizmos.DrawWireCube(Vector3.zero, Vector3.one);
                 }
-
-                var correctedPosition = _carryPointTransform.position;
-                correctedPosition.y = _playerMovement.transform.position.y + _yOffset;
-                _carryPointTransform.position = correctedPosition;
-            } else {
-                _isYPositionFrozen = false;
+                Gizmos.matrix = Matrix4x4.identity;
             }
         }
         
-        void IgnorePlayerCollision(bool ignore)
+        struct CarryInfo
         {
-            if (!_currentlyCarrying) return;
-            var carriedCollider = _currentlyCarrying.GetComponent<Collider>();
-            if (!carriedCollider) return;
-            foreach (var playerCollider in _playerColliders) Physics.IgnoreCollision(playerCollider, carriedCollider, ignore);
+            [CanBeNull] public Carryable Object;
+
+            public Vector3 Position;
+            public Quaternion Rotation;
+            
+            public Vector3? ObstructedCarryPosition;
+            public bool ShouldUseBackpack;
+            public bool UsingBackpack;
+            // (literal) edge case (at edges) where box sweep does not collide will wall
+            public bool IsOtherwiseOverlappingWithPlayer; 
+
+            public CarryPhysicsState PreCarryPhysicsState;
+        }
+    }
+
+    [Serializable]
+    public struct CarryPhysicsState
+    {
+        public PhysicsMaterial PhysicsMaterial;
+        public float Mass;
+        public bool EnableGravity;
+
+        public static CarryPhysicsState Get(Carryable carryable) =>
+            new() {
+                PhysicsMaterial = carryable.Collider.sharedMaterial,
+                Mass = carryable.Rigidbody.mass,
+                EnableGravity = true,
+            };
+
+        public void ApplyTo(Carryable carryable)
+        {
+            carryable.Collider.sharedMaterial = PhysicsMaterial;
+            carryable.Rigidbody.mass = Mass;
+
+            if (carryable.TryGetComponent(out GravityModifier gravityModifier)) gravityModifier.enabled = EnableGravity;
+            else carryable.Rigidbody.useGravity = EnableGravity;
         }
     }
 }

@@ -131,4 +131,5 @@
     /// &lt;/summary&gt;
   public class $CLASS$ {$END$}
 }</s:String>
+	<s:Boolean x:Key="/Default/UserDictionary/Words/=carryable/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=redstone/@EntryIndexedValue">True</s:Boolean></wpf:ResourceDictionary>

@@ -32,6 +32,49 @@ namespace GravityGame.Utils
             };
             DebugElement.MarkDirtyRepaint();
         }
+        
+        public static void DrawCube(
+            Vector3 center,
+            float size,
+            Color? color = null,
+            float duration = 0f
+        )
+        {
+            var cubeColor = color ?? Color.white;
+            float halfSize = size / 2f;
+
+            // Define the 8 corners of the cube
+            var corners = new Vector3[8];
+
+            corners[0] = center + new Vector3(-halfSize, -halfSize, -halfSize); // LBB
+            corners[1] = center + new Vector3(halfSize, -halfSize, -halfSize);  // RBB
+            corners[2] = center + new Vector3(halfSize, -halfSize, halfSize);   // RBF
+            corners[3] = center + new Vector3(-halfSize, -halfSize, halfSize);  // LBF
+
+            corners[4] = center + new Vector3(-halfSize, halfSize, -halfSize);  // LTB
+            corners[5] = center + new Vector3(halfSize, halfSize, -halfSize);   // RTB
+            corners[6] = center + new Vector3(halfSize, halfSize, halfSize);    // RTF
+            corners[7] = center + new Vector3(-halfSize, halfSize, halfSize);   // LTF
+
+            // Bottom face
+            Debug.DrawLine(corners[0], corners[1], cubeColor, duration);
+            Debug.DrawLine(corners[1], corners[2], cubeColor, duration);
+            Debug.DrawLine(corners[2], corners[3], cubeColor, duration);
+            Debug.DrawLine(corners[3], corners[0], cubeColor, duration);
+
+            // Top face
+            Debug.DrawLine(corners[4], corners[5], cubeColor, duration);
+            Debug.DrawLine(corners[5], corners[6], cubeColor, duration);
+            Debug.DrawLine(corners[6], corners[7], cubeColor, duration);
+            Debug.DrawLine(corners[7], corners[4], cubeColor, duration);
+
+            // Vertical edges
+            Debug.DrawLine(corners[0], corners[4], cubeColor, duration);
+            Debug.DrawLine(corners[1], corners[5], cubeColor, duration);
+            Debug.DrawLine(corners[2], corners[6], cubeColor, duration);
+            Debug.DrawLine(corners[3], corners[7], cubeColor, duration);
+        }
+
 
         public static void DrawSphere(
             Vector3 center,
