@@ -1,5 +1,6 @@
 using System.Linq;
 using GravityGame.Gravity;
+using GravityGame.Puzzle_Elements;
 using GravityGame.Utils;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -100,7 +101,7 @@ namespace GravityGame.Player
             var groundVelocity = _ground.HasStableGround && dynamicGround ? dynamicGround.linearVelocity : Vector3.zero;
             var groundVelocityDelta = groundVelocity - _lastGroundVelocity;
 
-            float platformStopThreshold = 1.0f;
+            const float platformStopThreshold = 1.0f;
             bool groundStoppedImmediately = Vector3.Dot(groundVelocityDelta, _lastGroundVelocity) < 0
                                             && groundVelocityDelta.magnitude > platformStopThreshold;
             _lastGroundVelocity = groundVelocity;
@@ -122,24 +123,21 @@ namespace GravityGame.Player
                     var upVelocity = Vector3.Project(velocity, transform.up);
                     float upVelocityValue = Vector3.Dot(upVelocity, transform.up) > 0 ? upVelocity.magnitude : -upVelocity.magnitude;
 
+                    // don't stick to cubes
+                    if (dynamicGround && dynamicGround.TryGetComponent<Carryable>(out _)) {
+                        gravity = -transform.up * 10f; 
+                    } 
                     // Stick to slope
-                    if (_ground.Angle > 0.1f) {
-                        var stickToGround = -_ground.Normal * 50f;
-                        if (dynamicGround) {
-                            stickToGround = gravity * 0.1f;
-                            if (_inputDirection == Vector3.zero) {
-                                var slopeUp = Vector3.ProjectOnPlane(transform.up, _ground.Normal);
-                                var slopeUpVelocity = Vector3.Project(velocity, slopeUp);
-                                velocity -= slopeUpVelocity;
-                            }
-                        }
+                    else if (_ground.Angle > 0.1f) {
                         if (_inputDirection == Vector3.zero) {
                             // stick to slope when standing still
-                            gravity = stickToGround;
+                            gravity = -_ground.Normal * 50f;
                         } else if (upVelocityValue > 0f && !jumped) {
                             // stick to slope when walking up it
-                            gravity = stickToGround;
+                            gravity = -_ground.Normal * 50f;
                         }
+                    } else {
+                        gravity = -_ground.Normal * 10f;
                     }
                 }
                 // On Steep Slope
@@ -280,7 +278,7 @@ namespace GravityGame.Player
                     continue;
                 var info = new GroundInfo();
                 info.Hit = hit;
-                info.Normal = hit.normal;
+                info.Normal = hit.normal.normalized;
                 info.HasAnyGround = true;
                 info.Angle = Vector3.Angle(info.Normal, transform.up);
                 info.HasStableGround = info.Angle <= MaxSlopeAngle;
@@ -328,11 +326,11 @@ namespace GravityGame.Player
                 var p2 = start + (_collider.height - _collider.radius) * transform.up;
                 var results = new Collider[1];
                 int numResults = Physics.OverlapCapsuleNonAlloc(p1, p2, _collider.radius, results, layerMask, QueryTriggerInteraction.Ignore);
-                DebugDraw.DrawSphere(p1, _collider.radius, Color.black);
-                DebugDraw.DrawSphere(p2, _collider.radius, Color.black);
+                if (DebugStepDetection) DebugDraw.DrawSphere(p1, _collider.radius, Color.black);
+                if (DebugStepDetection) DebugDraw.DrawSphere(p2, _collider.radius, Color.black);
                 if (numResults > 0) {
                     if (DebugStepDetection) Debug.DrawRay(origin, dir * hit.distance, Color.black);
-                    Debug.Log($"step obstructed by {results[0].name}");
+                    if (DebugStepDetection) Debug.Log($"step obstructed by {results[0].name}");
                     return noStep;
                 }
 
