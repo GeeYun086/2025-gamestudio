@@ -79,7 +79,7 @@ namespace GravityGame.Player
         public bool AttemptRelease()
         {
             if (!_carry.Object) return false;
-            if (_carry.ShouldUseBackpack) return false;
+            if (_carry.ShouldUseBackpack || _carry.UsingBackpack) return false;
             var obj = _carry.Object;
             _carry.Object = null;
             _carry.PreCarryPhysicsState.ApplyTo(obj);
