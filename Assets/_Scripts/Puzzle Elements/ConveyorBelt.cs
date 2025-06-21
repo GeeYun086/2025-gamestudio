@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using GravityGame.Player;
 using UnityEngine;
 
@@ -7,38 +6,47 @@ namespace GravityGame.Puzzle_Elements
 {
     public class ConveyorBelt : MonoBehaviour
     {
-        [SerializeField] float _speed;
-        [SerializeField] float _nonPlayerSpeedModifier = 0.5f;
-        readonly Dictionary<Rigidbody, RigidbodyConstraints> _onBelt = new();
-        readonly Dictionary<Rigidbody, Quaternion> _settlingObjects = new();
-
-        // Note FS: This is tested and looks the best
-        const float SettleSpeed = 20f;
-        const float TextureScrollMultiplier = 7f;
-
+        [SerializeField] float _speed = 1f;
+        [SerializeField] float _acceleration = 10f;
+        [SerializeField] float _friction = 5.0f;
+        [SerializeField] float _angularFriction = 5.0f;
+        [SerializeField] float _textureScrollMultiplier = 1.3f; // Note FS: This is tested and looks the best
+        readonly HashSet<Rigidbody> _onBelt = new();
         Material _material;
+        
+        public Vector3 Velocity => _speed * transform.forward;
         void Start() => _material = GetComponent<MeshRenderer>().material;
 
         void Update()
         {
-            _material.mainTextureOffset += new Vector2(0, 1) * (_speed * TextureScrollMultiplier * Time.deltaTime);
-
-            foreach (var rb in _settlingObjects.Keys.ToList().Where(rb => rb)) {
-                rb.transform.rotation = Quaternion.Lerp(rb.transform.rotation, _settlingObjects[rb], SettleSpeed * Time.deltaTime);
-                if (Quaternion.Angle(rb.transform.rotation, _settlingObjects[rb]) < 0.1f) {
-                    rb.transform.rotation = _settlingObjects[rb];
-                    _settlingObjects.Remove(rb);
-                }
-            }
+            _material.mainTextureOffset += new Vector2(0, 1) * (_speed * _textureScrollMultiplier * Time.deltaTime);
         }
 
         void FixedUpdate()
         {
-            foreach (var rb in _onBelt.Keys.Where(rb => rb)) {
+            _onBelt.RemoveWhere(rb => !rb);
+            foreach (var rb in _onBelt) {
                 if (rb.GetComponent<PlayerMovement>()) {
-                    rb.AddForce(_speed * transform.forward, ForceMode.VelocityChange);
+                    // handled in PlayerMovement
                 } else {
-                    rb.AddForce(_nonPlayerSpeedModifier * _speed * transform.forward, ForceMode.VelocityChange);
+                    var currentVelocity = rb.linearVelocity;
+
+                    // friction
+                    float velocityInBeltDirection = Vector3.Dot(currentVelocity, transform.forward);
+                    var frictionVector = Vector3.ProjectOnPlane(currentVelocity, transform.up)
+                                         - Mathf.Clamp(velocityInBeltDirection, 0, _speed) * transform.forward;
+                    rb.AddForce(frictionVector * -(_friction * Time.fixedDeltaTime), ForceMode.VelocityChange);
+
+                    // acceleration
+                    if (velocityInBeltDirection < _speed) {
+                        float newVelocityInBeltDir = Mathf.MoveTowards(velocityInBeltDirection, _speed, _acceleration * Time.fixedDeltaTime);
+                        rb.AddForce(transform.forward * (newVelocityInBeltDir - velocityInBeltDirection), ForceMode.VelocityChange);
+                    }
+
+                    // angular friction
+                    var angularVelocity = rb.angularVelocity;
+                    angularVelocity = Vector3.MoveTowards(angularVelocity, Vector3.zero, _angularFriction * Time.fixedDeltaTime);
+                    rb.AddTorque(angularVelocity - rb.angularVelocity, ForceMode.VelocityChange);
                 }
             }
         }
@@ -46,35 +54,13 @@ namespace GravityGame.Puzzle_Elements
         void OnCollisionEnter(Collision collision)
         {
             var rb = collision.rigidbody;
-            if (rb && !_onBelt.ContainsKey(rb)) {
-                _onBelt.Add(rb, rb.constraints);
-
-                if (!rb.GetComponent<PlayerMovement>()) {
-                    rb.constraints = RigidbodyConstraints.FreezeRotation;
-
-                    var currentAngles = rb.transform.eulerAngles;
-                    var targetAngles = new Vector3(
-                        RoundToNearestAngle(currentAngles.x),
-                        RoundToNearestAngle(currentAngles.y),
-                        RoundToNearestAngle(currentAngles.z)
-                    );
-                    _settlingObjects.Add(rb, Quaternion.Euler(targetAngles));
-                }
-            }
+            if (rb) _onBelt.Add(rb);
         }
 
         void OnCollisionExit(Collision collision)
         {
             var rb = collision.rigidbody;
-            if (rb) {
-                if (_onBelt.TryGetValue(rb, out var originalConstraint)) {
-                    rb.constraints = originalConstraint;
-                    _onBelt.Remove(rb);
-                }
-                _settlingObjects.Remove(rb);
-            }
+            if (rb) _onBelt.Remove(rb);
         }
-
-        static float RoundToNearestAngle(float angle) => Mathf.Round(angle / 90.0f) * 90.0f;
     }
 }
