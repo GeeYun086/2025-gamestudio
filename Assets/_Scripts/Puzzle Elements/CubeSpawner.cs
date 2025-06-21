@@ -1,4 +1,6 @@
+using System;
 using System.Collections;
+using System.Linq;
 using GravityGame.Gravity;
 using UnityEngine;
 
@@ -18,7 +20,7 @@ namespace GravityGame.Puzzle_Elements
         GameObject _currentCube;
         bool _isPowered;
         Vector3 CubePosition => transform.position + 1.0f * transform.up;
-        
+
         /// <summary>
         ///     Called whenever redstone power changes.
         ///     Spawns a cube on the rising edge (false→true) only once per pulse.
@@ -40,10 +42,9 @@ namespace GravityGame.Puzzle_Elements
         /// </summary>
         void Respawn()
         {
-            if (_currentCube != null) {
-                _currentCube.transform.position = new Vector3(10000, 10000, 10000);
+            if (_currentCube != null)
                 Destroy(_currentCube);
-            }
+
 
             _currentCube = Instantiate(
                 Cube,

@@ -17,19 +17,24 @@ namespace GravityGame.Puzzle_Elements
         [SerializeField] bool _isPowered;
         [SerializeField] List<RedstoneComponent> _logicComponents;
 
-        readonly List<Collider> _overlappingObjects = new();
+        public readonly List<Collider> OverlappingObjects = new();
 
         void OnTriggerEnter(Collider other)
         {
             if (!TriggersOverlap(other)) return;
-            _overlappingObjects.Add(other);
+            OverlappingObjects.Add(other);
             UpdateState();
         }
 
-        void OnTriggerExit(Collider other)
+        public void OnTriggerExit(Collider other)
         {
             if (!TriggersOverlap(other)) return;
-            _overlappingObjects.Remove(other);
+            OverlappingObjects.Remove(other);
+            UpdateState();
+        }
+
+        void Update()
+        {
             UpdateState();
         }
 
@@ -37,8 +42,9 @@ namespace GravityGame.Puzzle_Elements
 
         void UpdateState()
         {
-            _overlappingObjects.RemoveAll(o => o == null);
-            _isPowered = _overlappingObjects.Count > 0;
+            OverlappingObjects.RemoveAll(o => o == null);
+
+            _isPowered = OverlappingObjects.Count > 0;
 
             _pressurePlateOn.SetActive(_isPowered);
             _pressurePlateOff.SetActive(!_isPowered);
