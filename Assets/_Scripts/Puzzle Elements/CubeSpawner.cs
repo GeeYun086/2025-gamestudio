@@ -40,8 +40,10 @@ namespace GravityGame.Puzzle_Elements
         /// </summary>
         void Respawn()
         {
-            if (_currentCube != null)
+            if (_currentCube != null) {
+                _currentCube.transform.position = new Vector3(10000, 10000, 10000);
                 Destroy(_currentCube);
+            }
 
             _currentCube = Instantiate(
                 Cube,
