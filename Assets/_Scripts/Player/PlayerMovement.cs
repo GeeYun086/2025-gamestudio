@@ -1,6 +1,6 @@
-using System;
 using System.Linq;
 using GravityGame.Gravity;
+using GravityGame.Puzzle_Elements;
 using GravityGame.Utils;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -28,9 +28,9 @@ namespace GravityGame.Player
 
         [Header("Jumping")]
         public float JumpHeight = 1.4f;
-        public float JumpPreGroundedGraceTime = 0.15f;
-        public float JumpPostGroundedGraceTime = 0.15f;
-        public float MinTimeBetweenJumps = 0.2f;
+        public Timer JumpPreGroundedGraceTime = new(0.15f); // input buffer
+        public Timer JumpPostGroundedGraceTime = new(0.15f); // coyote time
+        public Timer JumpCooldown = new(0.2f);
 
         [Header("Input")]
         public InputActionReference MoveInput;
@@ -43,15 +43,12 @@ namespace GravityGame.Player
         CapsuleCollider _collider;
         PlayerCarry _carry;
         Camera _camera;
-        
-        float _lastJumpInputTime;
-        float _lastJumpTime;
-        float _coyoteLastGroundedTime;
-        Vector3 _inputDirection;
-        public GroundInfo Ground;
-        Vector3 _lastGroundVelocity;
 
-        public struct GroundInfo
+        Vector3 _inputDirection;
+        Vector3 _lastGroundVelocity;
+        GroundInfo _ground;
+
+        struct GroundInfo
         {
             public bool HasAnyGround;
             public bool HasStableGround;
@@ -70,10 +67,10 @@ namespace GravityGame.Player
             _camera = GetComponentInChildren<Camera>();
             _carry = GetComponent<PlayerCarry>();
 
-            _rigidbody.constraints |= RigidbodyConstraints.FreezeRotation;
+            _rigidbody.constraints = RigidbodyConstraints.FreezeRotation;
             _rigidbody.interpolation = RigidbodyInterpolation.Interpolate;
 
-            JumpInput.action.performed += _ => _lastJumpInputTime = Time.time;
+            JumpInput.action.performed += _ => JumpPreGroundedGraceTime.Start();
         }
 
         void Update()
@@ -88,7 +85,7 @@ namespace GravityGame.Player
         void FixedUpdate()
         {
             transform.up = -Gravity;
-            Ground = CheckGround(transform.position);
+            _ground = CheckGround(transform.position);
             Move();
             TryStepUp();
         }
@@ -100,59 +97,65 @@ namespace GravityGame.Player
             var gravity = Gravity;
 
             // Get ground velocity (e.g. moving platform)
-            var dynamicGround = Ground.Hit.rigidbody; // or null
-            var groundVelocity = Ground.HasStableGround && dynamicGround
-                ? Vector3.ProjectOnPlane(dynamicGround.linearVelocity, transform.up)
-                : Vector3.zero;
+            var dynamicGround = _ground.Hit.rigidbody; // or null
+            var groundVelocity = Vector3.zero;
+            if (_ground.HasStableGround) {
+                if (dynamicGround)
+                    groundVelocity = dynamicGround.linearVelocity;
+                else if (_ground.Hit.collider.gameObject.TryGetComponent<ConveyorBelt>(out var conveyorBelt))
+                    groundVelocity = conveyorBelt.Velocity;
+            }
             var groundVelocityDelta = groundVelocity - _lastGroundVelocity;
-            
-            float platformStopThreshold = 1.0f;
-            bool groundStoppedImmediately = Vector3.Dot(groundVelocityDelta, _lastGroundVelocity) < 0 
+
+            const float platformStopThreshold = 1.0f;
+            bool groundStoppedImmediately = Vector3.Dot(groundVelocityDelta, _lastGroundVelocity) < 0
                                             && groundVelocityDelta.magnitude > platformStopThreshold;
             _lastGroundVelocity = groundVelocity;
-            var originalInputDirection = _inputDirection;
-            
+
             // Get jump velocity
             bool jumped = TryJump();
 
             // Friction and Slopes
-            if (Ground.HasAnyGround) {
+            if (_ground.HasAnyGround) {
                 // Ground Friction
                 var velocityRelativeToGround = velocity - groundVelocity;
-                velocity -= Vector3.ProjectOnPlane(velocityRelativeToGround, Ground.Normal) * GroundFriction * deltaTime;
-                
+                if (_inputDirection != Vector3.zero) {
+                    var velocityInInputDir = Vector3.Dot(velocityRelativeToGround, _inputDirection.normalized);
+                    if (velocityInInputDir > 0 && velocityInInputDir < MaxMoveSpeed) {
+                        // No friction in input direction
+                        velocityRelativeToGround -= velocityInInputDir * _inputDirection.normalized;
+                    }
+                }
+                velocity -= Vector3.ProjectOnPlane(velocityRelativeToGround, _ground.Normal) * (GroundFriction * deltaTime);
+
                 // On even ground or walkable slope
-                if (Ground.HasStableGround) {
+                if (_ground.HasStableGround) {
                     // Project walk movement on slope
-                    _inputDirection = Vector3.ProjectOnPlane(_inputDirection, Ground.Normal);
+                    _inputDirection = Vector3.ProjectOnPlane(_inputDirection, _ground.Normal);
 
                     var upVelocity = Vector3.Project(velocity, transform.up);
                     float upVelocityValue = Vector3.Dot(upVelocity, transform.up) > 0 ? upVelocity.magnitude : -upVelocity.magnitude;
 
+                    // don't stick to cubes
+                    if (dynamicGround && dynamicGround.TryGetComponent<Carryable>(out _)) {
+                        gravity = -transform.up * 10f; 
+                    } 
                     // Stick to slope
-                    if (Ground.Angle > 0.1f) {
-                        var stickToGround = -Ground.Normal * 50f;
-                        if (dynamicGround) {
-                            stickToGround = gravity * 0.1f;
-                            if (_inputDirection == Vector3.zero) {
-                                var slopeUp = Vector3.ProjectOnPlane(transform.up, Ground.Normal);
-                                var slopeUpVelocity = Vector3.Project(velocity, slopeUp);
-                                velocity -= slopeUpVelocity;   
-                            }
-                        }
+                    else if (_ground.Angle > 0.1f) {
                         if (_inputDirection == Vector3.zero) {
                             // stick to slope when standing still
-                            gravity = stickToGround;
+                            gravity = -_ground.Normal * 50f;
                         } else if (upVelocityValue > 0f && !jumped) {
                             // stick to slope when walking up it
-                            gravity = stickToGround;
+                            gravity = -_ground.Normal * 50f;
                         }
+                    } else {
+                        gravity = -_ground.Normal * 10f;
                     }
-                    
                 }
                 // On Steep Slope
                 else {
-                    var slopeUp = Vector3.ProjectOnPlane(transform.up, Ground.Normal);
+                    var slopeUp = Vector3.ProjectOnPlane(transform.up, _ground.Normal);
                     // Eliminate velocity up slopes
                     var slopeUpVelocity = Vector3.Project(velocity, slopeUp);
                     if (Vector3.Dot(slopeUp, slopeUpVelocity) > 0) {
@@ -164,25 +167,25 @@ namespace GravityGame.Player
                         _inputDirection -= slopeUpInput;
                     }
                 }
-                
+
                 // Add moving ground velocity, don't apply if sudden platform movement -> player should get launched off
-                if(!groundStoppedImmediately) {
+                if (!groundStoppedImmediately) {
                     velocity += groundVelocityDelta;
                 }
             } else {
                 // Air Drag
-                velocity -= Vector3.ProjectOnPlane(velocity, transform.up) * AirDrag * deltaTime;
+                velocity -= Vector3.ProjectOnPlane(velocity, transform.up) * (AirDrag * deltaTime);
             }
 
             // Ground Acceleration
-            {
+            if (_inputDirection != Vector3.zero) {
                 var velocityRelativeToGround = velocity - groundVelocity;
                 var velocityInInputDir = Vector3.Project(velocityRelativeToGround, _inputDirection);
                 bool movingInOppositeDirection = Vector3.Dot(velocityInInputDir, _inputDirection) < 0;
 
-                var moveSpeed = Ground.HasStableGround ? MaxMoveSpeed : MaxAirMoveSpeed;
-                var acceleration = Ground.HasStableGround ? MoveAcceleration : AirAcceleration;
-                
+                float moveSpeed = _ground.HasStableGround ? MaxMoveSpeed : MaxAirMoveSpeed;
+                float acceleration = _ground.HasStableGround ? MoveAcceleration : AirAcceleration;
+
                 bool hasNotReachedMaxSpeed = velocityInInputDir.magnitude < moveSpeed || movingInOppositeDirection;
                 if (hasNotReachedMaxSpeed) {
                     var desiredInputVelocity = _inputDirection.normalized * moveSpeed;
@@ -194,28 +197,42 @@ namespace GravityGame.Player
 
             // Jump
             if (jumped) {
-                var upVelocity = Vector3.Project(velocity, transform.up);
-                var onlyUpVelocity = Vector3.Dot(upVelocity, transform.up) > 0 ? upVelocity : Vector3.zero;
+                // Jump only preserves velocity in inputDirection
+                var jumpForward = Vector3.zero;
+                if (_inputDirection != Vector3.zero) {
+                    var velocityRelativeToGround = velocity - groundVelocity;
+                    float velocityInInputDir = Vector3.Dot(velocityRelativeToGround, _inputDirection);
+                    // if jump angle < 90
+                    if (velocityInInputDir > 0) {
+                        float jumpForwardVelocity = Mathf.Max(
+                            velocityInInputDir, // Either preserve all speed in current input dir (possibly faster than MoveSpeed)
+                            Mathf.Min(
+                                velocityRelativeToGround.magnitude, MaxMoveSpeed
+                            ) // or if jumping at a larger angle, the total velocity up to MaxMoveSpeed
+                        );
+                        jumpForward = _inputDirection * jumpForwardVelocity;
+                        jumpForward = Vector3.ProjectOnPlane(jumpForward, transform.up); // no additional up on slops
+                    }
+                }
 
-                // Jump eliminates velocity outside inputDirection
-                var planeVelocity = Vector3.ProjectOnPlane(velocity, transform.up);
-                var planeVelocityInInputDir = Vector3.Project(planeVelocity, _inputDirection);
-                planeVelocityInInputDir = Vector3.Dot(planeVelocityInInputDir, _inputDirection) > 0 ? planeVelocityInInputDir : Vector3.zero;
-                
-                var jumpForwardVelocity = Mathf.Max(Mathf.Min(MaxMoveSpeed, planeVelocity.magnitude), planeVelocityInInputDir.magnitude);
-                var jumpForward = _inputDirection.normalized * jumpForwardVelocity;
-                
+                // Jump up
                 float jumpUpVelocity = Mathf.Sqrt(JumpHeight * 2f * Gravity.magnitude);
                 var jumpUp = transform.up * jumpUpVelocity;
-                velocity = jumpUp + jumpForward + onlyUpVelocity + groundVelocity;
-            
+
+                // Overwrite velocity
+                velocity = jumpUp + jumpForward + groundVelocity;
+                // Debug.Log($"up: {jumpUp} fwd: {jumpForward} ground: {groundVelocity}");
+
                 // un-ground yourself
-                Ground = default; 
+                _ground = default;
+
                 // push ground down
-                // Note TG: calculate velocity assuming normal gravity magnitude. The actual jump velocity is way higher and would push objects too far, since player has naturally higher gravity
-                float pushDownVelocity = Mathf.Sqrt(JumpHeight * 2f * 9.8f);
-                var pushDown = -transform.up * pushDownVelocity;
-                dynamicGround?.AddForceAtPosition(pushDown * _rigidbody.mass, transform.position, ForceMode.Impulse);
+                if (dynamicGround) {
+                    // Note TG: calculate velocity assuming normal gravity magnitude. The actual jump velocity is way higher and would push objects too far, since player has naturally higher gravity
+                    float pushDownVelocity = Mathf.Sqrt(JumpHeight * 2f * 9.8f);
+                    var pushDown = -transform.up * pushDownVelocity;
+                    dynamicGround.AddForceAtPosition(pushDown * _rigidbody.mass, transform.position, ForceMode.Impulse);
+                }
             }
 
             // Apply Force
@@ -229,13 +246,15 @@ namespace GravityGame.Player
                 if (DebugStepDetection) Debug.Log("Player Stepped!");
                 var difference = step.Hit.point - transform.position;
                 var up = Vector3.Project(difference, transform.up);
-                var fwd = difference - up;
                 // Move up
                 _rigidbody.MovePosition(transform.position + up.normalized * (up.magnitude + 0.05f));
 
+                // Note TG: I think this is no longer needed (?)
                 // Add fwd speed so you have enough to climb stair
-                float climbStairFwdBoost = 1.0f;
-                _rigidbody.AddForce(fwd.normalized * climbStairFwdBoost, ForceMode.VelocityChange);
+                // float climbStairFwdBoost = 1.0f;
+                // var fwd = difference - up;
+                // _rigidbody.AddForce(fwd.normalized * climbStairFwdBoost, ForceMode.VelocityChange);
+                
                 // eliminate downwards velocity
                 var upVelocity = Vector3.Project(_rigidbody.linearVelocity, transform.up);
                 var onlyUpVelocity = Vector3.Dot(upVelocity, transform.up) > 0 ? upVelocity : Vector3.zero;
@@ -246,19 +265,20 @@ namespace GravityGame.Player
 
         bool TryJump()
         {
-            if (Ground.HasStableGround) _coyoteLastGroundedTime = Time.time;
-            bool hasJumpInput = _lastJumpInputTime + JumpPreGroundedGraceTime > Time.time;
-            bool canJump = _coyoteLastGroundedTime + JumpPostGroundedGraceTime > Time.time && _lastJumpTime + MinTimeBetweenJumps < Time.time;
+            if (_ground.HasStableGround) JumpPostGroundedGraceTime.Start();
+            bool hasJumpInput = JumpPreGroundedGraceTime.IsActive;
+            bool canJump = JumpPostGroundedGraceTime.IsActive && !JumpCooldown.IsActive;
             if (!hasJumpInput || !canJump) return false;
-            _coyoteLastGroundedTime = 0;
-            _lastJumpTime = Time.time;
+            JumpPostGroundedGraceTime.Stop();
+            JumpPreGroundedGraceTime.Stop();
+            JumpCooldown.Start();
             return true;
         }
 
         GroundInfo CheckGround(Vector3 position)
         {
-            const float margin = 0.05f;
-            const float groundDistance = 0.15f;
+            const float margin = 0.3f;
+            const float groundDistance = margin + 0.10f;
             int layerMask = ~LayerMask.GetMask("Player");
             float radius = _collider.radius * 0.9f;
             var feetPosition = position + (radius + margin) * transform.up;
@@ -266,14 +286,22 @@ namespace GravityGame.Player
             var down = -transform.up;
 
             GroundInfo ground = default;
-            var results = new RaycastHit[8];
-            var numResults = Physics.SphereCastNonAlloc(feetPosition, radius, down, results, distance, layerMask);
-            foreach (var hit in results.Take(numResults)) {
-                if (hit.collider.isTrigger || _carry.CarriedObject?.Collider == hit.collider)
+            var results = new RaycastHit[4];
+            int numResults = Physics.SphereCastNonAlloc(feetPosition, radius, down, results, distance, layerMask, QueryTriggerInteraction.Ignore);
+            foreach (var originalHit in results.Take(numResults).OrderBy(hit => hit.distance)) {
+                if (_carry.CarriedObject?.Collider == originalHit.collider)
                     continue;
+                var verifiedHit = originalHit;
+                if (originalHit.point == Vector3.zero) {
+                    // Hit point is zero, the sphere cast may have started inside an object
+                    continue;
+                }
+                if (Physics.Raycast(originalHit.point + margin * transform.up, down, out var hit, distance, layerMask, QueryTriggerInteraction.Ignore)) {
+                    verifiedHit = hit; // Note TG: recast, because spherecast sometimes does not get the actual ground normal for some reason 
+                }
                 var info = new GroundInfo();
-                info.Hit = hit;
-                info.Normal = hit.normal;
+                info.Hit = verifiedHit;
+                info.Normal = verifiedHit.normal;
                 info.HasAnyGround = true;
                 info.Angle = Vector3.Angle(info.Normal, transform.up);
                 info.HasStableGround = info.Angle <= MaxSlopeAngle;
@@ -281,6 +309,8 @@ namespace GravityGame.Player
                 break;
             }
 
+            DebugDraw.DrawSphere(feetPosition, radius, ground.HasAnyGround ? Color.green : Color.red);
+            Debug.DrawRay(feetPosition, down * distance);
             DebugDraw.DrawSphere(feetPosition + down * distance, radius, ground.HasAnyGround ? Color.green : Color.red);
             return ground;
         }
@@ -288,16 +318,16 @@ namespace GravityGame.Player
         GroundInfo FindStep()
         {
             GroundInfo noStep = default;
-            if (Ground is { HasAnyGround: true, HasStableGround: false }) return noStep; // no stepping on steep slope
-            // if (!_ground.HasAnyGround && Vector3.Project(_rigidbody.linearVelocity, transform.up).magnitude > 1.0f)
+            if (_ground is { HasAnyGround: true, HasStableGround: false }) return noStep; // no stepping on steep slope
+            // if (!_ground.HasAnyGround && Vector3.Dot(_rigidbody.linearVelocity, transform.up) > 1.0f)
             //     return noStep; // no air stepping when velocity is too high
             if (_inputDirection == Vector3.zero) return noStep; // no unintended stepping
 
             const float minStepHeight = 0.05f;
             const float stepForward = 0.05f;
             int layerMask = ~LayerMask.GetMask("Player");
-            var input = Vector3.ProjectOnPlane(_inputDirection, Ground.HasStableGround ? Ground.Normal : transform.up);
-            var maxStepHeight = Ground.HasStableGround ? MaxStepHeight : MaxAirStepHeight;
+            var input = Vector3.ProjectOnPlane(_inputDirection, _ground.HasStableGround ? _ground.Normal : transform.up);
+            float maxStepHeight = _ground.HasStableGround ? MaxStepHeight : MaxAirStepHeight;
 
             float distance = _collider.height;
             var rayFront = input.normalized * (_collider.radius + stepForward);
@@ -315,7 +345,21 @@ namespace GravityGame.Player
             bool inStepThreshold = stepHeight <= maxStepHeight;
             var stepGround = CheckGround(hit.point);
             if (inStepThreshold && stepGround.HasStableGround) {
-                // good hit
+                // Check if step is obstructed
+                var start = stepGround.Hit.point + 0.05f * stepGround.Normal;
+                var p1 = start + _collider.radius * transform.up;
+                var p2 = start + (_collider.height - _collider.radius) * transform.up;
+                var results = new Collider[1];
+                int numResults = Physics.OverlapCapsuleNonAlloc(p1, p2, _collider.radius, results, layerMask, QueryTriggerInteraction.Ignore);
+                if (DebugStepDetection) DebugDraw.DrawSphere(p1, _collider.radius, Color.black);
+                if (DebugStepDetection) DebugDraw.DrawSphere(p2, _collider.radius, Color.black);
+                if (numResults > 0) {
+                    if (DebugStepDetection) Debug.DrawRay(origin, dir * hit.distance, Color.black);
+                    if (DebugStepDetection) Debug.Log($"step obstructed by {results[0].name}");
+                    return noStep;
+                }
+
+                // Good hit! We can step
                 if (DebugStepDetection) Debug.DrawRay(origin, dir * hit.distance, Color.green);
                 return stepGround;
             }
