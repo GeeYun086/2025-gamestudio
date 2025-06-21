@@ -5,9 +5,10 @@ namespace GravityGame.Puzzle_Elements
     /// <summary>
     /// Moves (and rotates) a platform back and forth between its initial start position
     /// and a specified target position by controlling its velocity.
+    /// /// The platform only moves when IsPowered is true.
     /// </summary>
     [RequireComponent(typeof(Rigidbody))]
-    public class IndependentMovingPlatform : MonoBehaviour
+    public class IndependentMovingPlatform : RedstoneComponent
     {
         [SerializeField] Vector3 _endPosition = new(5, 0, 0);
         [SerializeField] Vector3 _endRotation = new(0, 90, 0);
@@ -21,12 +22,22 @@ namespace GravityGame.Puzzle_Elements
         Vector3 _currentDestination;
         bool _isMovingToEnd;
         float _pathDistance;
+        bool _isPowered;
 
         void Awake()
         {
             _rigidbody = GetComponent<Rigidbody>();
             _rigidbody.useGravity = false;
             _rigidbody.constraints = RigidbodyConstraints.FreezeRotation;
+        }
+
+        public override bool IsPowered
+        {
+            get => _isPowered;
+            set {
+                _isPowered = value;
+                if (!_isPowered && _rigidbody) _rigidbody.linearVelocity = Vector3.zero;
+            }
         }
 
         void Start()
@@ -40,6 +51,7 @@ namespace GravityGame.Puzzle_Elements
 
         void FixedUpdate()
         {
+            if (!IsPowered) return;
             if (Vector3.Distance(_rigidbody.position, _currentDestination) < ReachThreshold) {
                 _rigidbody.MovePosition(_currentDestination);
                 _rigidbody.MoveRotation(_isMovingToEnd ? Quaternion.Euler(_endRotation) : _startRotation);
