@@ -26,7 +26,7 @@ namespace GravityGame.Puzzle_Elements
             UpdateState();
         }
 
-        public void OnTriggerExit(Collider other)
+        void OnTriggerExit(Collider other)
         {
             if (!TriggersOverlap(other)) return;
             _overlappingObjects.Remove(other);
