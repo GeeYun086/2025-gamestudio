@@ -98,7 +98,13 @@ namespace GravityGame.Player
 
             // Get ground velocity (e.g. moving platform)
             var dynamicGround = _ground.Hit.rigidbody; // or null
-            var groundVelocity = _ground.HasStableGround && dynamicGround ? dynamicGround.linearVelocity : Vector3.zero;
+            var groundVelocity = Vector3.zero;
+            if (_ground.HasStableGround) {
+                if (dynamicGround)
+                    groundVelocity = dynamicGround.linearVelocity;
+                else if (_ground.Hit.collider.gameObject.TryGetComponent<ConveyorBelt>(out var conveyorBelt))
+                    groundVelocity = conveyorBelt.Velocity;
+            }
             var groundVelocityDelta = groundVelocity - _lastGroundVelocity;
 
             const float platformStopThreshold = 1.0f;
