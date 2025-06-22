@@ -380,7 +380,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _pressurePlateOn: {fileID: 2741439583572847169}
   _pressurePlateOff: {fileID: 6167572030249459071}
-  _isPowered: 0
   _logicComponents:
   - {fileID: 0}
 --- !u!33 &6501896283736817467
@@ -446,7 +445,7 @@ BoxCollider:
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 72
   m_ExcludeLayers:
     serializedVersion: 2
     m_Bits: 0

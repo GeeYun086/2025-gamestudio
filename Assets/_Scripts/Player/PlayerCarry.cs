@@ -81,6 +81,13 @@ namespace GravityGame.Player
             if (!_carry.Object) return false;
             if (_carry.ShouldUseBackpack || _carry.UsingBackpack) return false;
             if (_carry.IsOtherwiseOverlappingWithPlayer) return false;
+            ForceDrop();
+            return true;
+        }
+
+        public void ForceDrop(Vector3 fallbackPosition = default)
+        {
+            if (!_carry.Object) return;
             var obj = _carry.Object;
             _carry.Object = null;
             _carry.PreCarryPhysicsState.ApplyTo(obj);
@@ -88,8 +95,9 @@ namespace GravityGame.Player
             obj.Rigidbody.angularVelocity = Vector3.zero;
             obj.Collider.enabled = true;
             IgnorePlayerCollision(obj, false);
-
-            return true;
+            if (_carry.UsingBackpack && fallbackPosition != default) {
+                obj.Rigidbody.MovePosition(fallbackPosition);
+            }
         }
 
         void Update()
