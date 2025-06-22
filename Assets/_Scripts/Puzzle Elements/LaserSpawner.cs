@@ -3,8 +3,8 @@ using GravityGame.Puzzle_Elements;
 using UnityEngine;
 
 /// <summary>
-/// Spawns a laser beam prefab at a specified local-space offset from this GameObject.
-/// Now supports Redstone power: the laser is active when "powered" (unless InvertRedstoneSignal is enabled).
+///     Spawns a laser beam prefab at a specified local-space offset from this GameObject.
+///     Now supports Redstone power: the laser is active when "powered" (unless InvertRedstoneSignal is enabled).
 /// </summary>
 [RequireComponent(typeof(Transform))]
 public class LaserSpawner : RedstoneComponent
@@ -19,20 +19,19 @@ public class LaserSpawner : RedstoneComponent
 
     [Header("Redstone")]
     [Tooltip("If true, laser is ON by default and turns OFF when powered. If false, laser is OFF by default and turns ON when powered.")]
-    public bool InvertRedstoneSignal = false;
+    public bool InvertRedstoneSignal;
 
     GameObject _spawnedLaser;
     bool _isPowered;
 
     /// <summary>
-    /// Redstone power control. When set, spawns or destroys the laser accordingly,
-    /// and respects InvertRedstoneSignal setting.
+    ///     Redstone power control. When set, spawns or destroys the laser accordingly,
+    ///     and respects InvertRedstoneSignal setting.
     /// </summary>
     public override bool IsPowered
     {
         get => _isPowered;
-        set
-        {
+        set {
             if (_isPowered == value) return;
             _isPowered = value;
 
@@ -61,13 +60,12 @@ public class LaserSpawner : RedstoneComponent
     }
 
     /// <summary>
-    /// Instantiates (or replaces) the laser prefab at this transform’s position plus the configured offset.
-    /// Fires <see cref="OnLaserSpawned" /> after instantiation.
+    ///     Instantiates (or replaces) the laser prefab at this transform’s position plus the configured offset.
+    ///     Fires <see cref="OnLaserSpawned" /> after instantiation.
     /// </summary>
     public void SpawnLaser()
     {
-        if (_laserPrefab == null)
-        {
+        if (_laserPrefab == null) {
             Debug.LogError($"{nameof(LaserSpawner)}: Cannot spawn – no prefab assigned.", this);
             return;
         }
@@ -82,19 +80,18 @@ public class LaserSpawner : RedstoneComponent
     }
 
     /// <summary>
-    /// Destroys the last spawned laser instance, if one exists.
+    ///     Destroys the last spawned laser instance, if one exists.
     /// </summary>
     public void DestroyLaser()
     {
-        if (_spawnedLaser != null)
-        {
+        if (_spawnedLaser != null) {
             Destroy(_spawnedLaser);
             _spawnedLaser = null;
         }
     }
 
     /// <summary>
-    /// Invoked immediately after a new laser instance is spawned.
+    ///     Invoked immediately after a new laser instance is spawned.
     /// </summary>
     public event Action<GameObject> OnLaserSpawned;
 }
