@@ -101,7 +101,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   MaxMoveSpeed: 8
-  MoveAcceleration: 60
+  MoveAcceleration: 40
   GroundFriction: 10
   MaxStepHeight: 0.5
   MaxAirStepHeight: 0.1

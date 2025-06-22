@@ -14,38 +14,32 @@ namespace GravityGame.Puzzle_Elements
         [SerializeField] GameObject _pressurePlateOff;
 
         [Header("Pressure Plate Settings")]
-        [SerializeField] bool _isPowered;
         [SerializeField] List<RedstoneComponent> _logicComponents;
 
-        readonly List<Collider> _overlappingObjects = new();
+        bool _isPowered;
 
-        void OnTriggerEnter(Collider other)
+        void Start()
         {
-            if (!TriggersOverlap(other)) return;
-            _overlappingObjects.Add(other);
-            UpdateState();
+            if (_logicComponents.Count == 0) Debug.LogWarning($"{gameObject.name} has no connected redstone components, did you forget to add them?");
         }
 
-        void OnTriggerExit(Collider other)
+        void FixedUpdate()
         {
-            if (!TriggersOverlap(other)) return;
-            _overlappingObjects.Remove(other);
             UpdateState();
+            _isPowered = false;
         }
 
-        void Update()
+        /// OnTriggerStay is called once per physics update for every Collider other that is touching the trigger
+        void OnTriggerStay(Collider other)
         {
-            UpdateState();
+            if (!TriggersOverlap(other)) return;
+            _isPowered = true;
         }
 
         bool TriggersOverlap(Collider other) => other.CompareTag("Cube");
 
         void UpdateState()
         {
-            _overlappingObjects.RemoveAll(o => o == null);
-
-            _isPowered = _overlappingObjects.Count > 0;
-
             _pressurePlateOn.SetActive(_isPowered);
             _pressurePlateOff.SetActive(!_isPowered);
 
