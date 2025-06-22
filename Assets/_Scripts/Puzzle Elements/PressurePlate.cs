@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -18,6 +17,11 @@ namespace GravityGame.Puzzle_Elements
         [SerializeField] List<RedstoneComponent> _logicComponents;
 
         bool _isPowered;
+
+        void Start()
+        {
+            if (_logicComponents.Count == 0) Debug.LogWarning($"{gameObject.name} has no connected redstone components, did you forget to add them?");
+        }
 
         void FixedUpdate()
         {
