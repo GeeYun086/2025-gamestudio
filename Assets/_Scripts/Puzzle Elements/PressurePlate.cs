@@ -6,7 +6,6 @@ namespace GravityGame.Puzzle_Elements
 {
     /// <summary>
     ///     Add to Pressure Plate GameObject and drag Doors into List
-    ///     Activated by GameObject with Tag "Cube"
     /// </summary>
     public class PressurePlate : MonoBehaviour
     {
@@ -36,7 +35,7 @@ namespace GravityGame.Puzzle_Elements
             _isPowered = true;
         }
 
-        bool TriggersOverlap(Collider other) => other.CompareTag("Cube") || other.CompareTag("Player");
+        bool TriggersOverlap(Collider other) => true;
 
         void UpdateState()
         {
