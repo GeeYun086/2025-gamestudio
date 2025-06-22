@@ -33,11 +33,17 @@ namespace GravityGame.Puzzle_Elements
             UpdateState();
         }
 
+        void Update()
+        {
+            UpdateState();
+        }
+
         bool TriggersOverlap(Collider other) => other.CompareTag("Cube");
 
         void UpdateState()
         {
             _overlappingObjects.RemoveAll(o => o == null);
+
             _isPowered = _overlappingObjects.Count > 0;
 
             _pressurePlateOn.SetActive(_isPowered);
