@@ -46,7 +46,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _laserPrefab: {fileID: 1875168489481163592, guid: 07ebac89ea5ccd542845a9a64b70ddcc, type: 3}
   _spawnOffset: {x: 0, y: 0, z: 0}
-  _spawnOnStart: 1
+  InvertRedstoneSignal: 0
 --- !u!1 &1240764995133012528
 GameObject:
   m_ObjectHideFlags: 0
