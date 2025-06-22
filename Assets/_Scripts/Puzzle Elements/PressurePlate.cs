@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -19,7 +18,7 @@ namespace GravityGame.Puzzle_Elements
         [SerializeField] List<RedstoneComponent> _logicComponents;
 
         readonly List<Collider> _overlappingObjects = new();
-        
+
         void OnTriggerEnter(Collider other)
         {
             if (!TriggersOverlap(other)) return;
@@ -33,17 +32,17 @@ namespace GravityGame.Puzzle_Elements
             _overlappingObjects.Remove(other);
             UpdateState();
         }
-        
+
         bool TriggersOverlap(Collider other) => other.CompareTag("Cube");
 
         void UpdateState()
         {
             _overlappingObjects.RemoveAll(o => o == null);
             _isPowered = _overlappingObjects.Count > 0;
-            
+
             _pressurePlateOn.SetActive(_isPowered);
             _pressurePlateOff.SetActive(!_isPowered);
-            
+
             // Update connected components
             foreach (var component in _logicComponents.Where(c => c != null)) {
                 component.IsPowered = _isPowered;

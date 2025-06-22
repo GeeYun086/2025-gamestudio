@@ -30,17 +30,17 @@ namespace GravityGame.UI
             painter.lineWidth = _outlineWidth;
 
             painter.strokeColor = _outlineColor;
-            
-            
+
+
             // Draw Outer Radial Menu (Diagonals: Top-Left, Top-Right, Bottom-Left, Bottom-Right)
             DrawRadialSection(painter, Vector2.zero, _deadZoneRadius, _outerRadius, 150.59f, 209.41f); // left
             DrawRadialSection(painter, Vector2.zero, _deadZoneRadius, _outerRadius, 330.59f, 389.41f); // right
-            
-            DrawRadialSection(painter, Vector2.zero, _innerRadius, _outerRadius, 29.41f, 150.59f);  // down
+
+            DrawRadialSection(painter, Vector2.zero, _innerRadius, _outerRadius, 29.41f, 150.59f); // down
             DrawRadialSection(painter, Vector2.zero, _innerRadius, _outerRadius, 209.41f, 330.59f); // up
-            
+
             DrawRadialSection(painter, Vector2.zero, _deadZoneRadius, _innerRadius, 209.41f, 330.59f); // up
-            DrawRadialSection(painter, Vector2.zero, _deadZoneRadius, _innerRadius, 29.41f, 150.59f);  // down
+            DrawRadialSection(painter, Vector2.zero, _deadZoneRadius, _innerRadius, 29.41f, 150.59f); // down
         }
 
         static void DrawRadialSection(
