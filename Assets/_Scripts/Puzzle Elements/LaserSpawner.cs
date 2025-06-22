@@ -1,77 +1,84 @@
 ﻿using System;
 using UnityEngine;
 
-/// <summary>
-///     Spawns a laser beam prefab at a specified local-space offset from this GameObject.
-///     Optionally auto-spawns on Start, allows manual spawn/destruction, and fires an event when a laser is spawned.
-/// </summary>
-[RequireComponent(typeof(Transform))]
-public class LaserSpawner : MonoBehaviour
+namespace GravityGame.Puzzle_Elements
 {
-    [Header("Laser Prefab")]
-    [Tooltip("Drag your LaserBeam prefab here.")]
-    [SerializeField]
-    GameObject _laserPrefab;
-
-    [Header("Spawn Settings")]
-    [Tooltip("Offset from this GameObject’s position to spawn the beam origin.")]
-    [SerializeField]
-    Vector3 _spawnOffset = Vector3.zero;
-
-    [Tooltip("Automatically spawn the laser when the scene starts?")]
-    [SerializeField]
-    bool _spawnOnStart = true;
-
-    GameObject _spawnedLaser;
-
     /// <summary>
-    ///     Called in the Editor when values change—warns if required references are missing.
+    /// Spawns a LaserEmitter prefab at a local‐space offset. 
+    /// Can auto‐spawn on Start, manually spawn/destroy, and fires an event when spawned.
+    /// Also assigns the "Laser" layer to all spawned children.
     /// </summary>
-    void OnValidate()
+    [RequireComponent(typeof(Transform))]
+    public class LaserSpawner : MonoBehaviour
     {
-        if (_laserPrefab == null)
-            Debug.LogWarning($"{nameof(LaserSpawner)}: Laser Prefab is not assigned.", this);
-    }
+        [Header("Laser Prefab")]
+        [Tooltip("Drag your LaserEmitter.prefab here.")]
+        [SerializeField] private GameObject _laserEmitterPrefab;
 
-    void Start()
-    {
-        if (_spawnOnStart)
-            SpawnLaser();
-    }
+        [Header("Spawn Settings")]
+        [Tooltip("Local‐space offset from this GameObject to spawn the emitter root.")]
+        [SerializeField] private Vector3 _spawnOffset = Vector3.zero;
+        [Tooltip("Automatically spawn on scene start?")]
+        [SerializeField] private bool _spawnOnStart = true;
 
-    /// <summary>
-    ///     Instantiates (or replaces) the laser prefab at this transform’s position plus the configured offset.
-    ///     Fires <see cref="OnLaserSpawned" /> after instantiation.
-    /// </summary>
-    public void SpawnLaser()
-    {
-        if (_laserPrefab == null) {
-            Debug.LogError($"{nameof(LaserSpawner)}: Cannot spawn – no prefab assigned.", this);
-            return;
+        private GameObject _spawnedEmitter;
+
+        /// <summary>
+        /// Fired immediately after a new LaserEmitter instance is spawned.
+        /// </summary>
+        public event Action<GameObject> OnLaserSpawned;
+
+        void OnValidate()
+        {
+            if (_laserEmitterPrefab == null)
+                Debug.LogWarning($"{nameof(LaserSpawner)}: no prefab assigned", this);
         }
 
-        DestroyLaser();
+        void Start()
+        {
+            if (_spawnOnStart)
+                SpawnLaser();
+        }
 
-        var worldPos = transform.TransformPoint(_spawnOffset);
-        _spawnedLaser = Instantiate(_laserPrefab, worldPos, transform.rotation);
-        _spawnedLaser.transform.SetParent(transform, worldPositionStays: true);
+        /// <summary>
+        /// Instantiates (or replaces) the LaserEmitter prefab under this transform.
+        /// </summary>
+        public void SpawnLaser()
+        {
+            if (_laserEmitterPrefab == null)
+            {
+                Debug.LogError($"{nameof(LaserSpawner)}: Cannot spawn, prefab is null", this);
+                return;
+            }
 
-        OnLaserSpawned?.Invoke(_spawnedLaser);
-    }
+            DestroyLaser();
+            Vector3 worldPos = transform.TransformPoint(_spawnOffset);
+            _spawnedEmitter = Instantiate(_laserEmitterPrefab, worldPos, transform.rotation, transform);
 
-    /// <summary>
-    ///     Destroys the last spawned laser instance, if one exists.
-    /// </summary>
-    public void DestroyLaser()
-    {
-        if (_spawnedLaser != null) {
-            Destroy(_spawnedLaser);
-            _spawnedLaser = null;
+            // Assign every child to the Laser layer
+            int laserLayer = LayerMask.NameToLayer("Laser");
+            SetLayerRecursively(_spawnedEmitter, laserLayer);
+
+            OnLaserSpawned?.Invoke(_spawnedEmitter);
+        }
+
+        /// <summary>
+        /// Destroys the last‐spawned LaserEmitter instance.
+        /// </summary>
+        public void DestroyLaser()
+        {
+            if (_spawnedEmitter != null)
+            {
+                Destroy(_spawnedEmitter);
+                _spawnedEmitter = null;
+            }
+        }
+
+        private void SetLayerRecursively(GameObject go, int layer)
+        {
+            go.layer = layer;
+            foreach (Transform child in go.transform)
+                SetLayerRecursively(child.gameObject, layer);
         }
     }
-
-    /// <summary>
-    ///     Invoked immediately after a new laser instance is spawned.
-    /// </summary>
-    public event Action<GameObject> OnLaserSpawned;
 }

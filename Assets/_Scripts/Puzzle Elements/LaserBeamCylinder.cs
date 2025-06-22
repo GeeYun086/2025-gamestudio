@@ -1,47 +1,74 @@
 ﻿using UnityEngine;
-using GravityGame.Player;
+using GravityGame.Player;  // for PlayerHealth
 
-namespace GravityGame.PuzzleElements
+namespace GravityGame.Puzzle_Elements
 {
     /// <summary>
-    /// Renders a laser beam that damages, knocks back, and clamps the player.
+    /// A cylinder‐based laser beam that can be toggled on/off via RedstoneComponent.
+    /// When powered it scales/positions its mesh, damages the player, and strongly clamps them outside the beam.
     /// </summary>
     [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
-    public class LaserBeamCylinder : MonoBehaviour
+    public class LaserBeamCylinder : RedstoneComponent
     {
         [Header("Beam Settings")]
-        [Tooltip("Max length if nothing blocks the beam.")]
+        [Tooltip("Max distance of the beam if nothing blocks it.")]
         public float MaxDistance = 20f;
-        [Tooltip("Layers that stop the beam (e.g. Default, Cube).")]
+        [Tooltip("Which layers physically block the beam (e.g. Default, Cube).")]
         public LayerMask ObstacleMask;
 
         [Header("Damage Settings")]
-        [Tooltip("Flat damage to apply when the player is hit.")]
+        [Tooltip("Flat damage applied on each hit.")]
         public float FlatDamage = 80f;
-        [Tooltip("Seconds between damage ticks.")]
+        [Tooltip("Minimum seconds between damage ticks.")]
         public float HitCooldown = 0.5f;
 
         [Header("Knockback Settings")]
-        [Tooltip("Instantaneous force applied to the player on hit.")]
+        [Tooltip("Instantaneous force to push the player out of the beam.")]
         public float KnockbackForce = 5f;
 
         [Header("Visual Settings")]
-        [Tooltip("Radius of the beam (half its diameter).")]
+        [Tooltip("Radius of the beam (half diameter).")]
         public float BeamRadius = 0.05f;
 
-        private float _lastHitTime = -Mathf.Infinity;
+        MeshRenderer _mesh;
+        bool         _isPowered;
+        float        _lastHitTime = -Mathf.Infinity;
+
+        /// <summary>
+        /// Called by Redstone logic. Turning on shows + activates the beam; off hides + disables it.
+        /// </summary>
+        public override bool IsPowered
+        {
+            get => _isPowered;
+            set
+            {
+                if (_isPowered == value) return;
+                _isPowered = value;
+                _mesh.enabled = _isPowered;
+            }
+        }
+
+        void Awake()
+        {
+            _mesh = GetComponent<MeshRenderer>();
+            _mesh.enabled = false;  // hidden until powered
+        }
 
         void Update()
         {
-            // Visual beam computation
+            if (!IsPowered) return;
+
+            // Compute origin (parent if present, else self)
             Transform origin = transform.parent != null ? transform.parent : transform;
-            Vector3 start = origin.position + origin.forward * 0.01f;
-            Vector3 dir   = origin.forward;
+            Vector3 start    = origin.position + origin.forward * 0.01f;
+            Vector3 dir      = origin.forward;
 
+            // Raycast obstacle
             float length = MaxDistance;
-            if (Physics.Raycast(start, dir, out var obstacleHit, MaxDistance, ObstacleMask))
-                length = obstacleHit.distance;
+            if (Physics.Raycast(start, dir, out var obsHit, MaxDistance, ObstacleMask))
+                length = obsHit.distance;
 
+            // Visual: rotate, scale, position cylinder
             transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
             transform.localScale    = new Vector3(BeamRadius, length * 0.5f, BeamRadius);
             transform.localPosition = new Vector3(0f, 0f, length * 0.5f);
@@ -49,36 +76,35 @@ namespace GravityGame.PuzzleElements
 
         void LateUpdate()
         {
-            // Damage & knockback after all movement
-            Transform origin = transform.parent != null ? transform.parent : transform;
-            Vector3 start = origin.position + origin.forward * 0.01f;
-            Vector3 dir   = origin.forward;
-
-            if (Time.time - _lastHitTime < HitCooldown)
+            if (!IsPowered || Time.time - _lastHitTime < HitCooldown)
                 return;
 
+            Transform origin = transform.parent != null ? transform.parent : transform;
+            Vector3 start    = origin.position + origin.forward * 0.01f;
+            Vector3 dir      = origin.forward;
+
+            // Only hit the Player layer
             int playerMask = 1 << LayerMask.NameToLayer("Player");
             if (!Physics.Raycast(start, dir, out var hit, transform.localScale.y * 2f, playerMask))
                 return;
-
             if (!hit.collider.CompareTag("Player"))
                 return;
 
             _lastHitTime = Time.time;
 
-            // Apply damage
+            // Damage
             if (hit.collider.TryGetComponent<PlayerHealth>(out var ph))
                 ph.TakeDamage(FlatDamage);
 
-            // Compute safe position just outside the beam
+            // Compute safe position behind the beam surface
             Vector3 safePos = hit.point - dir * (BeamRadius + 0.01f);
 
-            // Strong knockback + clamp
+            // Clamp + strong knockback
             if (hit.collider.TryGetComponent<Rigidbody>(out var rb))
             {
                 rb.linearVelocity = Vector3.zero;
+                rb.MovePosition(safePos);
                 rb.AddForce(-dir * KnockbackForce, ForceMode.VelocityChange);
-                rb.position = safePos;
             }
             else if (hit.collider.TryGetComponent<CharacterController>(out var cc))
             {
