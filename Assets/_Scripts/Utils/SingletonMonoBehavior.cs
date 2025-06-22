@@ -10,7 +10,7 @@ namespace GravityGame.Utils
     ///     These singletons still work after hot reloading.
     ///     But they do not have a check if there are multiple instances in the scene (you need to ensure that yourself)
     /// </summary>
-    /// <typeparam name="TSelf"></typeparam>
+    /// <typeparam name="TSelf"> </typeparam>
     public abstract class SingletonMonoBehavior<TSelf> : MonoBehaviour where TSelf : MonoBehaviour
     {
         static TSelf _instance;
