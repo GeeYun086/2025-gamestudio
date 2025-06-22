@@ -1,34 +1,32 @@
 ﻿using GravityGame.Player;
 using UnityEngine;
+using System.Collections.Generic;
 
 namespace GravityGame.PuzzleElements
 {
-    /// <summary>
-    ///     Renders and controls a cylindrical laser beam: casts a ray each frame up to MaxDistance,
-    ///     updates its mesh and collider to match the hit distance, and applies FlatDamage to the player on first contact.
-    /// </summary>
     [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer), typeof(CapsuleCollider))]
     public class LaserBeamCylinder : MonoBehaviour
     {
         [Header("Beam Settings")]
-        [Tooltip("Max length if nothing blocks.")]
         public float MaxDistance = 20f;
-
-        [Tooltip("Layers that stop the beam (Default, Cube, Player, etc).")]
         public LayerMask ObstacleMask;
 
         [Header("Damage Settings")]
-        [Tooltip("Flat damage to apply on the first frame of contact.")]
         public float FlatDamage = 80f;
 
+        [Header("Knockback Settings")]
+        public float KnockbackForce = 8f;
+
         [Header("Visual Settings")]
-        [Tooltip("Cylinder radius.")]
         public float BeamRadius = 0.1f;
 
         MeshFilter _meshFilter;
         MeshRenderer _meshRenderer;
         CapsuleCollider _collider;
-        bool _hasDamagedThisContact;
+
+        // Cooldown to avoid spamming player with damage every frame
+        private Dictionary<PlayerHealth, float> _cooldowns = new();
+        public float DamageCooldown = 0.3f;
 
         void Awake()
         {
@@ -44,24 +42,52 @@ namespace GravityGame.PuzzleElements
 #endif
         }
 
-        void Start()
+        void Start() => UpdateBeamAndCollider();
+        void OnEnable() => UpdateBeamAndCollider();
+        void Update() => UpdateBeamAndCollider();
+
+        void OnCollisionEnter(Collision collision)
         {
-            UpdateBeamAndCollider();
+            TryDamageAndKnockback(collision.collider);
         }
 
-        void OnEnable()
+        void OnCollisionStay(Collision collision)
         {
-            UpdateBeamAndCollider();
+            TryDamageAndKnockback(collision.collider);
         }
 
-        void Update()
+        void TryDamageAndKnockback(Collider other)
         {
-            UpdateBeamAndCollider();
+            var playerHealth = other.GetComponent<PlayerHealth>();
+            if (playerHealth == null) return;
+
+            // Cooldown check
+            if (_cooldowns.TryGetValue(playerHealth, out float lastTime))
+                if (Time.time - lastTime < DamageCooldown) return;
+
+            playerHealth.TakeDamage(FlatDamage);
+            Debug.Log($"[LaserBeamCylinder] Player hit by collision! Damage applied: {FlatDamage}. Current Health: {playerHealth.CurrentHealth}");
+
+            Rigidbody playerRb = other.GetComponent<Rigidbody>();
+            if (playerRb != null)
+            {
+                // Push away from center of the beam
+                Vector3 knockbackDir = (other.transform.position - transform.position).normalized;
+                knockbackDir.y = 0f; // Keep it horizontal
+                playerRb.AddForce(knockbackDir * KnockbackForce, ForceMode.Impulse);
+                Debug.Log($"[LaserBeamCylinder] Knockback applied to player: {knockbackDir * KnockbackForce}");
+            }
+
+            if (playerHealth.CurrentHealth <= 0)
+                Debug.Log($"[LaserBeamCylinder] Player killed by laser.");
+
+            // Optional: subscribe to death event
+            playerHealth.OnPlayerDied.RemoveListener(LogPlayerDied);
+            playerHealth.OnPlayerDied.AddListener(LogPlayerDied);
+
+            _cooldowns[playerHealth] = Time.time;
         }
 
-        /// <summary>
-        ///     Updates the beam's visuals and collider based on the raycast result.
-        /// </summary>
         void UpdateBeamAndCollider()
         {
             var origin = transform.parent;
@@ -72,22 +98,9 @@ namespace GravityGame.PuzzleElements
             var dir = origin.forward;
             float length = MaxDistance;
 
-            // Raycast to find hit point
-            if (Physics.Raycast(start, dir, out var hit, MaxDistance, ObstacleMask)) {
+            if (Physics.Raycast(start, dir, out var hit, MaxDistance, ObstacleMask))
+            {
                 length = hit.distance;
-
-                // Apply damage if the player was hit
-                var playerHealth = hit.collider.GetComponent<PlayerHealth>();
-                if (playerHealth != null) {
-                    if (!_hasDamagedThisContact) {
-                        playerHealth.TakeDamage(FlatDamage);
-                        _hasDamagedThisContact = true;
-                    }
-                } else {
-                    _hasDamagedThisContact = false;
-                }
-            } else {
-                _hasDamagedThisContact = false;
             }
 
             // Always align and scale the laser cylinder forward
@@ -100,6 +113,11 @@ namespace GravityGame.PuzzleElements
             _collider.radius = BeamRadius;
             _collider.height = Mathf.Max(0.01f, length);
             _collider.center = new Vector3(0f, 0f, length * 0.5f);
+        }
+
+        void LogPlayerDied()
+        {
+            Debug.Log("[LaserBeamCylinder] Player death event received (OnPlayerDied).");
         }
     }
 }
