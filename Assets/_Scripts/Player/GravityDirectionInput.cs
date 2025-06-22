@@ -201,7 +201,7 @@ namespace GravityGame.Player
         {
             var ray = new Ray(_camera.transform.position, _camera.transform.forward);
             // Note TG: other objects may block the hit, maybe need to ignore more layers in the future
-            int layerMask = ~LayerMask.GetMask("AxisGizmo", "Player", "Force Field");
+            int layerMask = ~LayerMask.GetMask("AxisGizmo", "Player");
 
             if (Physics.Raycast(ray, out var hitInfo, _maxObjectRange, layerMask, QueryTriggerInteraction.Ignore)) {
                 if (hitInfo.transform.gameObject.TryGetComponent<GravityModifier>(out _)) return hitInfo.transform.gameObject;
