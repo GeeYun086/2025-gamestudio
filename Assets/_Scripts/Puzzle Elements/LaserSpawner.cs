@@ -3,8 +3,8 @@ using GravityGame.Puzzle_Elements;
 using UnityEngine;
 
 /// <summary>
-///     Spawns a laser beam prefab at a specified local-space offset from this GameObject.
-///     Now supports Redstone power: the laser is only active when IsPowered is true.
+/// Spawns a laser beam prefab at a specified local-space offset from this GameObject.
+/// Now supports Redstone power: the laser is active when "powered" (unless InvertRedstoneSignal is enabled).
 /// </summary>
 [RequireComponent(typeof(Transform))]
 public class LaserSpawner : RedstoneComponent
@@ -17,14 +17,16 @@ public class LaserSpawner : RedstoneComponent
     [Tooltip("Offset from this GameObject’s position to spawn the beam origin.")]
     [SerializeField] Vector3 _spawnOffset = Vector3.zero;
 
-    [Tooltip("Automatically spawn the laser when the scene starts?")]
-    [SerializeField] bool _spawnOnStart = true;
+    [Header("Redstone")]
+    [Tooltip("If true, laser is ON by default and turns OFF when powered. If false, laser is OFF by default and turns ON when powered.")]
+    public bool InvertRedstoneSignal = false;
 
     GameObject _spawnedLaser;
     bool _isPowered;
 
     /// <summary>
-    ///     Redstone power control. When set, spawns or destroys the laser accordingly.
+    /// Redstone power control. When set, spawns or destroys the laser accordingly,
+    /// and respects InvertRedstoneSignal setting.
     /// </summary>
     public override bool IsPowered
     {
@@ -33,7 +35,12 @@ public class LaserSpawner : RedstoneComponent
         {
             if (_isPowered == value) return;
             _isPowered = value;
-            if (_isPowered)
+
+            // If InvertRedstoneSignal is false: powered means ON
+            // If InvertRedstoneSignal is true: powered means OFF
+            bool laserShouldBeActive = InvertRedstoneSignal ? !_isPowered : _isPowered;
+
+            if (laserShouldBeActive)
                 SpawnLaser();
             else
                 DestroyLaser();
@@ -48,15 +55,14 @@ public class LaserSpawner : RedstoneComponent
 
     void Start()
     {
-        if (_spawnOnStart)
-            IsPowered = true; // Use the Redstone system, so "On" means powered
-        else
-            IsPowered = false;
+        // On start, set IsPowered to false (no redstone signal)
+        // The laser's default state depends on InvertRedstoneSignal
+        IsPowered = false;
     }
 
     /// <summary>
-    ///     Instantiates (or replaces) the laser prefab at this transform’s position plus the configured offset.
-    ///     Fires <see cref="OnLaserSpawned" /> after instantiation.
+    /// Instantiates (or replaces) the laser prefab at this transform’s position plus the configured offset.
+    /// Fires <see cref="OnLaserSpawned" /> after instantiation.
     /// </summary>
     public void SpawnLaser()
     {
@@ -76,7 +82,7 @@ public class LaserSpawner : RedstoneComponent
     }
 
     /// <summary>
-    ///     Destroys the last spawned laser instance, if one exists.
+    /// Destroys the last spawned laser instance, if one exists.
     /// </summary>
     public void DestroyLaser()
     {
@@ -88,7 +94,7 @@ public class LaserSpawner : RedstoneComponent
     }
 
     /// <summary>
-    ///     Invoked immediately after a new laser instance is spawned.
+    /// Invoked immediately after a new laser instance is spawned.
     /// </summary>
     public event Action<GameObject> OnLaserSpawned;
 }
