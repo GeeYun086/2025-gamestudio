@@ -18,7 +18,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4359489964549750594, guid: 60ab763821d91e34381fe76379e7e36d, type: 3}
       propertyPath: m_ExcludeLayers.m_Bits
-      value: 0
+      value: 64
       objectReference: {fileID: 0}
     - target: {fileID: 4359489964549750594, guid: 60ab763821d91e34381fe76379e7e36d, type: 3}
       propertyPath: m_IncludeLayers.m_Bits
@@ -65,7 +65,8 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 3918135313144631505, guid: 60ab763821d91e34381fe76379e7e36d, type: 3}
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 60ab763821d91e34381fe76379e7e36d, type: 3}
