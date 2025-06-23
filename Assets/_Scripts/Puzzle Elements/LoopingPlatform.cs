@@ -1,31 +1,13 @@
-﻿using UnityEngine;
+using UnityEngine;
 
-namespace GravityGame.Puzzle_Elements
+namespace GravityGame
 {
-    /// <summary>
-    /// Moves (and rotates) a platform back and forth between its initial start position
-    /// and a specified target position by controlling its velocity.
-    /// /// The platform only moves when IsPowered is true.
-    /// </summary>
-    [RequireComponent(typeof(Rigidbody))]
-     public class IndependentMovingPlatform : MovingPlatformBase
+    // plattform that moves back and forth all the time
+    public class LoopingPlatform : MovingPlatformBase
     {
         const float ReachThreshold = 0.1f;
-
-        [SerializeField] bool _isPowered;
-
         Vector3 _currentDestination;
         bool _isMovingToEnd;
-
-        public bool IsPowered
-        {
-            get => _isPowered;
-            set
-            {
-                _isPowered = value;
-                if (!_isPowered && Rigidbody) Rigidbody.linearVelocity = Vector3.zero;
-            }
-        }
 
         protected override void Start()
         {
@@ -36,8 +18,6 @@ namespace GravityGame.Puzzle_Elements
 
         void FixedUpdate()
         {
-            if (!IsPowered) return;
-
             if (Vector3.Distance(Rigidbody.position, _currentDestination) < ReachThreshold)
             {
                 Rigidbody.MovePosition(_currentDestination);
@@ -64,7 +44,6 @@ namespace GravityGame.Puzzle_Elements
             _isMovingToEnd = !_isMovingToEnd;
             _currentDestination = _isMovingToEnd ? EndPosition : StartPoint;
         }
-
         void OnDrawGizmosSelected()
         {
             if (EndPointTransform == null) return;
