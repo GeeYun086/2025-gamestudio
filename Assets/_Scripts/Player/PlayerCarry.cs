@@ -199,7 +199,7 @@ namespace GravityGame.Player
                 if (_carry.Object == null) return null;
                 var start = _camera.transform.position;
                 var direction = _carry.Position - start;
-                int layerMask = ~LayerMask.GetMask("Player");
+                int layerMask = ~LayerMask.GetMask("Player", "Laser");
                 var halfExtents = CarryBoxScale * 0.5f;
 
                 var results = new RaycastHit[10];
