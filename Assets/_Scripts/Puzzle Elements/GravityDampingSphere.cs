@@ -12,7 +12,8 @@ namespace GravityGame.Puzzle_Elements
     {
         [SerializeField] float _effectRadius = 10f;
         [SerializeField] LayerMask _affectableLayers = ~0;
-        [SerializeField] [Range(0f, 1f)] float _movementDampening = 0.1f;
+        [SerializeField] [Range(0f, 1f)] float _movementDampening = 0.2f;
+        [SerializeField] [Range(0f, 1f)] float _angularDampening = 0.3f;
         [SerializeField] Material _effectSphereMaterial;
 
         SphereCollider _triggerCollider;
@@ -37,7 +38,7 @@ namespace GravityGame.Puzzle_Elements
                 }
 
                 rb.linearVelocity = Vector3.Lerp(rb.linearVelocity, Vector3.zero, _movementDampening);
-                rb.angularVelocity = Vector3.Lerp(rb.angularVelocity, Vector3.zero, _movementDampening);
+                rb.angularVelocity = Vector3.Lerp(rb.angularVelocity, Vector3.zero, _angularDampening);
             }
         }
 
