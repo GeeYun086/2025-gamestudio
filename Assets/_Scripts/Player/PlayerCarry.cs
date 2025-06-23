@@ -276,20 +276,9 @@ namespace GravityGame.Player
         void OnDrawGizmos()
         {
             if (Application.isPlaying) {
-                DrawGizmoCube(_carry.Position, _carry.Rotation, CarryBoxScale);
+                DebugDraw.DrawGizmoCube(_carry.Position, _carry.Rotation, CarryBoxScale);
             }
             return;
-
-            void DrawGizmoCube(Vector3 position, Quaternion rotation, Vector3 scale, bool filled = false)
-            {
-                Gizmos.matrix = Matrix4x4.TRS(position, rotation, scale);
-                if (filled) {
-                    Gizmos.DrawCube(Vector3.zero, Vector3.one);
-                } else {
-                    Gizmos.DrawWireCube(Vector3.zero, Vector3.one);
-                }
-                Gizmos.matrix = Matrix4x4.identity;
-            }
         }
 
         struct CarryInfo
