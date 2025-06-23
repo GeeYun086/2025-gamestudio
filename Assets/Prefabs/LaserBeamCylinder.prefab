@@ -127,7 +127,7 @@ MonoBehaviour:
   ObstacleMask:
     serializedVersion: 2
     m_Bits: 73
-  FlatDamage: 80
+  FlatDamage: 50
   KnockbackForce: 20
   BeamRadius: 0.1
   DamageCooldown: 0.3
