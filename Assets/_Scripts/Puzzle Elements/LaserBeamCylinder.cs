@@ -25,7 +25,7 @@ namespace GravityGame.PuzzleElements
         CapsuleCollider _collider;
 
         // Cooldown to avoid spamming player with damage every frame
-        Dictionary<PlayerHealth, float> _cooldowns = new();
+        readonly Dictionary<PlayerHealth, float> _cooldowns = new();
         public float DamageCooldown = 0.3f;
 
         void Awake()
@@ -117,8 +117,8 @@ namespace GravityGame.PuzzleElements
             _collider.height = Mathf.Max(0.01f, unclampedH);
 
             // Center half-way along the beam in world space, then un-scale
-            float unclampedCZ = length * 0.5f * invScaleY;
-            _collider.center = new Vector3(0f, 0f, unclampedCZ);
+            float unclampedCz = length * 0.5f * invScaleY;
+            _collider.center = new Vector3(0f, 0f, unclampedCz);
         }
 
         void LogPlayerDied()

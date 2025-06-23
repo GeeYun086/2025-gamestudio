@@ -24,25 +24,13 @@ public class LaserSpawner : RedstoneComponent
     GameObject _spawnedLaser;
     bool _isPowered;
 
-    /// <summary>
-    ///     Redstone power control. When set, spawns or destroys the laser accordingly,
-    ///     and respects InvertRedstoneSignal setting.
-    /// </summary>
     public override bool IsPowered
     {
         get => _isPowered;
         set {
             if (_isPowered == value) return;
             _isPowered = value;
-
-            // If InvertRedstoneSignal is false: powered means ON
-            // If InvertRedstoneSignal is true: powered means OFF
-            bool laserShouldBeActive = InvertRedstoneSignal ? !_isPowered : _isPowered;
-
-            if (laserShouldBeActive)
-                SpawnLaser();
-            else
-                DestroyLaser();
+            UpdateLaserState();
         }
     }
 
@@ -50,39 +38,48 @@ public class LaserSpawner : RedstoneComponent
     {
         if (_laserPrefab == null)
             Debug.LogWarning($"{nameof(LaserSpawner)}: Laser Prefab is not assigned.", this);
+        // DO NOT call UpdateLaserState here!
     }
 
     void Start()
     {
-        // On start, set IsPowered to false (no redstone signal)
-        // The laser's default state depends on InvertRedstoneSignal
-        IsPowered = false;
+        UpdateLaserState();
+    }
+
+
+    /// <summary>
+    ///     Spawns or destroys the laser based on redstone and inversion state.
+    /// </summary>
+    void UpdateLaserState()
+    {
+        bool laserShouldBeActive = InvertRedstoneSignal ? !_isPowered : _isPowered;
+        if (laserShouldBeActive)
+            SpawnLaser();
+        else
+            DestroyLaser();
     }
 
     /// <summary>
     ///     Instantiates (or replaces) the laser prefab at this transform’s position plus the configured offset.
     ///     Fires <see cref="OnLaserSpawned" /> after instantiation.
     /// </summary>
-    public void SpawnLaser()
+    void SpawnLaser()
     {
         if (_laserPrefab == null) {
             Debug.LogError($"{nameof(LaserSpawner)}: Cannot spawn – no prefab assigned.", this);
             return;
         }
-
         DestroyLaser();
-
         var worldPos = transform.TransformPoint(_spawnOffset);
         _spawnedLaser = Instantiate(_laserPrefab, worldPos, transform.rotation);
         _spawnedLaser.transform.SetParent(transform, worldPositionStays: true);
-
         OnLaserSpawned?.Invoke(_spawnedLaser);
     }
 
     /// <summary>
     ///     Destroys the last spawned laser instance, if one exists.
     /// </summary>
-    public void DestroyLaser()
+    void DestroyLaser()
     {
         if (_spawnedLaser != null) {
             Destroy(_spawnedLaser);
