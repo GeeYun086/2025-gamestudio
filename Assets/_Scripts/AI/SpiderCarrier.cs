@@ -1,4 +1,6 @@
+using System;
 using System.Collections;
+using GravityGame.AI;
 using GravityGame.Puzzle_Elements;
 using UnityEngine;
 using UnityEngine.AI;
@@ -17,7 +19,6 @@ namespace GravityGame
         [SerializeField] float _waitBeforePickup = 0.35f;
         [SerializeField] float _moveTime = 0.25f;
         [SerializeField] AnimationCurve _heightCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
-        [SerializeField] string _targetTag = "Carryable";
         [SerializeField] float _lookAhead = 2.0f;
         [SerializeField] float _detectionRadius = 2f;
         [SerializeField] float _grabDistance = 1.5f;
@@ -31,6 +32,11 @@ namespace GravityGame
         NavMeshPatrol _patrol;
 
         State _state = State.Patrol;
+
+        void Start()
+        {
+            _agent.updateUpAxis = false;
+        }
 
         void Update()
         {
