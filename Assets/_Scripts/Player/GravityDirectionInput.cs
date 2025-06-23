@@ -151,6 +151,9 @@ namespace GravityGame.Player
                 _previewCloneInstance.GetComponent<Rigidbody>().isKinematic = true;
                 _previewCloneInstance.GetComponent<GravityModifier>().enabled = false;
                 _previewCloneInstance.GetComponent<Renderer>().SetMaterials(new List<Material> { _previewMaterial });
+                foreach (Renderer renderer in _previewCloneInstance.GetComponentsInChildren<Renderer>()) {
+                    renderer.SetMaterials(new List<Material> { _previewMaterial });
+                }
                 _previewCloneInstance.transform.localScale *= .999f;
                 foreach (var component in _previewCloneInstance.GetComponentsInChildren<Collider>()) {
                     component.enabled = false;
