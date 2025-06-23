@@ -6,6 +6,7 @@ using GravityGame.UI;
 using GravityGame.Utils;
 using JetBrains.Annotations;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using Cursor = UnityEngine.Cursor;
 
 namespace GravityGame.Player
@@ -17,25 +18,32 @@ namespace GravityGame.Player
     /// </summary>
     public class GravityDirectionInput : MonoBehaviour
     {
+        [Header("References")]
         [SerializeField] Transform _playerTransform;
         [SerializeField] Camera _camera;
         [SerializeField] Axes _visualizationAxes;
         
+        [Header("Input")]
+        [SerializeField] InputActionReference _startGravityInput;
+        [SerializeField] InputActionReference _cancelGravityInput;
+        
+        [Header("Parameters")]
         [SerializeField] float _maxObjectRange = 30;
         [SerializeField] Timer _aimBuffer = new(0.25f);
 
+        [Header("Preview")]
         [SerializeField] Material _previewMaterial;
         [SerializeField] float _previewDistance = 4f;
         [SerializeField] float _previewCycleDuration = 1.5f;
 
+        static GravityDirectionRadialMenu GravityChangeMenu => GameUI.Instance.Elements.GravityDirectionRadialMenu;
+        
         GravityModifier _target;
         bool _tryChangingGravity;
 
         Coroutine _previewCoroutine;
         [CanBeNull] GameObject _previewCloneInstance;
-        [CanBeNull] Vector3? _currentPreviewDirection;
-
-        static GravityDirectionRadialMenu GravityChangeMenu => GameUI.Instance.Elements.GravityDirectionRadialMenu;
+        Vector3 _currentPreviewDirection;
 
         void Update()
         {
@@ -59,9 +67,9 @@ namespace GravityGame.Player
             }
 
             // Update Input
-            var start = Input.GetMouseButtonDown(1);
-            var stopped = !Input.GetMouseButton(1);
-            var canceled = Input.GetMouseButtonDown(0);
+            var start = _startGravityInput.action.WasPressedThisFrame();
+            var stopped = !_startGravityInput.action.IsPressed();
+            var canceled = _cancelGravityInput.action.WasPressedThisFrame();
             if (start) {
                 _tryChangingGravity = true;
             }
@@ -69,15 +77,12 @@ namespace GravityGame.Player
                 _tryChangingGravity = false;
             }
 
-
             // Start / Stop changing gravity
             if (_tryChangingGravity) {
                 if (_target && !wasChangingGravity) {
-                    SetVisualizedDirection(_target.GravityDirection);
-                    ToggleOutlineOnObject(_target.gameObject, 1);
                     Cursor.lockState = CursorLockMode.None;
                     Cursor.visible = true;
-                    GravityChangeMenu.visible = true;    
+                    GravityChangeMenu.visible = true;
                 }
             } else {
                 if (wasChangingGravity) {
@@ -86,15 +91,12 @@ namespace GravityGame.Player
                         _target.GravityDirection = direction.Value;
                     }
                     
-                    SetVisualizedDirection(Vector3.zero);
+                    _aimBuffer.Stop();
                     StopGravityPreview();
+                    
                     Cursor.lockState = CursorLockMode.Locked;
                     Cursor.visible = false;
                     GravityChangeMenu.visible = false;
-                    _aimBuffer.Stop();
-                    if (_previewCloneInstance) {
-                        StopGravityPreview();
-                    }
                 }
             }
 
@@ -107,7 +109,6 @@ namespace GravityGame.Player
                 SetVisualizedDirection(direction);
 
                 if (!_previewCloneInstance || _currentPreviewDirection != direction) {
-                    StopGravityPreview();
                     StartGravityPreview(_target, direction);
                     _currentPreviewDirection = direction;
                 }
@@ -120,6 +121,7 @@ namespace GravityGame.Player
 
         void StartGravityPreview(GravityModifier originalObjectToPreview, Vector3 direction)
         {
+            SetVisualizedDirection(direction);
             StopGravityPreview();
             _previewCloneInstance = Instantiate(
                 originalObjectToPreview.gameObject,
@@ -147,6 +149,8 @@ namespace GravityGame.Player
 
         void StopGravityPreview()
         {
+            SetVisualizedDirection(Vector3.zero);
+            
             if (_previewCoroutine != null) {
                 StopCoroutine(_previewCoroutine);
                 _previewCoroutine = null;

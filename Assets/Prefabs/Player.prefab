@@ -232,8 +232,6 @@ MonoBehaviour:
     m_Bits: 4294967295
   _interactBuffer:
     Duration: 0.3
-  _playerCamera: {fileID: 0}
-  _showDebugRays: 1
 --- !u!114 &5880869433627786739
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -261,7 +259,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a4178df924dd4bb9ada9cf1080fb77aa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _previewMaterial: {fileID: 2100000, guid: b5c181c7184bac24ca8b62ff5170b404, type: 2}
+  _playerTransform: {fileID: 3415188100231383341}
+  _camera: {fileID: 6900899572408050767}
   _visualizationAxes:
     Up: {fileID: 4183016400899394350}
     Down: {fileID: 6773717936227390705}
@@ -269,12 +268,14 @@ MonoBehaviour:
     Right: {fileID: 2049121422551055425}
     Forward: {fileID: 1377105111605906921}
     Back: {fileID: 4370124163806689174}
+  _startGravityInput: {fileID: 1120369429361536294, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  _cancelGravityInput: {fileID: 3847164772840063163, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   _maxObjectRange: 30
-  _aimBufferDuration: 0.25
+  _aimBuffer:
+    Duration: 0.25
+  _previewMaterial: {fileID: 2100000, guid: b5c181c7184bac24ca8b62ff5170b404, type: 2}
   _previewDistance: 4
   _previewCycleDuration: 1.5
-  _camera: {fileID: 6900899572408050767}
-  _playerTransform: {fileID: 3415188100231383341}
 --- !u!1 &3127878622004459026
 GameObject:
   m_ObjectHideFlags: 0
