@@ -1,46 +1,46 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using GravityGame.Gravity;
 using GravityGame.Player;
+using GravityGame.Utils;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 namespace GravityGame.CheckpointSystem
 {
     /// <summary>
-    /// Manages all checkpoints in the scene and the player's respawn logic.
-    /// This component should be present in each scene that requires checkpoint functionality.
-    /// How to use:
-    /// 1. Populate the 'Game Object Checkpoints' list in the Inspector with GameObjects
-    ///    that represent checkpoints. These GameObjects should ideally have the
-    ///    <see cref="Checkpoint"/> component already, or it will be added automatically.
-    ///    Each checkpoint GameObject must have a Collider component (e.g., BoxCollider, SphereCollider)
-    /// 2. If no checkpoints are active when a scene loads (or on initial game start),
-    ///    an initial spawn point checkpoint will be created at the player's starting position.
-    /// 3. To make the player respawn, call the <see cref="RespawnPlayer"/> method.
-    ///
-    /// The controller ensures that only one checkpoint is active at any time.
-    /// When a player triggers a new, unreached checkpoint, that checkpoint becomes the active one.
+    ///     Manages all checkpoints in the scene and the player's respawn logic.
+    ///     This component should be present in each scene that requires checkpoint functionality.
+    ///     How to use:
+    ///     1. Populate the 'Game Object Checkpoints' list in the Inspector with GameObjects
+    ///     that represent checkpoints. These GameObjects should ideally have the
+    ///     <see cref="Checkpoint" /> component already, or it will be added automatically.
+    ///     Each checkpoint GameObject must have a Collider component (e.g., BoxCollider, SphereCollider)
+    ///     2. If no checkpoints are active when a scene loads (or on initial game start),
+    ///     an initial spawn point checkpoint will be created at the player's starting position.
+    ///     3. To make the player respawn, call the <see cref="RespawnPlayer" /> method.
+    ///     The controller ensures that only one checkpoint is active at any time.
+    ///     When a player triggers a new, unreached checkpoint, that checkpoint becomes the active one.
     /// </summary>
-    public class CheckpointController : MonoBehaviour
+    public class CheckpointController : SingletonMonoBehavior<CheckpointController>
     {
-        public static CheckpointController Instance { get; private set; }
-
         [SerializeField] GameObject _playerObject;
         [SerializeField] List<GameObject> _gameObjectCheckpoints = new();
         [SerializeField] float _respawnHeightOffset = 2.0f;
 
         readonly List<Checkpoint> _checkpoints = new();
         PlayerMovement _playerMovementScript;
+        FirstPersonCameraController _cameraController;
+        static string _lastActiveCheckpointID;
 
-        void Awake()
+        void Awake() => SceneManager.sceneLoaded += OnSceneLoaded;
+
+        void OnEnable()
         {
-            Instance = this;
-            SceneManager.sceneLoaded += OnSceneLoaded;
-
             _playerMovementScript = _playerObject.GetComponent<PlayerMovement>();
+            _cameraController = _playerObject.GetComponentInChildren<FirstPersonCameraController>();
+            PlayerHealth.Instance.OnPlayerDied.AddListener(RespawnPlayer);
         }
-        
-        void Start() => PlayerHealth.Instance.OnPlayerDied.AddListener(RespawnPlayer);
 
         void OnDisable() => PlayerHealth.Instance.OnPlayerDied.RemoveListener(RespawnPlayer);
 
@@ -52,8 +52,46 @@ namespace GravityGame.CheckpointSystem
         void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
             SetupCheckpointsFromGameObjects();
-            if (!_checkpoints.FirstOrDefault(cp => cp.IsActiveCheckpoint))
-                CreateAndSetInitialSpawnCheckpointAtPlayerPosition();
+
+            var activeCheckpoint = FindCheckpointByID(_lastActiveCheckpointID);
+            if (activeCheckpoint) {
+                RestoreCheckpointState(activeCheckpoint);
+                PositionPlayerAtCheckpoint(activeCheckpoint);
+            } else {
+                if (!_checkpoints.FirstOrDefault(cp => cp.IsActiveCheckpoint))
+                    CreateAndSetInitialSpawnCheckpointAtPlayerPosition();
+            }
+        }
+
+        void RestoreCheckpointState(Checkpoint lastActiveCheckpoint)
+        {
+            DeactivateAllCheckpoints();
+            foreach (var checkpoint in _checkpoints.Where(checkpoint => checkpoint)) {
+                checkpoint.HasBeenReached = true;
+                if (checkpoint == lastActiveCheckpoint) {
+                    checkpoint.IsActiveCheckpoint = true;
+                    break;
+                }
+            }
+        }
+
+        void PositionPlayerAtCheckpoint(Checkpoint checkpoint)
+        {
+            _playerMovementScript.enabled = false;
+
+            _playerObject.transform.rotation = Quaternion.identity;
+            var checkpointRotation = checkpoint.transform.rotation.eulerAngles;
+            _cameraController.LookRightRotation = checkpointRotation.y;
+            _cameraController.LookDownRotation = Mathf.Clamp(checkpointRotation.x, -90f, 90f);
+
+            var playerRb = _playerObject.GetComponent<Rigidbody>();
+            playerRb.MovePosition(checkpoint.transform.position + Vector3.up * _respawnHeightOffset);
+
+            playerRb.linearVelocity = Vector3.zero;
+            var playerGravity = _playerObject.GetComponent<GravityModifier>();
+            if (playerGravity) playerGravity.GravityDirection = Vector3.down;
+
+            _playerMovementScript.enabled = true;
         }
 
         void DeactivateAllCheckpoints()
@@ -104,19 +142,14 @@ namespace GravityGame.CheckpointSystem
             DeactivateAllCheckpoints();
             targetCheckpoint.IsActiveCheckpoint = true;
             targetCheckpoint.HasBeenReached = true;
+            _lastActiveCheckpointID = targetCheckpoint.CheckpointID;
         }
 
-        public void RespawnPlayer()
-        {
-            _playerMovementScript.enabled = false;
-            _playerObject.transform.position = _checkpoints.First(cp => cp.IsActiveCheckpoint).transform.position +
-                                              Vector3.up * _respawnHeightOffset;
-            _playerMovementScript.enabled = true;
-            PlayerHealth.Instance.Heal(PlayerHealth.MaxHealth);
-        }
+        public static void RespawnPlayer() => SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
 
-        Checkpoint FindCheckpointByID(string id) => string.IsNullOrEmpty(id)
-            ? null
-            : _checkpoints.FirstOrDefault(cp => cp != null && cp.CheckpointID == id);
+        Checkpoint FindCheckpointByID(string id) =>
+            string.IsNullOrEmpty(id)
+                ? null
+                : _checkpoints.FirstOrDefault(cp => cp != null && cp.CheckpointID == id);
     }
 }
