@@ -33,7 +33,7 @@ namespace GravityGame.Player
         {
             CheckForAimedInteractable();
 
-            if (_interactInput.action.IsPressed()) {
+            if (_interactInput.action.WasPressedThisFrame()) {
                 _interactBuffer.Start();
             }
 
