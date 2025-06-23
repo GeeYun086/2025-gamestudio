@@ -9,17 +9,22 @@ namespace GravityGame.Puzzle_Elements
 
         void OnCollisionEnter(Collision collision)
         {
-            float impactForce = collision.relativeVelocity.magnitude * collision.rigidbody.mass;
-
-            if (impactForce > BreakForceThreshold)
+            if (collision.rigidbody != null)
             {
-                Break();
+                float impactForce = collision.relativeVelocity.magnitude * collision.rigidbody.mass;
+                
+                if (impactForce > BreakForceThreshold)
+                {
+                    Break();
+                }
+
+                if (collision.relativeVelocity.y > BreakForceThreshold)
+                {
+                    Break();
+                }
             }
 
-            if (collision.relativeVelocity.y > BreakForceThreshold)
-            {
-                Break();
-            }
+            
         }
 
         public void Break()
