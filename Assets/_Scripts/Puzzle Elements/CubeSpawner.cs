@@ -4,28 +4,54 @@ using UnityEngine;
 namespace GravityGame.Puzzle_Elements
 {
     /// <summary>
-    ///     (Re)spawns assigned (<see cref="Cube" />) cube on load and interact.
+    ///     (Re)spawns the assigned cube prefab on load and when redstone-powered.
     /// </summary>
-    public class CubeSpawner : MonoBehaviour
+    public class CubeSpawner : RedstoneComponent
     {
+        [Tooltip("Cube prefab to spawn")]
         public GameObject Cube;
-        GameObject _currentCube;
-        Vector3 _cubePosition;
 
-        void Start()
+        [Tooltip("Delay before allowing another spawn after power is applied")]
+        public float RespawnDelay = 1f;
+
+        GameObject _currentCube;
+        bool _isPowered;
+        Vector3 CubePosition => transform.position + 1.0f * transform.up;
+
+        /// <summary>
+        ///     Called whenever redstone power changes.
+        ///     Spawns a cube on the rising edge (false→true) only once per pulse.
+        /// </summary>
+        public override bool IsPowered
         {
-            _cubePosition = transform.position + transform.up;
-            Respawn();
+            get => _isPowered;
+            set {
+                if (value && !_isPowered) {
+                    Respawn();
+                }
+                _isPowered = value;
+            }
         }
 
-        public void Respawn()
+        /// <summary>
+        ///     Instantiates a new cube and destroys the previous one.
+        ///     Also applies custom gravity if available.
+        /// </summary>
+        void Respawn()
         {
-            var newCube = Instantiate(Cube, _cubePosition, transform.rotation, transform);
-            Destroy(_currentCube);
-            _currentCube = newCube;
+            if (_currentCube != null)
+                Destroy(_currentCube);
 
-            newCube.TryGetComponent(out GravityModifier gravityModifier);
-            gravityModifier.GravityDirection = -transform.up;
+
+            _currentCube = Instantiate(
+                Cube,
+                CubePosition,
+                transform.rotation,
+                transform
+            );
+
+            if (_currentCube.TryGetComponent<GravityModifier>(out var gm))
+                gm.GravityDirection = -transform.up;
         }
     }
 }

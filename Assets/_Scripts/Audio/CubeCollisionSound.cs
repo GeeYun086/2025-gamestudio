@@ -1,3 +1,4 @@
+using GravityGame.Utils;
 using UnityEngine;
 
 namespace GravityGame.Audio
@@ -40,6 +41,7 @@ namespace GravityGame.Audio
 
         Rigidbody _rB;
         AudioSource _audioSource;
+        readonly Timer _collisionCooldown = new(0.1f);
 
         /// <summary>
         ///     Unity Start method.
@@ -68,8 +70,11 @@ namespace GravityGame.Audio
 
                 // Adjust volume based on collision intensity and play impact sound
                 // Changing MaxCollisionVelocity can change the loudness of the sound
-                float volume = Mathf.Clamp(velocity / MaxCollisionVelocity, MinVolume, MaxVolume);
-                AudioSource.PlayClipAtPoint(CollisionSound, transform.position, volume);
+                if (!_collisionCooldown.IsActive) {
+                    float volume = Mathf.Clamp(velocity / MaxCollisionVelocity, MinVolume, MaxVolume);
+                    AudioSource.PlayClipAtPoint(CollisionSound, transform.position, volume);
+                    _collisionCooldown.Start();
+                }
             } else {
                 // If the collision is too soft, stop any sound (optional: may be removed)
                 _audioSource.Stop();
