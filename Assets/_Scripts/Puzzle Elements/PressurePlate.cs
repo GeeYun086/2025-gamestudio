@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -7,7 +6,6 @@ namespace GravityGame.Puzzle_Elements
 {
     /// <summary>
     ///     Add to Pressure Plate GameObject and drag Doors into List
-    ///     Activated by GameObject with Tag "Cube"
     /// </summary>
     public class PressurePlate : MonoBehaviour
     {
@@ -15,35 +13,35 @@ namespace GravityGame.Puzzle_Elements
         [SerializeField] GameObject _pressurePlateOff;
 
         [Header("Pressure Plate Settings")]
-        [SerializeField] bool _isPowered;
         [SerializeField] List<RedstoneComponent> _logicComponents;
 
-        readonly List<Collider> _overlappingObjects = new();
-        
-        void OnTriggerEnter(Collider other)
+        bool _isPowered;
+
+        void Start()
         {
-            if (!TriggersOverlap(other)) return;
-            _overlappingObjects.Add(other);
-            UpdateState();
+            if (_logicComponents.Count == 0) Debug.LogWarning($"{gameObject.name} has no connected redstone components, did you forget to add them?");
         }
 
-        void OnTriggerExit(Collider other)
+        void FixedUpdate()
+        {
+            UpdateState();
+            _isPowered = false;
+        }
+
+        /// OnTriggerStay is called once per physics update for every Collider other that is touching the trigger
+        void OnTriggerStay(Collider other)
         {
             if (!TriggersOverlap(other)) return;
-            _overlappingObjects.Remove(other);
-            UpdateState();
+            _isPowered = true;
         }
-        
-        bool TriggersOverlap(Collider other) => other.CompareTag("Cube");
+
+        bool TriggersOverlap(Collider other) => true;
 
         void UpdateState()
         {
-            _overlappingObjects.RemoveAll(o => o == null);
-            _isPowered = _overlappingObjects.Count > 0;
-            
             _pressurePlateOn.SetActive(_isPowered);
             _pressurePlateOff.SetActive(!_isPowered);
-            
+
             // Update connected components
             foreach (var component in _logicComponents.Where(c => c != null)) {
                 component.IsPowered = _isPowered;

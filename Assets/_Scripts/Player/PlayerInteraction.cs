@@ -1,11 +1,12 @@
 using GravityGame.Puzzle_Elements;
+using GravityGame.Utils;
 using UnityEngine;
 
 namespace GravityGame.Player
 {
     /// <summary>
-    /// Pressing the interact key attempts to release a carried object if held,
-    /// otherwise, it will try to interact with or pick up an object the player is looking at.
+    ///     Pressing the interact key attempts to release a carried object if held,
+    ///     otherwise, it will try to interact with or pick up an object the player is looking at.
     /// </summary>
     public class PlayerInteraction : MonoBehaviour
     {
@@ -13,6 +14,8 @@ namespace GravityGame.Player
         [SerializeField] float _interactDistance = 3f;
         [SerializeField] KeyCode _interactKey = KeyCode.E;
         [SerializeField] LayerMask _interactableLayer;
+        [SerializeField] Timer _interactBuffer = new(0.5f);
+
 
         [Header("References")]
         Camera _playerCamera;
@@ -31,10 +34,15 @@ namespace GravityGame.Player
             CheckForAimedInteractable();
 
             if (Input.GetKeyDown(_interactKey)) {
-                if (_playerCarry && _playerCarry.IsCarrying()) {
-                    _playerCarry.AttemptRelease();
+                _interactBuffer.Start();
+            }
+
+            if (_interactBuffer.IsActive) {
+                if (_playerCarry.AttemptRelease()) {
+                    _interactBuffer.Stop();
                 } else if (_currentlyAimedInteractable is { IsInteractable: true }) {
                     _currentlyAimedInteractable.Interact();
+                    _interactBuffer.Stop();
                 }
             }
         }

@@ -1,10 +1,9 @@
 using System.Collections;
-using System.Collections.Generic;
-using GravityGame.Gravity;
+using GravityGame.Puzzle_Elements;
 using UnityEngine;
 using UnityEngine.AI;
 
-namespace GravityGame.AI
+namespace GravityGame
 {
     /// <summary>
     ///     Adds a "pick up and carry" layer on top of NavMeshPatrol.
@@ -23,14 +22,10 @@ namespace GravityGame.AI
         [SerializeField] float _detectionRadius = 2f;
         [SerializeField] float _grabDistance = 1.5f;
         [SerializeField] Transform _carrySocket;
-        [SerializeField] float _ignoreSeconds = 3f;
-        Dictionary<GameObject, float> _ignoreUntil = new();
-        GravityModifier _carriedGravity;
 
         NavMeshAgent _agent;
         GameObject _currentTarget;
         bool _foundObject;
-        FixedJoint _carryJoint;
 
         float _originalStopping;
         NavMeshPatrol _patrol;
@@ -47,14 +42,12 @@ namespace GravityGame.AI
                     TickAcquire();
                     break;
                 case State.Carrying:
-                    TickCarrying();
                     break;
             }
         }
 
         void OnEnable()
         {
-            _ignoreUntil.Clear();
             _agent = GetComponent<NavMeshAgent>();
             _patrol = GetComponent<NavMeshPatrol>();
 
@@ -82,11 +75,7 @@ namespace GravityGame.AI
             var dir = _agent.velocity.sqrMagnitude > 0.01f ? _agent.velocity.normalized : transform.forward;
 
             if (Physics.SphereCast(origin, _detectionRadius, dir, out var hit, _lookAhead))
-                if (hit.collider.CompareTag(_targetTag)) {
-                    GameObject obj = hit.collider.gameObject;
-                    if (_ignoreUntil.TryGetValue(obj, out float t) && Time.time < t) return;
-                    var gm = obj.GetComponent<GravityModifier>();
-                    if (gm != null && !IsDefaultGravity(gm.GravityDirection)) return;
+                if (hit.collider.gameObject.GetComponent<Carryable>()) {
                     _currentTarget = hit.collider.gameObject;
                     _patrol.enabled = false;
                     _state = State.Acquire;
@@ -96,15 +85,11 @@ namespace GravityGame.AI
                     _agent.SetDestination(approach);
                 }
         }
-        
-        bool IsDefaultGravity(Vector3 dir) =>
-            Vector3.Angle(dir.normalized, Vector3.down) < 1f;
 
         void TickAcquire()
         {
             if (_currentTarget == null) {
                 ResumePatrol();
-                _state = State.Patrol;
                 return;
             }
 
@@ -112,14 +97,6 @@ namespace GravityGame.AI
                 _foundObject = true;
                 StartCoroutine(DoPickup(_currentTarget));
             }
-        }
-        
-        void TickCarrying()
-        {
-            if (_carriedGravity == null) return;
-
-            if (!IsDefaultGravity(_carriedGravity.GravityDirection))
-                DropCarried();
         }
 
         Vector3 GetApproachPoint(Transform target, float offset)
@@ -138,6 +115,8 @@ namespace GravityGame.AI
         {
             _agent.isStopped = true;
             yield return new WaitForSeconds(_waitBeforePickup);
+            if (obj.TryGetComponent(out Rigidbody rb)) rb.isKinematic = true;
+            if (obj.TryGetComponent(out Collider col)) col.enabled = false;
 
             var startPos = obj.transform.position;
             var startRot = obj.transform.rotation;
@@ -152,44 +131,14 @@ namespace GravityGame.AI
                 obj.transform.rotation = Quaternion.Slerp(startRot, endRot, t);
                 yield return null;
             }
-            
-            Rigidbody socketRb = EnsureSocketBody();
-            _carryJoint                 = obj.AddComponent<FixedJoint>();
-            _carryJoint.connectedBody   = socketRb;
-            _carryJoint.enableCollision = false;
-            
-            obj.transform.position = _carrySocket.position;
-            obj.transform.rotation = _carrySocket.rotation;
+
+            obj.transform.SetParent(_carrySocket, true);
+            obj.transform.localPosition = Vector3.zero;
+            obj.transform.localRotation = Quaternion.identity;
 
             _agent.isStopped = false;
             _currentTarget = null;
-            ResumePatrol();
             _state = State.Carrying;
-            _foundObject = false;
-            _carriedGravity = obj.GetComponent<GravityModifier>();
-        }
-        
-        Rigidbody EnsureSocketBody()
-        {
-            var rb = _carrySocket.GetComponent<Rigidbody>();
-            if (rb == null) rb = _carrySocket.gameObject.AddComponent<Rigidbody>();
-            rb.isKinematic = true;
-            return rb;
-        }
-
-        void DropCarried()
-        {
-            Debug.Log("Dropping object");
-            if (_carryJoint != null)
-                Destroy(_carryJoint);
-
-            if (_carriedGravity != null)
-                _ignoreUntil[_carriedGravity.gameObject] = Time.time + _ignoreSeconds;
-
-            _carryJoint       = null;
-            _carriedGravity   = null;
-            _foundObject      = false;
-            _state            = State.Patrol;
             ResumePatrol();
         }
 
@@ -198,6 +147,7 @@ namespace GravityGame.AI
             _patrol.enabled = true;
             _agent.stoppingDistance = _originalStopping;
             _patrol.RepathToCurrentTarget();
+            _state = State.Patrol;
         }
 
         enum State { Patrol, Acquire, Carrying }

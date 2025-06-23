@@ -11,21 +11,18 @@ namespace GravityGame.Puzzle_Elements
         {
             float impactForce = collision.relativeVelocity.magnitude * collision.rigidbody.mass;
 
-            if (impactForce > BreakForceThreshold)
-            {
+            if (impactForce > BreakForceThreshold) {
                 Break();
             }
 
-            if (collision.relativeVelocity.y > BreakForceThreshold)
-            {
+            if (collision.relativeVelocity.y > BreakForceThreshold) {
                 Break();
             }
         }
 
         public void Break()
         {
-            if (BrokenVersionPrefab != null)
-            {
+            if (BrokenVersionPrefab != null) {
                 Instantiate(BrokenVersionPrefab, transform.position, transform.rotation);
             }
 

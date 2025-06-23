@@ -11,7 +11,7 @@ namespace GravityGame.AI
     public class NavMeshPatrol : MonoBehaviour
     {
         public enum PatrolMode { PingPong, Loop }
-        
+
         [Header("Path definition")]
         [Tooltip("Waypoint parent")]
         public Transform WaypointsRoot;
