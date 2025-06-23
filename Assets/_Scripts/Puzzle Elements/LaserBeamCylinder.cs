@@ -34,12 +34,12 @@ namespace GravityGame.PuzzleElements
             _meshRenderer = GetComponent<MeshRenderer>();
             _collider = GetComponent<CapsuleCollider>();
 
-#if UNITY_EDITOR
+    #if UNITY_EDITOR
             if (_meshFilter.sharedMesh == null)
                 Debug.LogError($"[{nameof(LaserBeamCylinder)}] Missing MeshFilter.sharedMesh", this);
             if (_meshRenderer.sharedMaterial == null)
                 Debug.LogError($"[{nameof(LaserBeamCylinder)}] Missing MeshRenderer.sharedMaterial", this);
-#endif
+    #endif
         }
 
         void Start() => UpdateBeamAndCollider();
@@ -62,8 +62,9 @@ namespace GravityGame.PuzzleElements
             if (playerHealth == null) return;
 
             // Cooldown check
-            if (_cooldowns.TryGetValue(playerHealth, out float lastTime))
-                if (Time.time - lastTime < DamageCooldown) return;
+            if (_cooldowns.TryGetValue(playerHealth, out float lastTime) &&
+                Time.time - lastTime < DamageCooldown)
+                return;
 
             playerHealth.TakeDamage(FlatDamage);
             Debug.Log($"[LaserBeamCylinder] Player hit by collision! Damage applied: {FlatDamage}. Current Health: {playerHealth.CurrentHealth}");
@@ -81,7 +82,7 @@ namespace GravityGame.PuzzleElements
             if (playerHealth.CurrentHealth <= 0)
                 Debug.Log($"[LaserBeamCylinder] Player killed by laser.");
 
-            // Optional: subscribe to death event
+            // Subscribe to death event
             playerHealth.OnPlayerDied.RemoveListener(LogPlayerDied);
             playerHealth.OnPlayerDied.AddListener(LogPlayerDied);
 
@@ -108,11 +109,18 @@ namespace GravityGame.PuzzleElements
             transform.localScale = new Vector3(BeamRadius, length * 0.5f, BeamRadius);
             transform.localPosition = new Vector3(0f, 0f, length * 0.5f);
 
-            // Update collider to match visuals
+            // Update collider to match visuals, compensating for transform scaling
             _collider.direction = 1; // Y-axis
-            _collider.radius = BeamRadius;
-            _collider.height = Mathf.Max(0.01f, length);
-            _collider.center = new Vector3(0f, 0f, length * 0.5f);
+            _collider.radius    = BeamRadius;
+
+            // Inverse of the Y-scale so that height * scaleY == world-space length
+            float invScaleY    = 1f / transform.localScale.y;
+            float unclampedH   = length * invScaleY;
+            _collider.height   = Mathf.Max(0.01f, unclampedH);
+
+            // Center half-way along the beam in world space, then un-scale
+            float unclampedCZ  = (length * 0.5f) * invScaleY;
+            _collider.center   = new Vector3(0f, 0f, unclampedCZ);
         }
 
         void LogPlayerDied()
