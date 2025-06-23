@@ -1,6 +1,6 @@
-﻿using GravityGame.Player;
+﻿using System.Collections.Generic;
+using GravityGame.Player;
 using UnityEngine;
-using System.Collections.Generic;
 
 namespace GravityGame.PuzzleElements
 {
@@ -25,7 +25,7 @@ namespace GravityGame.PuzzleElements
         CapsuleCollider _collider;
 
         // Cooldown to avoid spamming player with damage every frame
-        private Dictionary<PlayerHealth, float> _cooldowns = new();
+        Dictionary<PlayerHealth, float> _cooldowns = new();
         public float DamageCooldown = 0.3f;
 
         void Awake()
@@ -34,12 +34,12 @@ namespace GravityGame.PuzzleElements
             _meshRenderer = GetComponent<MeshRenderer>();
             _collider = GetComponent<CapsuleCollider>();
 
-    #if UNITY_EDITOR
+#if UNITY_EDITOR
             if (_meshFilter.sharedMesh == null)
                 Debug.LogError($"[{nameof(LaserBeamCylinder)}] Missing MeshFilter.sharedMesh", this);
             if (_meshRenderer.sharedMaterial == null)
                 Debug.LogError($"[{nameof(LaserBeamCylinder)}] Missing MeshRenderer.sharedMaterial", this);
-    #endif
+#endif
         }
 
         void Start() => UpdateBeamAndCollider();
@@ -69,18 +69,17 @@ namespace GravityGame.PuzzleElements
             playerHealth.TakeDamage(FlatDamage);
             Debug.Log($"[LaserBeamCylinder] Player hit by collision! Damage applied: {FlatDamage}. Current Health: {playerHealth.CurrentHealth}");
 
-            Rigidbody playerRb = other.GetComponent<Rigidbody>();
-            if (playerRb != null)
-            {
+            var playerRb = other.GetComponent<Rigidbody>();
+            if (playerRb != null) {
                 // Push away from center of the beam
-                Vector3 knockbackDir = (other.transform.position - transform.position).normalized;
+                var knockbackDir = (other.transform.position - transform.position).normalized;
                 knockbackDir.y = 0f; // Keep it horizontal
                 playerRb.AddForce(knockbackDir * KnockbackForce, ForceMode.Impulse);
                 Debug.Log($"[LaserBeamCylinder] Knockback applied to player: {knockbackDir * KnockbackForce}");
             }
 
             if (playerHealth.CurrentHealth <= 0)
-                Debug.Log($"[LaserBeamCylinder] Player killed by laser.");
+                Debug.Log("[LaserBeamCylinder] Player killed by laser.");
 
             // Subscribe to death event
             playerHealth.OnPlayerDied.RemoveListener(LogPlayerDied);
@@ -99,8 +98,7 @@ namespace GravityGame.PuzzleElements
             var dir = origin.forward;
             float length = MaxDistance;
 
-            if (Physics.Raycast(start, dir, out var hit, MaxDistance, ObstacleMask))
-            {
+            if (Physics.Raycast(start, dir, out var hit, MaxDistance, ObstacleMask)) {
                 length = hit.distance;
             }
 
@@ -111,16 +109,16 @@ namespace GravityGame.PuzzleElements
 
             // Update collider to match visuals, compensating for transform scaling
             _collider.direction = 1; // Y-axis
-            _collider.radius    = BeamRadius;
+            _collider.radius = BeamRadius;
 
             // Inverse of the Y-scale so that height * scaleY == world-space length
-            float invScaleY    = 1f / transform.localScale.y;
-            float unclampedH   = length * invScaleY;
-            _collider.height   = Mathf.Max(0.01f, unclampedH);
+            float invScaleY = 1f / transform.localScale.y;
+            float unclampedH = length * invScaleY;
+            _collider.height = Mathf.Max(0.01f, unclampedH);
 
             // Center half-way along the beam in world space, then un-scale
-            float unclampedCZ  = (length * 0.5f) * invScaleY;
-            _collider.center   = new Vector3(0f, 0f, unclampedCZ);
+            float unclampedCz = length * 0.5f * invScaleY;
+            _collider.center = new Vector3(0f, 0f, unclampedCz);
         }
 
         void LogPlayerDied()
