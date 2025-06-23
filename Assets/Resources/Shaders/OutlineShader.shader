@@ -6,12 +6,16 @@ Shader"Outlines/OutlineShader"
     }
     SubShader
     {
-        Tags { "RenderType"="Opaque" "RenderPipeline" = "UniversalPipeline" "Queue"="Geometry" }
-        
+        Tags
+        {
+            "RenderType"="Opaque" "RenderPipeline" = "UniversalPipeline" "Queue"="Geometry"
+        }
+
         Pass
         {
             Name "Outline"
-            Stencil{
+            Stencil
+            {
                 Ref 0
                 Comp Equal
             }
@@ -23,14 +27,14 @@ Shader"Outlines/OutlineShader"
             #pragma fragment Fragment
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
-            
+
             float4 _Color;
-            
+
             struct Attributes
             {
                 float4 posO : POSITION;
             };
-                        
+
             struct VertexOutput
             {
                 float4 pos: SV_POSITION;
@@ -47,7 +51,6 @@ Shader"Outlines/OutlineShader"
             {
                 return _Color;
             }
-            
             ENDHLSL
         }
     }
