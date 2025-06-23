@@ -2,18 +2,20 @@
 using GravityGame.Puzzle_Elements;
 using UnityEngine;
 
+/// <summary>
+///     Spawns a laser beam prefab at a specified local-space offset from this GameObject.
+///     Now supports Redstone power: the laser is active when "powered" (unless InvertRedstoneSignal is enabled).
+/// </summary>
 [RequireComponent(typeof(Transform))]
 public class LaserSpawner : RedstoneComponent
 {
     [Header("Laser Prefab")]
     [Tooltip("Drag your LaserBeam prefab here.")]
-    [SerializeField]
-    GameObject _laserPrefab;
+    [SerializeField] GameObject _laserPrefab;
 
     [Header("Spawn Settings")]
     [Tooltip("Offset from this GameObject’s position to spawn the beam origin.")]
-    [SerializeField]
-    Vector3 _spawnOffset = Vector3.zero;
+    [SerializeField] Vector3 _spawnOffset = Vector3.zero;
 
     [Header("Redstone")]
     [Tooltip("If true, laser is ON by default and turns OFF when powered. If false, laser is OFF by default and turns ON when powered.")]
@@ -23,7 +25,8 @@ public class LaserSpawner : RedstoneComponent
     bool _isPowered;
 
     /// <summary>
-    ///     Redstone power flag: whenever this flips, we update the laser.
+    ///     Redstone power control. When set, spawns or destroys the laser accordingly,
+    ///     and respects InvertRedstoneSignal setting.
     /// </summary>
     public override bool IsPowered
     {
@@ -31,41 +34,34 @@ public class LaserSpawner : RedstoneComponent
         set {
             if (_isPowered == value) return;
             _isPowered = value;
-            UpdateLaserState();
-        }
-    }
 
-    void Awake()
-    {
-        // Make sure our default (possibly inverted) state is applied
-        UpdateLaserState();
+            // If InvertRedstoneSignal is false: powered means ON
+            // If InvertRedstoneSignal is true: powered means OFF
+            bool laserShouldBeActive = InvertRedstoneSignal ? !_isPowered : _isPowered;
+
+            if (laserShouldBeActive)
+                SpawnLaser();
+            else
+                DestroyLaser();
+        }
     }
 
     void OnValidate()
     {
-        // Only warn in the editor—don't spawn/destroy here!
         if (_laserPrefab == null)
             Debug.LogWarning($"{nameof(LaserSpawner)}: Laser Prefab is not assigned.", this);
     }
 
-    /// <summary>
-    ///     Spawns or destroys the laser based on current power & invert settings.
-    /// </summary>
-    void UpdateLaserState()
+    void Start()
     {
-        // Never spawn/destroy in edit mode
-        if (!Application.isPlaying)
-            return;
-
-        bool shouldBeOn = InvertRedstoneSignal ? !_isPowered : _isPowered;
-        if (shouldBeOn)
-            SpawnLaser();
-        else
-            DestroyLaser();
+        // On start, set IsPowered to false (no redstone signal)
+        // The laser's default state depends on InvertRedstoneSignal
+        IsPowered = false;
     }
 
     /// <summary>
-    ///     Instantiates (or replaces) the laser prefab at this transform + offset.
+    ///     Instantiates (or replaces) the laser prefab at this transform’s position plus the configured offset.
+    ///     Fires <see cref="OnLaserSpawned" /> after instantiation.
     /// </summary>
     public void SpawnLaser()
     {
@@ -75,13 +71,16 @@ public class LaserSpawner : RedstoneComponent
         }
 
         DestroyLaser();
+
         var worldPos = transform.TransformPoint(_spawnOffset);
-        _spawnedLaser = Instantiate(_laserPrefab, worldPos, transform.rotation, transform);
+        _spawnedLaser = Instantiate(_laserPrefab, worldPos, transform.rotation);
+        _spawnedLaser.transform.SetParent(transform, worldPositionStays: true);
+
         OnLaserSpawned?.Invoke(_spawnedLaser);
     }
 
     /// <summary>
-    ///     Destroys the last spawned laser instance, if any.
+    ///     Destroys the last spawned laser instance, if one exists.
     /// </summary>
     public void DestroyLaser()
     {
@@ -92,7 +91,7 @@ public class LaserSpawner : RedstoneComponent
     }
 
     /// <summary>
-    ///     Fired immediately after a new laser is spawned.
+    ///     Invoked immediately after a new laser instance is spawned.
     /// </summary>
     public event Action<GameObject> OnLaserSpawned;
 }
