@@ -13,11 +13,17 @@ namespace GravityGame.Puzzle_Elements
         [SerializeField] float _pullForce = 50f;
         [SerializeField] bool _requireLineOfSight = true;
         [SerializeField] LayerMask _affectedLayers = -1;
-        [SerializeField] AnimationCurve _forceCurve = AnimationCurve.EaseInOut(0f, 1f, 1f, 0f);
+        [SerializeField] AnimationCurve _forceCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
         MeshCollider _meshCollider;
 
-        void Awake() => _meshCollider = GetComponent<MeshCollider>();
+        void Awake()
+        {
+            _meshCollider = GetComponent<MeshCollider>();
+            _meshCollider.convex = true;
+            var meshRenderer = GetComponent<MeshRenderer>();
+            if (meshRenderer) meshRenderer.enabled = false;
+        }
 
         void FixedUpdate()
         {
