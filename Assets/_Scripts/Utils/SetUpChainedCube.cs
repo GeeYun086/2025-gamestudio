@@ -4,6 +4,9 @@ using Vector3 = UnityEngine.Vector3;
 
 namespace GravityGame.Utils
 {
+    /// <summary>
+    ///     Sets up the chained cube by fitting the cube size and anchor point to their representatives and create a rope made up of links between them.
+    /// </summary>
     public class SetUpChainedCube : MonoBehaviour
     {
         GameObject _previousLink;
@@ -37,7 +40,7 @@ namespace GravityGame.Utils
             _currentLink = _link;
 
             int i = 0;
-            while ((_currentLink.transform.position - _anchor.transform.position).magnitude > .10f && i < 100) {
+            while ((_currentLink.transform.position - _anchor.transform.position).magnitude > .25f && i < 100) {
                 GameObject temp = Instantiate(
                     _currentLink, _currentLink.transform.position + transform.up * .4f, _currentLink.transform.rotation, transform
                 );
