@@ -5041,7 +5041,7 @@ PrefabInstance:
     - target: {fileID: 1023217057756439689, guid: 1d7bc10ec93332e4c8d917a35800f6b1, type: 3}
       propertyPath: '_logicComponents.Array.data[0]'
       value: 
-      objectReference: {fileID: 1302203873}
+      objectReference: {fileID: 1731138754}
     - target: {fileID: 1581816896809878898, guid: 1d7bc10ec93332e4c8d917a35800f6b1, type: 3}
       propertyPath: m_Mesh
       value: 
@@ -33147,7 +33147,7 @@ PrefabInstance:
     - target: {fileID: 1023217057756439689, guid: 1d7bc10ec93332e4c8d917a35800f6b1, type: 3}
       propertyPath: '_logicComponents.Array.data[1]'
       value: 
-      objectReference: {fileID: 1731138754}
+      objectReference: {fileID: 1302203873}
     - target: {fileID: 1581816896809878898, guid: 1d7bc10ec93332e4c8d917a35800f6b1, type: 3}
       propertyPath: m_Mesh
       value: 
@@ -73143,6 +73143,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: p1 Door main
       objectReference: {fileID: 0}
+    - target: {fileID: 110922875008210662, guid: a37924c51dae52845be6b0c85f3245e5, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 698142988124281327, guid: a37924c51dae52845be6b0c85f3245e5, type: 3}
       propertyPath: m_Mesh
       value: 
@@ -79601,7 +79605,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
 --- !u!33 &1483344670
 MeshFilter:
-  m_ObjectHideFlags: 0
+  m_ObjectHideFlags: 10
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
