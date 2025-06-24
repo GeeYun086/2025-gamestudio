@@ -70,8 +70,9 @@ MonoBehaviour:
   _effectRadius: 10
   _affectableLayers:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 3447
   _movementDampening: 0.2
+  _angularDampening: 0.3
   _effectSphereMaterial: {fileID: 2100000, guid: 2009c9bf16dd65040a4492a051f077bb, type: 2}
 --- !u!1 &5245043870255726766
 GameObject:
