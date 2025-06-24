@@ -1216,12 +1216,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _explosionRadius: 5
   _explosionVFX: {fileID: 1998830269065593993, guid: b70fbea4bc8994749ba52e4f560f9f28, type: 3}
-  _explosionSound: {fileID: 8300000, guid: 011869e6d55a5c64393926a22d0c1150, type: 3}
+  _explosionSound: {fileID: 8300000, guid: 22c474292be05aa4cbcaec30647ddfaf, type: 3}
   _explosionDamage: 34
   _pushbackRadius: 8.5
   _pushbackForce: 1000
   _fuseTime: 5
-  _fuseSound: {fileID: 8300000, guid: 9f42768f3dae4f7449c5acfa30b6e479, type: 3}
+  _fuseSound: {fileID: 8300000, guid: 7f71afb537a79e14fb42ccba43a4bcf1, type: 3}
 --- !u!65 &1207587348349593867
 BoxCollider:
   m_ObjectHideFlags: 0
