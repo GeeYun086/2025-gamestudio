@@ -173,24 +173,21 @@ namespace GravityGame.Player
         {
             if (!_carry.Object) return false;
             _carry.ObstructedCarryPosition = FindObstructedCarryPosition();
-            _carry.IsOtherwiseOverlappingWithPlayer = IsOverlappingWithPlayer(_carry.Object.Rigidbody.position);
-            if (IsOverlappingWithPlayer(_carry.Position)) {
+            _carry.IsOtherwiseOverlappingWithPlayer = IsOverlappingWithPlayer(_carry.Object.Rigidbody.position, _carry.Object.Rigidbody.rotation);
+            if (IsOverlappingWithPlayer(_carry.Position, _carry.Rotation))
                 return true;
-            }
-            if (_carry.ObstructedCarryPosition is { } pos && IsOverlappingWithPlayer(pos)) {
+            if (_carry.ObstructedCarryPosition is { } pos && IsOverlappingWithPlayer(pos, _carry.Rotation))
                 return true;
-            }
-            if (-_camera.LookDownRotation < MinBackpackAngle) {
+            if (-_camera.LookDownRotation < MinBackpackAngle)
                 return true;
-            }
             return false;
 
-            bool IsOverlappingWithPlayer(Vector3 position)
+            bool IsOverlappingWithPlayer(Vector3 position, Quaternion rotation)
             {
                 var halfExtents = CarryBoxScale * 0.5f;
                 int layerMask = LayerMask.GetMask("Player");
                 var results = new Collider[1];
-                int overlappingObjects = Physics.OverlapBoxNonAlloc(position, halfExtents, results, _carry.Rotation, layerMask);
+                int overlappingObjects = Physics.OverlapBoxNonAlloc(position, halfExtents, results, rotation, layerMask);
                 return overlappingObjects > 0;
             }
 
@@ -200,7 +197,8 @@ namespace GravityGame.Player
                 var start = _camera.transform.position;
                 var direction = _carry.Position - start;
                 int layerMask = ~LayerMask.GetMask("Player", "Laser");
-                var halfExtents = CarryBoxScale * 0.5f;
+                const float overlapScale = 0.6f; // allow box to be inside player a little
+                var halfExtents = CarryBoxScale * (0.5f * overlapScale);
 
                 var results = new RaycastHit[10];
                 int hitCount = Physics.BoxCastNonAlloc(
