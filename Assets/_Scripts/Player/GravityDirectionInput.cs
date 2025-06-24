@@ -3,8 +3,10 @@ using System.Collections;
 using System.Collections.Generic;
 using GravityGame.Gravity;
 using GravityGame.UI;
+using GravityGame.Utils;
 using JetBrains.Annotations;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using Cursor = UnityEngine.Cursor;
 
 namespace GravityGame.Player
@@ -16,121 +18,101 @@ namespace GravityGame.Player
     /// </summary>
     public class GravityDirectionInput : MonoBehaviour
     {
-        [SerializeField] Material _previewMaterial;
+        [Header("References")]
+        [SerializeField] Transform _playerTransform;
+        [SerializeField] Camera _camera;
         [SerializeField] Axes _visualizationAxes;
+        
+        [Header("Input")]
+        [SerializeField] InputActionReference _startGravityInput;
+        [SerializeField] InputActionReference _cancelGravityInput;
+        
+        [Header("Parameters")]
         [SerializeField] float _maxObjectRange = 30;
-        [SerializeField] float _aimBufferDuration = 0.25f;
+        [SerializeField] Timer _aimBuffer = new(0.25f);
+
+        [Header("Preview")]
+        [SerializeField] Material _previewMaterial;
         [SerializeField] float _previewDistance = 4f;
         [SerializeField] float _previewCycleDuration = 1.5f;
 
-        [SerializeField] Camera _camera;
-        [SerializeField] Transform _playerTransform;
-
-        [CanBeNull] GravityModifier _aimedObject;
-        [CanBeNull] GravityModifier _lastAimedObject;
-        float _lastObjectAimedTime;
-        [CanBeNull] GameObject _lastSelectedObject;
-
-        [CanBeNull] GravityModifier _selectedObject;
+        static GravityDirectionRadialMenu GravityChangeMenu => GameUI.Instance.Elements.GravityDirectionRadialMenu;
+        
+        GravityModifier _target;
+        bool _tryChangingGravity;
 
         Coroutine _previewCoroutine;
         [CanBeNull] GameObject _previewCloneInstance;
-        [CanBeNull] Vector3? _currentPreviewDirection;
-
-        static GravityDirectionRadialMenu GravityChangeMenu => GameUI.Instance.Elements.GravityDirectionRadialMenu;
+        Vector3 _currentPreviewDirection;
 
         void Update()
         {
-            var hitObject = RaycastForSelectableObject();
+            bool wasChangingGravity = GravityChangeMenu.visible;
 
-            if (hitObject) {
-                _aimedObject = hitObject.GetComponent<GravityModifier>();
-                if (!_selectedObject || hitObject != _selectedObject.gameObject) {
-                    if (hitObject != _lastSelectedObject) {
-                        ToggleOutlineOnObject(hitObject, 1);
-                        ToggleOutlineOnObject(_lastSelectedObject, 0);
-                    } else {
-                        ToggleOutlineOnObject(hitObject, 1);
-                    }
+            // Switch Target
+            bool canSwitchTarget = !wasChangingGravity || !_target;
+            if (canSwitchTarget) {
+                var hit = RaycastForSelectableObject();
+                var last = _target;
+                if (hit) {
+                    _target = hit;
+                    _aimBuffer.Start();
+                } else if (!_aimBuffer.IsActive) {
+                    _target = null;
                 }
-
-                _lastSelectedObject = hitObject;
-                _lastAimedObject = _aimedObject;
-                _lastObjectAimedTime = Time.time;
-            } else {
-                _aimedObject = null;
-                if (_lastSelectedObject &&
-                    Time.time - _lastObjectAimedTime > _aimBufferDuration &&
-                    (!_selectedObject || _lastSelectedObject != _selectedObject.gameObject)) {
-                    ToggleOutlineOnObject(_lastSelectedObject, 0);
-                    _lastSelectedObject = null;
+                if (_target != last) {
+                    if (_target) ToggleOutlineOnObject(_target.gameObject, 1);
+                    if (last) ToggleOutlineOnObject(last.gameObject, 0);
                 }
             }
 
-            if (Input.GetMouseButtonDown(1))
-                if (!_selectedObject) {
-                    GravityModifier objectToSelect = null;
-                    if (_aimedObject) objectToSelect = _aimedObject;
-                    else if (_lastAimedObject && Time.time - _lastObjectAimedTime < _aimBufferDuration)
-                        objectToSelect = _lastAimedObject;
+            // Update Input
+            var start = _startGravityInput.action.WasPressedThisFrame();
+            var stopped = !_startGravityInput.action.IsPressed();
+            var canceled = _cancelGravityInput.action.WasPressedThisFrame();
+            if (start) {
+                _tryChangingGravity = true;
+            }
+            if (stopped || canceled) {
+                _tryChangingGravity = false;
+            }
 
-                    if (objectToSelect) {
-                        _selectedObject = objectToSelect;
-                        if (_selectedObject.gameObject != _lastSelectedObject) {
-                            ToggleOutlineOnObject(_lastSelectedObject, 0);
-                            ToggleOutlineOnObject(_selectedObject.gameObject, 1);
-                            _lastSelectedObject = _selectedObject.gameObject;
-                        }
-                    }
-                }
-
-            bool isInteracting = Input.GetMouseButton(1) && _selectedObject;
-
-            switch (isInteracting) {
-                case true when !GravityChangeMenu.visible:
-                    GravityChangeMenu.visible = true;
+            // Start / Stop changing gravity
+            if (_tryChangingGravity) {
+                if (_target && !wasChangingGravity) {
                     Cursor.lockState = CursorLockMode.None;
                     Cursor.visible = true;
-                    if (_selectedObject) {
-                        SetVisualizedDirection(_selectedObject.GravityDirection);
-                        ToggleOutlineOnObject(_selectedObject.gameObject, 1);
-                        _lastSelectedObject = _selectedObject.gameObject;
-                    }
-                    break;
-                case false when GravityChangeMenu.visible:
-                    StopGravityPreview();
+                    GravityChangeMenu.visible = true;
+                }
+            } else {
+                if (wasChangingGravity) {
                     var direction = GetRadialMenuGravityDirection();
-                    if (_selectedObject && direction.HasValue) _selectedObject.GravityDirection = direction.Value;
-
-                    SetVisualizedDirection(Vector3.zero);
-
-                    GravityChangeMenu.visible = false;
+                    if (_target && direction.HasValue && !canceled) {
+                        _target.GravityDirection = direction.Value;
+                    }
+                    
+                    _aimBuffer.Stop();
+                    StopGravityPreview();
+                    
                     Cursor.lockState = CursorLockMode.Locked;
                     Cursor.visible = false;
-
-                    _selectedObject = null;
-                    break;
-            }
-
-            if (isInteracting) {
-                if (!_selectedObject) return;
-                ToggleOutlineOnObject(_selectedObject.gameObject, 1);
-
-                var newDirection = GetRadialMenuGravityDirection();
-                SetVisualizedDirection(newDirection ?? _selectedObject.GravityDirection);
-
-                if (newDirection.HasValue) {
-                    if (!_previewCloneInstance || _currentPreviewDirection != newDirection) {
-                        StopGravityPreview();
-                        StartGravityPreview(_selectedObject, newDirection.Value);
-                    }
-                } else {
-                    StopGravityPreview();
+                    GravityChangeMenu.visible = false;
                 }
-                _currentPreviewDirection = newDirection;
-            } else if (_previewCloneInstance) {
-                StopGravityPreview();
             }
+
+            // Update while changing gravity
+            bool isChangingGravity = GravityChangeMenu.visible && _target;
+            if (isChangingGravity) {
+                ToggleOutlineOnObject(_target.gameObject, 1);
+
+                var direction = GetRadialMenuGravityDirection() ?? _target.GravityDirection;
+                SetVisualizedDirection(direction);
+
+                if (!_previewCloneInstance || _currentPreviewDirection != direction) {
+                    StartGravityPreview(_target, direction);
+                    _currentPreviewDirection = direction;
+                }
+            } 
         }
 
         void OnEnable() => SetVisualizedDirection(Vector3.zero);
@@ -139,6 +121,7 @@ namespace GravityGame.Player
 
         void StartGravityPreview(GravityModifier originalObjectToPreview, Vector3 direction)
         {
+            SetVisualizedDirection(direction);
             StopGravityPreview();
             _previewCloneInstance = Instantiate(
                 originalObjectToPreview.gameObject,
@@ -151,6 +134,9 @@ namespace GravityGame.Player
                 _previewCloneInstance.GetComponent<Rigidbody>().isKinematic = true;
                 _previewCloneInstance.GetComponent<GravityModifier>().enabled = false;
                 _previewCloneInstance.GetComponent<Renderer>().SetMaterials(new List<Material> { _previewMaterial });
+                foreach (var renderer in _previewCloneInstance.GetComponentsInChildren<Renderer>()) {
+                    renderer.SetMaterials(new List<Material> { _previewMaterial });
+                }
                 _previewCloneInstance.transform.localScale *= .999f;
                 foreach (var component in _previewCloneInstance.GetComponentsInChildren<Collider>()) {
                     component.enabled = false;
@@ -163,6 +149,8 @@ namespace GravityGame.Player
 
         void StopGravityPreview()
         {
+            SetVisualizedDirection(Vector3.zero);
+            
             if (_previewCoroutine != null) {
                 StopCoroutine(_previewCoroutine);
                 _previewCoroutine = null;
@@ -197,14 +185,15 @@ namespace GravityGame.Player
         }
 
         [CanBeNull]
-        GameObject RaycastForSelectableObject()
+        GravityModifier RaycastForSelectableObject()
         {
             var ray = new Ray(_camera.transform.position, _camera.transform.forward);
             // Note TG: other objects may block the hit, maybe need to ignore more layers in the future
             int layerMask = ~LayerMask.GetMask("AxisGizmo", "Player");
 
             if (Physics.Raycast(ray, out var hitInfo, _maxObjectRange, layerMask, QueryTriggerInteraction.Ignore)) {
-                if (hitInfo.transform.gameObject.TryGetComponent<GravityModifier>(out _)) return hitInfo.transform.gameObject;
+                if (hitInfo.transform.gameObject.TryGetComponent<GravityModifier>(out var g)) 
+                    return g;
             }
             return null;
         }
@@ -220,7 +209,9 @@ namespace GravityGame.Player
             var right = GetClosestCardinalDirection(_camera.transform.right);
             var forward = Vector3.Cross(right, up).normalized;
 
-            if (Mathf.Abs(mouseOffset.x) * 9 > Mathf.Abs(mouseOffset.y) * 16) return mouseOffset.x > 0 ? right : -right;
+            float angle = Vector3.Angle(mouseOffset, Vector3.up);
+            float alpha = GravityChangeMenu.HorizontalAngle * 0.5f;
+            if (angle > 90 - alpha && angle < 90 + alpha) return mouseOffset.x > 0 ? right : -right;
             if (distance > GravityChangeMenu.InnerRadius) return mouseOffset.y > 0 ? forward : -forward;
             return mouseOffset.y > 0 ? up : -up;
         }
@@ -240,11 +231,8 @@ namespace GravityGame.Player
             GameObject GetDisplayedAxis()
             {
                 if (direction.y != 0) return direction.y > 0 ? _visualizationAxes.Up : _visualizationAxes.Down;
-
                 if (direction.x != 0) return direction.x > 0 ? _visualizationAxes.Right : _visualizationAxes.Left;
-
                 if (direction.z != 0) return direction.z > 0 ? _visualizationAxes.Forward : _visualizationAxes.Back;
-
                 return null;
             }
         }
