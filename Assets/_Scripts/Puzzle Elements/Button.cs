@@ -23,6 +23,11 @@ namespace GravityGame.Puzzle_Elements
         
         Coroutine _pulseRoutine;
 
+        void Start()
+        {
+            if(Targets.Count == 0) Debug.LogWarning($"{gameObject.name} has no connected redstone components, did you forget to add them?");
+        }
+
         void SetPowered(bool value)
         {
             _buttonOn.SetActive(value);

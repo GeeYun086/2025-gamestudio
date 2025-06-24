@@ -1,6 +1,7 @@
 using GravityGame.Puzzle_Elements;
 using GravityGame.Utils;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace GravityGame.Player
 {
@@ -10,16 +11,15 @@ namespace GravityGame.Player
     /// </summary>
     public class PlayerInteraction : MonoBehaviour
     {
-        [Header("Settings")]
-        [SerializeField] float _interactDistance = 3f;
-        [SerializeField] KeyCode _interactKey = KeyCode.E;
-        [SerializeField] LayerMask _interactableLayer;
-        [SerializeField] Timer _interactBuffer = new(0.5f);
-
-
         [Header("References")]
         Camera _playerCamera;
         PlayerCarry _playerCarry;
+        
+        [Header("Settings")]
+        [SerializeField] InputActionReference _interactInput;
+        [SerializeField] float _interactDistance = 3f;
+        [SerializeField] Timer _interactBuffer = new(0.5f);
+        [SerializeField] LayerMask _interactableLayer;
 
         IInteractable _currentlyAimedInteractable;
 
@@ -33,7 +33,7 @@ namespace GravityGame.Player
         {
             CheckForAimedInteractable();
 
-            if (Input.GetKeyDown(_interactKey)) {
+            if (_interactInput.action.WasPressedThisFrame()) {
                 _interactBuffer.Start();
             }
 
