@@ -1,4 +1,5 @@
 using System.Collections;
+using GravityGame.Puzzle_Elements;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -74,7 +75,7 @@ namespace GravityGame
             var dir = _agent.velocity.sqrMagnitude > 0.01f ? _agent.velocity.normalized : transform.forward;
 
             if (Physics.SphereCast(origin, _detectionRadius, dir, out var hit, _lookAhead))
-                if (hit.collider.CompareTag(_targetTag)) {
+                if (hit.collider.gameObject.GetComponent<Carryable>()) {
                     _currentTarget = hit.collider.gameObject;
                     _patrol.enabled = false;
                     _state = State.Acquire;
