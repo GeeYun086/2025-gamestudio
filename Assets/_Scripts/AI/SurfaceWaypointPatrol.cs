@@ -14,6 +14,7 @@ namespace GravityGame.AI
         [Header("Locomotion")]
         [SerializeField] float _speed = 2f;
         [SerializeField] float _arriveDist = 0.15f;
+        [SerializeField] bool _paused;
 
         [Header("Surface sticking")]
         [SerializeField] LayerMask _groundMask = ~0;
@@ -26,6 +27,8 @@ namespace GravityGame.AI
         int _index;
         int _dir     = 1;           // +1 forward, –1 back
 
+        public void SetPaused(bool v) => _paused = v;
+        
         void Awake()
         {
             if (_waypointsRoot == null)
@@ -41,6 +44,7 @@ namespace GravityGame.AI
 
         void Update()
         {
+            if (_paused) return;
             if (_pts.Length == 0) return;
 
             Vector3 toTarget = _pts[_index].position - transform.position;
@@ -57,8 +61,12 @@ namespace GravityGame.AI
 
                 toTarget = _pts[_index].position - transform.position;
             }
+            
+            bool wallInFront = Physics.Raycast(transform.position, transform.forward, out var hit, _rayDist, _groundMask);
+            if(wallInFront)
+                Debug.Log("wall in front? "+ wallInFront);
 
-            bool gotSurface =
+            /*bool gotSurface =
                 Physics.Raycast(transform.position + transform.up * 0.05f,
                     -transform.up,
                     out var hit, _rayDist, _groundMask)
@@ -70,19 +78,19 @@ namespace GravityGame.AI
                     _groundMask,
                     out hit);
             
-            if (!gotSurface) return;
+            if (!gotSurface) return;*/
 
             Vector3 surfaceNormal = hit.normal;
 
-            Quaternion desiredRot =
+            /*Quaternion desiredRot =
                 Quaternion.FromToRotation(transform.up, surfaceNormal) * transform.rotation;
             transform.rotation = Quaternion.Slerp(transform.rotation, desiredRot,
-                _rotLerp * Time.deltaTime);
+                _rotLerp * Time.deltaTime);*/
 
             Vector3 moveDir = Vector3.ProjectOnPlane(toTarget, surfaceNormal).normalized;
             if (moveDir.sqrMagnitude > 0.001f) {
                 Quaternion faceDir = Quaternion.LookRotation(moveDir, surfaceNormal);
-                transform.rotation = Quaternion.Slerp(transform.rotation, faceDir, _rotLerp * Time.deltaTime);
+                //transform.rotation = Quaternion.Slerp(transform.rotation, faceDir, _rotLerp * Time.deltaTime);
             }
             transform.position += moveDir * (_speed * Time.deltaTime);
             
@@ -119,7 +127,7 @@ namespace GravityGame.AI
 #if UNITY_EDITOR      // compile in Editor only
         void OnDrawGizmos()
         {
-            if (!Application.isPlaying) return;
+            //if (!Application.isPlaying) return;
 
             Gizmos.color = Color.red;
 
@@ -138,6 +146,7 @@ namespace GravityGame.AI
                 Gizmos.DrawLine(A, B);              // chord
                 Gizmos.DrawLine(A, A + (B - A).normalized * 0.05f);   // little direction tick
             }
+            Gizmos.DrawLine(transform.position, transform.position + transform.forward * _rayDist);
         }
 #endif
         

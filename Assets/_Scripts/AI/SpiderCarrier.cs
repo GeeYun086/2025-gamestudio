@@ -1,161 +1,105 @@
-using System;
 using System.Collections;
-using GravityGame.AI;
 using GravityGame.Puzzle_Elements;
 using UnityEngine;
-using UnityEngine.AI;
+using UnityEngine.Serialization;
 
-namespace GravityGame
+namespace GravityGame.AI
 {
-    /// <summary>
-    ///     Adds a "pick up and carry" layer on top of NavMeshPatrol.
-    ///     The agent pauses its patrol when it sees a tagged object,
-    ///     walks to it, and parents it to a CarrySocket.
-    /// </summary>
-    [RequireComponent(typeof(NavMeshAgent))]
+    [RequireComponent(typeof(SurfaceWaypointPatrol))]
     public class SpiderCarrier : MonoBehaviour
     {
-        [Header("Pick-up timing & look")] 
-        [SerializeField] float _waitBeforePickup = 0.35f;
-        [SerializeField] float _moveTime = 0.25f;
-        [SerializeField] AnimationCurve _heightCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
-        [SerializeField] float _lookAhead = 2.0f;
-        [SerializeField] float _detectionRadius = 2f;
-        [SerializeField] float _grabDistance = 1.5f;
+        [Header("Detection")]
+        [SerializeField] float _detectForward = 1.2f;
+        [SerializeField] float _detectRadius = 0.4f;
+        [SerializeField] LayerMask _carryMask = ~0;
+        [Header("Pick-up distance")]
+        [SerializeField] float _stopDist   = 0.4f;
+        [Header("Animation")]
+        [SerializeField] float _waitBefore = 0.3f;
+        [SerializeField] float _moveTime   = 0.25f;
+        [SerializeField] AnimationCurve   _height = AnimationCurve.EaseInOut(0,0,1,1);
+        
         [SerializeField] Transform _carrySocket;
 
-        NavMeshAgent _agent;
-        GameObject _currentTarget;
-        bool _foundObject;
+        SurfaceWaypointPatrol _mover;
+        GameObject _target;
+        enum State { Free, Approach, Carry } State _state = State.Free;
 
-        float _originalStopping;
-        NavMeshPatrol _patrol;
-
-        State _state = State.Patrol;
-
-        void Start()
-        {
-            _agent.updateUpAxis = false;
-        }
+        void Awake()  => _mover = GetComponent<SurfaceWaypointPatrol>();
 
         void Update()
         {
-            switch (_state) {
-                case State.Patrol:
-                    TickPatrol();
+            switch (_state)
+            {
+                case State.Free:
+                    var origin = transform.position + Vector3.up * 0.2f;
+                    if (Physics.SphereCast(origin, _detectRadius, transform.forward, out var hit, _detectForward) &&
+                        hit.collider.gameObject.GetComponent<Carryable>())
+                    {
+                        Debug.Log(hit.collider.gameObject.name);
+                        _target = hit.collider.gameObject;
+                        _mover.SetPaused(true);
+                        _state = State.Approach;
+                    }
                     break;
-                case State.Acquire:
-                    TickAcquire();
-                    break;
-                case State.Carrying:
+
+                case State.Approach:
+                    if (Vector3.Distance(transform.position,
+                                         _target.transform.position) <= _stopDist)
+                        StartCoroutine(DoPickup(_target));
                     break;
             }
-        }
-
-        void OnEnable()
-        {
-            _agent = GetComponent<NavMeshAgent>();
-            _patrol = GetComponent<NavMeshPatrol>();
-
-            if (_carrySocket == null) Debug.LogError("SpiderCarrier needs a CarrySocket assigned!");
-        }
-
-#if UNITY_EDITOR
-        void OnDrawGizmosSelected()
-        {
-            if (Application.isPlaying == false) return;
-
-            Gizmos.color = Color.cyan;
-            var origin = transform.position + Vector3.up * 0.2f;
-            var dir = _agent != null && _agent.velocity.sqrMagnitude > 0.01f
-                ? _agent.velocity.normalized
-                : transform.forward;
-            Gizmos.DrawLine(origin, origin + dir * _lookAhead);
-            Gizmos.DrawWireSphere(origin + dir * _lookAhead, _detectionRadius);
-        }
-#endif
-
-        void TickPatrol()
-        {
-            var origin = transform.position + Vector3.up * 0.2f;
-            var dir = _agent.velocity.sqrMagnitude > 0.01f ? _agent.velocity.normalized : transform.forward;
-
-            if (Physics.SphereCast(origin, _detectionRadius, dir, out var hit, _lookAhead))
-                if (hit.collider.gameObject.GetComponent<Carryable>()) {
-                    _currentTarget = hit.collider.gameObject;
-                    _patrol.enabled = false;
-                    _state = State.Acquire;
-                    _originalStopping = _agent.stoppingDistance;
-                    _agent.stoppingDistance = _grabDistance;
-                    var approach = GetApproachPoint(_currentTarget.transform, _grabDistance);
-                    _agent.SetDestination(approach);
-                }
-        }
-
-        void TickAcquire()
-        {
-            if (_currentTarget == null) {
-                ResumePatrol();
-                return;
-            }
-
-            if (!_agent.pathPending && _agent.remainingDistance <= _agent.stoppingDistance + 0.05f && !_foundObject) {
-                _foundObject = true;
-                StartCoroutine(DoPickup(_currentTarget));
-            }
-        }
-
-        Vector3 GetApproachPoint(Transform target, float offset)
-        {
-            var dir = target.position - transform.position;
-            dir.y = 0f;
-            dir = dir.normalized;
-
-            var point = target.position - dir * offset;
-
-            NavMesh.SamplePosition(point, out var hit, 1f, NavMesh.AllAreas);
-            return hit.position;
         }
 
         IEnumerator DoPickup(GameObject obj)
         {
-            _agent.isStopped = true;
-            yield return new WaitForSeconds(_waitBeforePickup);
-            if (obj.TryGetComponent(out Rigidbody rb)) rb.isKinematic = true;
-            if (obj.TryGetComponent(out Collider col)) col.enabled = false;
+            _state = State.Carry;
 
-            var startPos = obj.transform.position;
-            var startRot = obj.transform.rotation;
-            var endPos = _carrySocket.position;
-            var endRot = _carrySocket.rotation;
+            yield return new WaitForSeconds(_waitBefore);
+            
+            Vector3 startP = obj.transform.position;
+            Quaternion startR = obj.transform.rotation;
+            Vector3 endP = _carrySocket.position;
+            Quaternion endR = _carrySocket.rotation;
 
             float t = 0f;
-            while (t < 1f) {
+            while (t < 1f)
+            {
                 t += Time.deltaTime / _moveTime;
-                float yArc = _heightCurve.Evaluate(t) * 0.15f;
-                obj.transform.position = Vector3.Lerp(startPos, endPos, t) + Vector3.up * yArc;
-                obj.transform.rotation = Quaternion.Slerp(startRot, endRot, t);
+                float h = _height.Evaluate(t) * 0.15f;
+                obj.transform.position =
+                    Vector3.Lerp(startP, endP, t) + Vector3.up * h;
+                obj.transform.rotation =
+                    Quaternion.Slerp(startR, endR, t);
                 yield return null;
             }
 
-            obj.transform.SetParent(_carrySocket, true);
-            obj.transform.localPosition = Vector3.zero;
-            obj.transform.localRotation = Quaternion.identity;
+            var joint = obj.AddComponent<FixedJoint>();
+            joint.connectedBody = _carrySocket.GetComponent<Rigidbody>();
+            joint.enableCollision = false;
+            obj.transform.SetPositionAndRotation(endP, endR);
 
-            _agent.isStopped = false;
-            _currentTarget = null;
-            _state = State.Carrying;
-            ResumePatrol();
+            _mover.SetPaused(false);
+            _state = State.Free;
         }
+        
 
-        void ResumePatrol()
+#if UNITY_EDITOR
+        void OnDrawGizmosSelected()
         {
-            _patrol.enabled = true;
-            _agent.stoppingDistance = _originalStopping;
-            _patrol.RepathToCurrentTarget();
-            _state = State.Patrol;
-        }
+            Gizmos.color = Color.cyan;
 
-        enum State { Patrol, Acquire, Carrying }
+            // front-sphere centre (half-way along the cast)
+            Vector3 cen = transform.position + transform.forward * _detectForward * 0.5f;
+            // draw cylinder-ish guide: two spheres + lines
+            Gizmos.DrawWireSphere(cen + transform.forward * _detectForward * 0.5f, _detectRadius);
+            Gizmos.DrawWireSphere(cen - transform.forward * _detectForward * 0.5f, _detectRadius);
+            Gizmos.DrawLine(cen + transform.up * _detectRadius,
+                cen + transform.up * _detectRadius + transform.forward * _detectForward);
+            Gizmos.DrawLine(cen - transform.up * _detectRadius,
+                cen - transform.up * _detectRadius + transform.forward * _detectForward);
+        }
+#endif
+
     }
 }
