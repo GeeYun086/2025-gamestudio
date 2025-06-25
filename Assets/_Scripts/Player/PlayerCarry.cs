@@ -173,24 +173,21 @@ namespace GravityGame.Player
         {
             if (!_carry.Object) return false;
             _carry.ObstructedCarryPosition = FindObstructedCarryPosition();
-            _carry.IsOtherwiseOverlappingWithPlayer = IsOverlappingWithPlayer(_carry.Object.Rigidbody.position);
-            if (IsOverlappingWithPlayer(_carry.Position)) {
+            _carry.IsOtherwiseOverlappingWithPlayer = IsOverlappingWithPlayer(_carry.Object.Rigidbody.position, _carry.Object.Rigidbody.rotation);
+            if (IsOverlappingWithPlayer(_carry.Position, _carry.Rotation))
                 return true;
-            }
-            if (_carry.ObstructedCarryPosition is { } pos && IsOverlappingWithPlayer(pos)) {
+            if (_carry.ObstructedCarryPosition is { } pos && IsOverlappingWithPlayer(pos, _carry.Rotation))
                 return true;
-            }
-            if (-_camera.LookDownRotation < MinBackpackAngle) {
+            if (-_camera.LookDownRotation < MinBackpackAngle)
                 return true;
-            }
             return false;
 
-            bool IsOverlappingWithPlayer(Vector3 position)
+            bool IsOverlappingWithPlayer(Vector3 position, Quaternion rotation)
             {
                 var halfExtents = CarryBoxScale * 0.5f;
                 int layerMask = LayerMask.GetMask("Player");
                 var results = new Collider[1];
-                int overlappingObjects = Physics.OverlapBoxNonAlloc(position, halfExtents, results, _carry.Rotation, layerMask);
+                int overlappingObjects = Physics.OverlapBoxNonAlloc(position, halfExtents, results, rotation, layerMask);
                 return overlappingObjects > 0;
             }
 
@@ -199,8 +196,9 @@ namespace GravityGame.Player
                 if (_carry.Object == null) return null;
                 var start = _camera.transform.position;
                 var direction = _carry.Position - start;
-                int layerMask = ~LayerMask.GetMask("Player");
-                var halfExtents = CarryBoxScale * 0.5f;
+                int layerMask = ~LayerMask.GetMask("Player", "Laser");
+                const float overlapScale = 0.6f; // allow box to be inside player a little
+                var halfExtents = CarryBoxScale * (0.5f * overlapScale);
 
                 var results = new RaycastHit[10];
                 int hitCount = Physics.BoxCastNonAlloc(
@@ -276,20 +274,9 @@ namespace GravityGame.Player
         void OnDrawGizmos()
         {
             if (Application.isPlaying) {
-                DrawGizmoCube(_carry.Position, _carry.Rotation, CarryBoxScale);
+                DebugDraw.DrawGizmoCube(_carry.Position, _carry.Rotation, CarryBoxScale);
             }
             return;
-
-            void DrawGizmoCube(Vector3 position, Quaternion rotation, Vector3 scale, bool filled = false)
-            {
-                Gizmos.matrix = Matrix4x4.TRS(position, rotation, scale);
-                if (filled) {
-                    Gizmos.DrawCube(Vector3.zero, Vector3.one);
-                } else {
-                    Gizmos.DrawWireCube(Vector3.zero, Vector3.one);
-                }
-                Gizmos.matrix = Matrix4x4.identity;
-            }
         }
 
         struct CarryInfo

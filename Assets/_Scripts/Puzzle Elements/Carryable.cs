@@ -1,5 +1,4 @@
 using System;
-using GravityGame.Gravity;
 using GravityGame.Player;
 using UnityEngine;
 
