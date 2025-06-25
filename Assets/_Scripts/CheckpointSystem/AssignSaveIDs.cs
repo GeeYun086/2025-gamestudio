@@ -12,7 +12,7 @@ namespace GravityGame.CheckpointSystem
         {
             EditorSceneManager.sceneSaving += (_, _) => AssignSaveIDsToLoadedObjects();
             EditorApplication.playModeStateChanged += p => {
-                if (p == PlayModeStateChange.ExitingEditMode)
+                if (p == PlayModeStateChange.EnteredPlayMode)
                     AssignSaveIDsToLoadedObjects();
             };
         }
@@ -22,7 +22,7 @@ namespace GravityGame.CheckpointSystem
             int count = 0;
             foreach (var (gameObject, saveData) in SaveAndLoad.FindObjectsWithSaveData()) {
                 var id = GlobalObjectId.GetGlobalObjectIdSlow(gameObject);
-                saveData.ID = id.GetHashCode();
+                saveData.SaveDataID = id.GetHashCode();
                 count++;
             }
             Debug.Log($"[{typeof(AssignSaveIDs)}] assigned save ids to objects in scene ({count}).");

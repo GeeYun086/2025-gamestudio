@@ -29,10 +29,10 @@ namespace GravityGame.CheckpointSystem
             foreach (var (_, saveData) in FindObjectsWithSaveData()) {
                 string jsonData = saveData.Save();
                 var entry = new SaveDataEntry {
-                    DataID = saveData.ID,
+                    DataID = saveData.SaveDataID,
                     JsonData = jsonData
                 };
-                data[saveData.ID] = entry;
+                data[saveData.SaveDataID] = entry;
             }
             Data.Entries = data.Values.ToList();
         }
@@ -41,16 +41,16 @@ namespace GravityGame.CheckpointSystem
         {
             var data = Data.Entries.ToDictionary(e => e.DataID);
             foreach (var (_, saveData) in FindObjectsWithSaveData()) {
-                if (data.TryGetValue(saveData.ID, out var objData)) {
+                if (data.TryGetValue(saveData.SaveDataID, out var objData)) {
                     saveData.Load(objData.JsonData);
                 }
             }
         }
 
-        public static IEnumerable<(GameObject, IWithSaveData)> FindObjectsWithSaveData()
+        public static IEnumerable<(GameObject, ISaveData)> FindObjectsWithSaveData()
         {
             foreach (var obj in FindObjectsByType<MonoBehaviour>(FindObjectsInactive.Include, FindObjectsSortMode.None)) {
-                if (obj.TryGetComponent<IWithSaveData>(out var saveData)) {
+                if (obj.TryGetComponent<ISaveData>(out var saveData)) {
                     yield return (obj.gameObject, saveData);
                 }
             }

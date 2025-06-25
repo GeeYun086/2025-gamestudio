@@ -8,13 +8,10 @@ namespace GravityGame.Puzzle_Elements
     /// <summary>
     ///     (Re)spawns the assigned cube prefab on load and when redstone-powered.
     /// </summary>
-    public class CubeSpawner : RedstoneComponent, IWithSaveData<CubeSpawner.SaveData>
+    public class CubeSpawner : RedstoneComponent, ISaveData<CubeSpawner.SaveData>
     {
         [Tooltip("Cube prefab to spawn")]
         public GameObject Cube;
-
-        [Tooltip("Delay before allowing another spawn after power is applied")]
-        public float RespawnDelay = 1f;
 
         GameObject _currentCube;
         bool _isPowered;
@@ -59,18 +56,15 @@ namespace GravityGame.Puzzle_Elements
 
     #region Save and Load
 
+        [field: SerializeField] public int SaveDataID { get; set; }
+        
         [Serializable]
         public struct SaveData
         {
             public bool IsSpawned;
             public Vector3 CubePosition;
             public Quaternion CubeRotation;
-
-            public const string Identifier = "CubeSpawner";
         }
-
-        int IWithSaveData.ID { get; set; }
-        public int SaveDataTypeID => SaveData.Identifier.GetHashCode();
 
         public SaveData Save()
         {
@@ -84,6 +78,7 @@ namespace GravityGame.Puzzle_Elements
 
         public void Load(SaveData data)
         {
+            Debug.Log($"loaded {((ISaveData)this).SaveDataID}");
             if (data.IsSpawned) {
                 Respawn();
                 if (_currentCube.TryGetComponent<Rigidbody>(out var rb)) {
