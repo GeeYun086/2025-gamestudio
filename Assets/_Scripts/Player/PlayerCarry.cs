@@ -128,7 +128,8 @@ namespace GravityGame.Player
             float clampedLookDownAngle = Mathf.Clamp(_camera.LookDownRotation, -MaxAngle, -MinAngle);
             var clampedLookDown = Quaternion.AngleAxis(clampedLookDownAngle, right);
             var lookRight = Quaternion.AngleAxis(_camera.LookRightRotation, transform.up);
-            var localCarryPosition = clampedLookDown * lookRight * CarryPoint.localPosition;
+            var rotation = clampedLookDown * lookRight * Quaternion.FromToRotation(Vector3.up, transform.up);
+            var localCarryPosition = rotation * CarryPoint.localPosition;
             var carryPosition = _camera.transform.position + localCarryPosition;
             // Clamp Min Max Carry Height
             var playerToCarryPos = carryPosition - transform.position;
@@ -218,6 +219,7 @@ namespace GravityGame.Player
             }
         }
 
+        Vector3 _lastLinearVelocity;
         void FixedUpdate()
         {
             MoveCarriedObject(Time.fixedDeltaTime);
@@ -229,15 +231,16 @@ namespace GravityGame.Player
                 if (_carry.Object == null) return;
                 var rb = _carry.Object.Rigidbody;
                 var newPosition = Vector3.MoveTowards(rb.position, _carry.Position, MoveSpeed * deltaTime);
-                var velocity = (newPosition - rb.position) / deltaTime;
-                if (_carry.ObstructedCarryPosition is { } obs) {
-                    bool closeToObstacle = Vector3.Distance(rb.position, newPosition) < Vector3.Distance(rb.position, obs);
-                    if (_carry.ShouldUseBackpack == false && closeToObstacle)
-                        velocity = Vector3.ClampMagnitude(velocity, 5f); // avoid cramming box into wall with too much speed
-                    else
-                        velocity = Vector3.ClampMagnitude(velocity, 10f);
+                var direction = newPosition - rb.position;
+                var velocity = direction / deltaTime;
+                if (IsOverlappingWithSomething(newPosition, rb.rotation) && !_carry.UsingBackpack) {
+                    var delta = rb.linearVelocity - _lastLinearVelocity;
+                    var otherVelocity = Vector3.MoveTowards(delta, Vector3.zero, 10f/Time.fixedDeltaTime);
+                    velocity = Vector3.ClampMagnitude(velocity, 5f); // avoid cramming box into wall with too much speed
+                    velocity += otherVelocity;
                 }
                 rb.linearVelocity = velocity;
+                _lastLinearVelocity = rb.linearVelocity;
             }
 
             void RotateCarriedObject(float deltaTime)
@@ -254,7 +257,7 @@ namespace GravityGame.Player
                 axis.Normalize();
 
                 // Only apply if rotation is meaningful
-                if (Mathf.Abs(angleInRadians) > 0.001f) {
+                if (Mathf.Abs(angleInRadians) > 0.001f && !IsOverlappingWithSomething(rb.position, rb.rotation, 1.2f)) {
                     // Smoothly rotate toward the target at a constant angular speed
                     float angularSpeed = RotationSpeed;
                     float rotationThisFrame = Mathf.Min(angleInRadians, angularSpeed * deltaTime);
@@ -263,6 +266,14 @@ namespace GravityGame.Player
                 } else {
                     rb.angularVelocity = Vector3.zero;
                 }
+            }
+            Collider IsOverlappingWithSomething(Vector3 position, Quaternion rotation, float scale = 1.0f)
+            {
+                var halfExtents = CarryBoxScale * (0.5f * scale);
+                int layerMask = ~LayerMask.GetMask("Player", "Laser");
+                var results = new Collider[2];
+                int overlappingObjects = Physics.OverlapBoxNonAlloc(position, halfExtents, results, rotation, layerMask);
+                return results.Take(overlappingObjects).FirstOrDefault(b => b != _carry.Object?.Collider);
             }
         }
 
