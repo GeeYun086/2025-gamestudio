@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace GravityGame.Puzzle_Elements
 {
-   /// <summary>
+    /// <summary>
     ///     (Re)spawns the assigned cube prefab on load and when redstone-powered.
     /// </summary>
     [RequireComponent(typeof(SaveID))]
@@ -35,7 +35,7 @@ namespace GravityGame.Puzzle_Elements
                 _isPowered = value;
             }
         }
-        
+
 
         /// <summary>
         ///     Instantiates a new cube and destroys the previous one.
@@ -58,39 +58,43 @@ namespace GravityGame.Puzzle_Elements
                 gm.GravityDirection = -transform.up;
         }
 
+    #region Save and Load
+
         [Serializable]
-        struct SaveData
+        public struct SaveData
         {
             public bool IsSpawned;
             public Vector3 CubePosition;
             public Quaternion CubeRotation;
-        }
-        
-        int IWithRawSaveData.DataTypeID => "CubeSpawnerData".GetHashCode();
-        SaveData IWithSaveData<SaveData>.Save()
-        {
-            var data = new SaveData();
-            if (_currentCube) {
-                data.IsSpawned = true;
-                data.CubePosition = _currentCube.transform.position;
-                data.CubeRotation = _currentCube.transform.rotation;
-            } else {
-                data.IsSpawned = false;
-            }
-            return data;
+
+            public const string Identifier = "CubeSpawner";
         }
 
-        void IWithSaveData<SaveData>.Load(SaveData data)
+        public int SaveDataTypeID => SaveData.Identifier.GetHashCode();
+
+        public SaveData Save()
+        {
+            if (!_currentCube) return new SaveData { IsSpawned = false };
+            return new SaveData {
+                IsSpawned = true,
+                CubePosition = _currentCube.transform.position,
+                CubeRotation = _currentCube.transform.rotation
+            };
+        }
+
+        public void Load(SaveData data)
         {
             if (data.IsSpawned) {
-                if (!_currentCube) Respawn();
+                Respawn();
                 if (_currentCube.TryGetComponent<Rigidbody>(out var rb)) {
                     rb.position = data.CubePosition;
-                    rb.rotation = data.CubeRotation;    
+                    rb.rotation = data.CubeRotation;
                 }
             } else {
                 if (_currentCube) Destroy(_currentCube);
             }
         }
+
+    #endregion
     }
 }

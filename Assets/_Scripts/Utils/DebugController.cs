@@ -11,8 +11,8 @@ namespace GravityGame.Utils
         const KeyCode TeleportToCheckpointKey = KeyCode.F3;
         const KeyCode HealPlayerKey = KeyCode.F4;
         const KeyCode DamagePlayerKey = KeyCode.F5;
-        const KeyCode SaveKey = KeyCode.F9;
-        const KeyCode LoadKey = KeyCode.F10;
+        const KeyCode SaveKey = KeyCode.C;
+        const KeyCode LoadKey = KeyCode.V;
 
         const float NoclipSpeed = 15.0f;
 

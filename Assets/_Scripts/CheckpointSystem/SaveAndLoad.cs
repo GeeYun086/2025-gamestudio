@@ -2,9 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using GravityGame.Utils;
-using UnityEditor;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace GravityGame.CheckpointSystem
 {
@@ -57,7 +55,7 @@ namespace GravityGame.CheckpointSystem
             foreach (var savableObject in savableObjects) {
                 foreach (var saveData in savableObject.GetComponents<IWithRawSaveData>()) {
                     var objectId = savableObject.ObjectID;
-                    var dataTypeId = saveData.DataTypeID;
+                    var dataTypeId = saveData.SaveDataTypeID;
                     yield return (objectId, dataTypeId, saveData);
                 }
             }

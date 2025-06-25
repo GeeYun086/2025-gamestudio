@@ -5,7 +5,7 @@ namespace GravityGame.CheckpointSystem
     
     public interface IWithRawSaveData
     {
-        int DataTypeID { get; }
+        int SaveDataTypeID { get; }
         
         string Save();
         void Load(string jsonData);
