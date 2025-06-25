@@ -11,6 +11,8 @@ namespace GravityGame.Utils
         const KeyCode TeleportToCheckpointKey = KeyCode.F3;
         const KeyCode HealPlayerKey = KeyCode.F4;
         const KeyCode DamagePlayerKey = KeyCode.F5;
+        const KeyCode SaveKey = KeyCode.F9;
+        const KeyCode LoadKey = KeyCode.F10;
 
         const float NoclipSpeed = 15.0f;
 
@@ -59,6 +61,9 @@ namespace GravityGame.Utils
             if (Input.GetKeyDown(DamagePlayerKey)) {
                 PlayerHealth.Instance.TakeDamage(20f);
             }
+            
+            if(Input.GetKeyDown(SaveKey)) SaveAndLoad.Instance.Save();
+            if(Input.GetKeyDown(LoadKey)) SaveAndLoad.Instance.Load();
         }
 
         void ToggleNoclip()
