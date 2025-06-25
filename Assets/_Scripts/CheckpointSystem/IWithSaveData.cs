@@ -3,26 +3,26 @@ using UnityEngine;
 namespace GravityGame.CheckpointSystem
 {
     
-    public interface IWithRawSaveData
+    public interface IWithSaveData
     {
-        int SaveDataTypeID { get; }
+        int ID { get; internal set; }
         
         string Save();
         void Load(string jsonData);
     }
 
-    public interface IWithSaveData<T> : IWithRawSaveData
+    public interface IWithSaveData<T> : IWithSaveData
     {
         new T Save();
         void Load(T data);
 
-        string IWithRawSaveData.Save()
+        string IWithSaveData.Save()
         {
             var data = Save();
             return JsonUtility.ToJson(data);
         }
         
-        void IWithRawSaveData.Load(string jsonData)
+        void IWithSaveData.Load(string jsonData)
         {
             var data = JsonUtility.FromJson<T>(jsonData);
             Load(data);

@@ -8,7 +8,6 @@ namespace GravityGame.Puzzle_Elements
     /// <summary>
     ///     (Re)spawns the assigned cube prefab on load and when redstone-powered.
     /// </summary>
-    [RequireComponent(typeof(SaveID))]
     public class CubeSpawner : RedstoneComponent, IWithSaveData<CubeSpawner.SaveData>
     {
         [Tooltip("Cube prefab to spawn")]
@@ -70,6 +69,7 @@ namespace GravityGame.Puzzle_Elements
             public const string Identifier = "CubeSpawner";
         }
 
+        int IWithSaveData.ID { get; set; }
         public int SaveDataTypeID => SaveData.Identifier.GetHashCode();
 
         public SaveData Save()

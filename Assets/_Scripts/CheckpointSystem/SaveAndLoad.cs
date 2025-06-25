@@ -9,8 +9,7 @@ namespace GravityGame.CheckpointSystem
     [Serializable]
     public struct SaveDataEntry
     {
-        public int ObjectID;
-        public int DataTypeID;
+        public int DataID;
         public string JsonData;
     }
 
@@ -22,41 +21,37 @@ namespace GravityGame.CheckpointSystem
 
     public class SaveAndLoad : SingletonMonoBehavior<SaveAndLoad>
     {
-        [NonSerialized] public GameSaveData Data = new(){Entries = new List<SaveDataEntry>()};
+        [NonSerialized] public GameSaveData Data = new() { Entries = new List<SaveDataEntry>() };
 
         public void Save()
         {
-            var saveDataForObject = Data.Entries.ToDictionary(e => e.ObjectID + e.DataTypeID);
-            foreach ((int objectID, int dataTypeID, var saveData) in FindObjectsWithSaveData()) {
-                var jsonData = saveData.Save();
+            var data = Data.Entries.ToDictionary(e => e.DataID);
+            foreach (var (_, saveData) in FindObjectsWithSaveData()) {
+                string jsonData = saveData.Save();
                 var entry = new SaveDataEntry {
-                    ObjectID = objectID,
-                    DataTypeID = dataTypeID,
+                    DataID = saveData.ID,
                     JsonData = jsonData
                 };
-                saveDataForObject[objectID + dataTypeID] = entry;
+                data[saveData.ID] = entry;
             }
-            Data.Entries = saveDataForObject.Values.ToList();
+            Data.Entries = data.Values.ToList();
         }
 
         public void Load()
         {
-            var saveDataForObject = Data.Entries.ToDictionary(e => e.ObjectID + e.DataTypeID);
-            foreach ((int objectID, int dataTypeID, var saveData) in FindObjectsWithSaveData()) {
-                if (saveDataForObject.TryGetValue(objectID + dataTypeID, out var objData)) {
+            var data = Data.Entries.ToDictionary(e => e.DataID);
+            foreach (var (_, saveData) in FindObjectsWithSaveData()) {
+                if (data.TryGetValue(saveData.ID, out var objData)) {
                     saveData.Load(objData.JsonData);
                 }
             }
         }
 
-        static IEnumerable<(int ObjectID, int DataTypeID, IWithRawSaveData SaveData)> FindObjectsWithSaveData()
+        public static IEnumerable<(GameObject, IWithSaveData)> FindObjectsWithSaveData()
         {
-            var savableObjects = FindObjectsByType<SaveID>(FindObjectsSortMode.None);
-            foreach (var savableObject in savableObjects) {
-                foreach (var saveData in savableObject.GetComponents<IWithRawSaveData>()) {
-                    var objectId = savableObject.ObjectID;
-                    var dataTypeId = saveData.SaveDataTypeID;
-                    yield return (objectId, dataTypeId, saveData);
+            foreach (var obj in FindObjectsByType<MonoBehaviour>(FindObjectsInactive.Include, FindObjectsSortMode.None)) {
+                if (obj.TryGetComponent<IWithSaveData>(out var saveData)) {
+                    yield return (obj.gameObject, saveData);
                 }
             }
         }
