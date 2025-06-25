@@ -1,6 +1,7 @@
 ﻿using System;
 using GravityGame.Puzzle_Elements;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 /// <summary>
 ///     Spawns a laser beam prefab at a specified local-space offset from this GameObject.
@@ -21,6 +22,7 @@ public class LaserSpawner : RedstoneComponent
     [Tooltip("If true, laser is ON by default and turns OFF when powered. If false, laser is OFF by default and turns ON when powered.")]
     public bool InvertRedstoneSignal;
 
+    Transform _beamOrigin;
     GameObject _spawnedLaser;
     bool _isPowered;
 
@@ -43,6 +45,12 @@ public class LaserSpawner : RedstoneComponent
 
     void Start()
     {
+        _beamOrigin = transform.Find("BeamOrigin");
+        Debug.Log($"BeamOrigin found: {_beamOrigin != null}");
+        if (_beamOrigin == null) {
+            Debug.LogError($"{nameof(LaserSpawner)}: Could not find a child named 'BeamOrigin' in the transform.", this);
+            return;
+        }
         UpdateLaserState();
     }
 
@@ -69,9 +77,12 @@ public class LaserSpawner : RedstoneComponent
             Debug.LogError($"{nameof(LaserSpawner)}: Cannot spawn – no prefab assigned.", this);
             return;
         }
+        if (_beamOrigin == null) {
+            Debug.LogError($"{nameof(LaserSpawner)}: Cannot spawn - BeamOrigin not found.", this);
+        }
         DestroyLaser();
-        var worldPos = transform.TransformPoint(_spawnOffset);
-        _spawnedLaser = Instantiate(_laserPrefab, worldPos, transform.rotation);
+        //var worldPos = transform.TransformPoint(_spawnOffset);
+        _spawnedLaser = Instantiate(_laserPrefab, _beamOrigin.position, _beamOrigin.rotation);
         _spawnedLaser.transform.SetParent(transform, worldPositionStays: true);
         OnLaserSpawned?.Invoke(_spawnedLaser);
     }

@@ -9,10 +9,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6842956085242459625}
-  - component: {fileID: 2577711242875404696}
   m_Layer: 7
   m_Name: BeamOrigin
-  m_TagString: Untagged
+  m_TagString: BeamOrigin
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -32,21 +31,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1682645185086417255}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &2577711242875404696
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 103042302910951089}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f1da79f79fca409fb77d9a70037403cc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _laserPrefab: {fileID: 1875168489481163592, guid: 07ebac89ea5ccd542845a9a64b70ddcc, type: 3}
-  _spawnOffset: {x: 0, y: 0, z: 0}
-  InvertRedstoneSignal: 0
 --- !u!1 &1240764995133012528
 GameObject:
   m_ObjectHideFlags: 0
@@ -56,6 +40,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1682645185086417255}
+  - component: {fileID: 5431743147402366525}
   m_Layer: 7
   m_Name: LaserEmitter
   m_TagString: Untagged
@@ -80,6 +65,21 @@ Transform:
   - {fileID: 6842956085242459625}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5431743147402366525
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1240764995133012528}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f1da79f79fca409fb77d9a70037403cc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _laserPrefab: {fileID: 1875168489481163592, guid: 07ebac89ea5ccd542845a9a64b70ddcc, type: 3}
+  _spawnOffset: {x: 0, y: 0, z: 0}
+  InvertRedstoneSignal: 0
 --- !u!1 &3303639097607612464
 GameObject:
   m_ObjectHideFlags: 0
