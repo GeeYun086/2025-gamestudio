@@ -62,13 +62,14 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4662317870626134877, guid: 64e97b85a4f90c348a6daf19eecade02, type: 3}
       propertyPath: m_Name
-      value: Big Gravity Cube Variant
+      value: BigGravityCube Variant
       objectReference: {fileID: 0}
     - target: {fileID: 9181645947103299050, guid: 64e97b85a4f90c348a6daf19eecade02, type: 3}
       propertyPath: m_Mass
       value: 200
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 1294556758841930574, guid: 64e97b85a4f90c348a6daf19eecade02, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
