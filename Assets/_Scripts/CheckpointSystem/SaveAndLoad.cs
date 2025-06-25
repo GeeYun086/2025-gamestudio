@@ -19,6 +19,10 @@ namespace GravityGame.CheckpointSystem
         public List<SaveDataEntry> Entries;
     }
 
+    /// <summary>
+    ///     Singleton that handles saving/loading of game state
+    ///     Saves / Loads all objects that implement <see cref="ISaveData" />
+    /// </summary>
     public class SaveAndLoad : SingletonMonoBehavior<SaveAndLoad>
     {
         [NonSerialized] public GameSaveData Data = new() { Entries = new List<SaveDataEntry>() };

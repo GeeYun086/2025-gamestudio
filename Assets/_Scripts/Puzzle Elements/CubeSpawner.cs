@@ -55,9 +55,7 @@ namespace GravityGame.Puzzle_Elements
         }
 
     #region Save and Load
-
-        [field: SerializeField] public int SaveDataID { get; set; }
-        
+    
         [Serializable]
         public struct SaveData
         {
@@ -78,7 +76,6 @@ namespace GravityGame.Puzzle_Elements
 
         public void Load(SaveData data)
         {
-            Debug.Log($"loaded {((ISaveData)this).SaveDataID}");
             if (data.IsSpawned) {
                 Respawn();
                 if (_currentCube.TryGetComponent<Rigidbody>(out var rb)) {
@@ -89,6 +86,8 @@ namespace GravityGame.Puzzle_Elements
                 if (_currentCube) Destroy(_currentCube);
             }
         }
+
+        [field: SerializeField] public int SaveDataID { get; set; }
 
     #endregion
     }
