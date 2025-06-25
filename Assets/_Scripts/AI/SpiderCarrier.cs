@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using GravityGame.Gravity;
+using GravityGame.Puzzle_Elements;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -82,7 +83,7 @@ namespace GravityGame.AI
             var dir = _agent.velocity.sqrMagnitude > 0.01f ? _agent.velocity.normalized : transform.forward;
 
             if (Physics.SphereCast(origin, _detectionRadius, dir, out var hit, _lookAhead))
-                if (hit.collider.CompareTag(_targetTag)) {
+                if (hit.collider.gameObject.GetComponent<Carryable>()) {
                     GameObject obj = hit.collider.gameObject;
                     if (_ignoreUntil.TryGetValue(obj, out float t) && Time.time < t) return;
                     var gm = obj.GetComponent<GravityModifier>();

@@ -27,11 +27,15 @@ namespace GravityGame.AI
 
         public bool TryHandle(Transform wp)
         {
+            Debug.Log("busy? " + _busy);
             if (_busy) return true;
 
             NavMeshPath probe = new NavMeshPath();
             _agent.CalculatePath(wp.position, probe);
-            if (probe.status == NavMeshPathStatus.PathComplete)
+
+            bool reachedExactSpot = probe.status == NavMeshPathStatus.PathComplete && Vector3.Distance(probe.corners[^1], wp.position) < 0.05f;
+            Debug.Log("Did I reach the exact spot? " + reachedExactSpot);
+            if (reachedExactSpot)
                 return false;
 
             StartCoroutine(ClimbRoutine(wp));
