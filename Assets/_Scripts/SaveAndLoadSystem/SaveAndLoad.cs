@@ -4,7 +4,7 @@ using System.Linq;
 using GravityGame.Utils;
 using UnityEngine;
 
-namespace GravityGame.CheckpointSystem
+namespace GravityGame.SaveAndLoadSystem
 {
     [Serializable]
     public struct SaveDataEntry
@@ -31,7 +31,7 @@ namespace GravityGame.CheckpointSystem
         {
             var data = Data.Entries.ToDictionary(e => e.DataID);
             foreach (var (_, saveData) in FindObjectsWithSaveData()) {
-                string jsonData = saveData.Save();
+                string jsonData = saveData.SaveToJson();
                 var entry = new SaveDataEntry {
                     DataID = saveData.SaveDataID,
                     JsonData = jsonData
@@ -46,7 +46,7 @@ namespace GravityGame.CheckpointSystem
             var data = Data.Entries.ToDictionary(e => e.DataID);
             foreach (var (_, saveData) in FindObjectsWithSaveData()) {
                 if (data.TryGetValue(saveData.SaveDataID, out var objData)) {
-                    saveData.Load(objData.JsonData);
+                    saveData.LoadFromJson(objData.JsonData);
                 }
             }
         }

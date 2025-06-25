@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace GravityGame.CheckpointSystem
+namespace GravityGame.SaveAndLoadSystem
 {
     /// <summary>
     ///     Interface for objects that support saving and loading of their state through the <see cref="SaveAndLoad" /> system.
@@ -8,8 +8,8 @@ namespace GravityGame.CheckpointSystem
     /// </summary>
     public interface ISaveData
     {
-        string Save();
-        void Load(string jsonData);
+        string SaveToJson();
+        void LoadFromJson(string jsonData);
 
         /// <summary>
         ///     Unique per-object save data id. Set automatically by <see cref="AssignSaveIDs" />.
@@ -25,10 +25,10 @@ namespace GravityGame.CheckpointSystem
     /// <typeparam name="TSaveData"> Your type representing the object's saved state. (Must have the [Serializable] attribute). </typeparam>
     public interface ISaveData<TSaveData> : ISaveData
     {
-        new TSaveData Save();
+        TSaveData Save();
         void Load(TSaveData data);
 
-        string ISaveData.Save() => JsonUtility.ToJson(Save());
-        void ISaveData.Load(string jsonData) => Load(JsonUtility.FromJson<TSaveData>(jsonData));
+        string ISaveData.SaveToJson() => JsonUtility.ToJson(Save());
+        void ISaveData.LoadFromJson(string jsonData) => Load(JsonUtility.FromJson<TSaveData>(jsonData));
     }
 }

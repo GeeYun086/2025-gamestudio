@@ -3,7 +3,7 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 
-namespace GravityGame.CheckpointSystem
+namespace GravityGame.SaveAndLoadSystem
 {
     [InitializeOnLoad]
     public static class AssignSaveIDs
