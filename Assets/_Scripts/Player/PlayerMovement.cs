@@ -138,8 +138,8 @@ namespace GravityGame.Player
 
                     // don't stick to cubes
                     if (dynamicGround && dynamicGround.TryGetComponent<Carryable>(out _)) {
-                        gravity = -transform.up * 10f; 
-                    } 
+                        gravity = -transform.up * 10f;
+                    }
                     // Stick to slope
                     else if (_ground.Angle > 0.1f) {
                         if (_inputDirection == Vector3.zero) {
@@ -219,10 +219,6 @@ namespace GravityGame.Player
                 float jumpUpVelocity = Mathf.Sqrt(JumpHeight * 2f * Gravity.magnitude);
                 var jumpUp = transform.up * jumpUpVelocity;
 
-                // Overwrite velocity
-                velocity = jumpUp + jumpForward + groundVelocity;
-                // Debug.Log($"up: {jumpUp} fwd: {jumpForward} ground: {groundVelocity}");
-
                 // un-ground yourself
                 _ground = default;
 
@@ -232,12 +228,59 @@ namespace GravityGame.Player
                     float pushDownVelocity = Mathf.Sqrt(JumpHeight * 2f * 9.8f);
                     var pushDown = -transform.up * pushDownVelocity;
                     dynamicGround.AddForceAtPosition(pushDown * _rigidbody.mass, transform.position, ForceMode.Impulse);
+
+                    // Don't allow jump when standing on cube with low mass, that is not grounded (to prevent box double jump)
+                    if (!IsDynamicGroundGrounded(dynamicGround, pushDown)) {
+                        jumpUp *= Mathf.Clamp01(dynamicGround.mass / _rigidbody.mass);
+                    }
                 }
+
+                // Overwrite velocity
+                velocity = jumpUp + jumpForward + groundVelocity;
+                // Debug.Log($"up: {jumpUp} fwd: {jumpForward} ground: {groundVelocity}");
             }
 
             // Apply Force
             _rigidbody.AddForce(velocity - _rigidbody.linearVelocity, ForceMode.VelocityChange);
             _rigidbody.AddForce(gravity, ForceMode.Acceleration);
+        }
+
+        bool IsDynamicGroundGrounded(Rigidbody dynamicGround, Vector3 pushDownVelocity)
+        {
+            if (!dynamicGround.TryGetComponent<Carryable>(out _) || dynamicGround.mass >= _rigidbody.mass) {
+                return true;
+            }
+            
+            const float timeToHitGround = 0.05f;
+            // first test with sweep
+            var endPos = dynamicGround.position + pushDownVelocity * timeToHitGround;
+            if (dynamicGround.SweepTest(
+                    pushDownVelocity.normalized, out var hit,
+                    pushDownVelocity.magnitude * timeToHitGround, QueryTriggerInteraction.Ignore
+                )) {
+                Debug.Log($"Cube has ground (sweep): {hit.collider.name}");
+                DebugDraw(true);
+                return true;
+            }
+
+            // second test failsafe (if already inside collider, sweep will not detect it)
+            const float overlapScale = 0.9f; // to prevent rounding errors
+            var layer = ~LayerMask.GetMask("Player") & ~dynamicGround.excludeLayers;
+            var results = new Collider[2];
+            var size = Physics.OverlapBoxNonAlloc(
+                endPos, dynamicGround.transform.lossyScale * (0.5f * overlapScale), results, dynamicGround.rotation, layer
+            );
+
+            foreach (var potentialGround in results.Take(size)) {
+                if (potentialGround != dynamicGround.GetComponent<Collider>()) {
+                    Debug.Log($"Cube has ground (overlap): {potentialGround}");
+                    DebugDraw(true);
+                    return true;
+                }
+            }
+            DebugDraw(false);
+            return false;
+            void DebugDraw(bool grounded) => Utils.DebugDraw.DrawCube(endPos, 1.0f, grounded ? Color.green : Color.red, 1.0f);
         }
 
         void TryStepUp()
@@ -254,7 +297,7 @@ namespace GravityGame.Player
                 // float climbStairFwdBoost = 1.0f;
                 // var fwd = difference - up;
                 // _rigidbody.AddForce(fwd.normalized * climbStairFwdBoost, ForceMode.VelocityChange);
-                
+
                 // eliminate downwards velocity
                 var upVelocity = Vector3.Project(_rigidbody.linearVelocity, transform.up);
                 var onlyUpVelocity = Vector3.Dot(upVelocity, transform.up) > 0 ? upVelocity : Vector3.zero;
@@ -296,7 +339,9 @@ namespace GravityGame.Player
                     // Hit point is zero, the sphere cast may have started inside an object
                     continue;
                 }
-                if (Physics.Raycast(originalHit.point + margin * transform.up, down, out var hit, distance, layerMask, QueryTriggerInteraction.Ignore)) {
+                if (Physics.Raycast(
+                        originalHit.point + margin * transform.up, down, out var hit, distance, layerMask, QueryTriggerInteraction.Ignore
+                    )) {
                     verifiedHit = hit; // Note TG: recast, because spherecast sometimes does not get the actual ground normal for some reason 
                 }
                 var info = new GroundInfo();
