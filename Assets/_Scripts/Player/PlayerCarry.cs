@@ -233,7 +233,7 @@ namespace GravityGame.Player
                 var newPosition = Vector3.MoveTowards(rb.position, _carry.Position, MoveSpeed * deltaTime);
                 var direction = newPosition - rb.position;
                 var velocity = direction / deltaTime;
-                if (IsOverlappingWithSomething(newPosition, rb.rotation) && !_carry.UsingBackpack) {
+                if (IsOverlappingWithSomething(newPosition, rb.rotation, 0.95f) && !_carry.UsingBackpack) {
                     var delta = rb.linearVelocity - _lastLinearVelocity;
                     var otherVelocity = Vector3.MoveTowards(delta, Vector3.zero, 10f/Time.fixedDeltaTime);
                     velocity = Vector3.ClampMagnitude(velocity, 5f); // avoid cramming box into wall with too much speed
@@ -273,7 +273,9 @@ namespace GravityGame.Player
                 int layerMask = ~LayerMask.GetMask("Player", "Laser");
                 var results = new Collider[2];
                 int overlappingObjects = Physics.OverlapBoxNonAlloc(position, halfExtents, results, rotation, layerMask);
-                return results.Take(overlappingObjects).FirstOrDefault(b => b != _carry.Object?.Collider);
+                var coll = results.Take(overlappingObjects).FirstOrDefault(b => b != _carry.Object?.Collider);
+                // DebugDraw.DrawCube(position, scale, coll ? Color.green : Color.red);
+                return coll;
             }
         }
 
