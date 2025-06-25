@@ -209,49 +209,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _drawSphere: 1
---- !u!1 &896031903 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 1048923521071570241, guid: 6d797a3af3ab1c94fa9671fac86dd6c5, type: 3}
-  m_PrefabInstance: {fileID: 6719570920845027953}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &896031908
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 896031903}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4022a5a44d5a8a44492fdfa5691aae40, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _hangTime: 0.35
-  _climbTime: 1.25
-  _ease:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
 --- !u!1 &1054415895
 GameObject:
   m_ObjectHideFlags: 0
@@ -471,6 +428,14 @@ PrefabInstance:
       propertyPath: WaypointsRoot
       value: 
       objectReference: {fileID: 1881257936}
+    - target: {fileID: 4763842418845940616, guid: 6d797a3af3ab1c94fa9671fac86dd6c5, type: 3}
+      propertyPath: SelectedMode
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4763842418845940616, guid: 6d797a3af3ab1c94fa9671fac86dd6c5, type: 3}
+      propertyPath: WaypointsRoot
+      value: 
+      objectReference: {fileID: 1881257936}
     - target: {fileID: 6245572535198503719, guid: 6d797a3af3ab1c94fa9671fac86dd6c5, type: 3}
       propertyPath: m_LocalPosition.x
       value: 1.6808606
@@ -514,10 +479,7 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 1048923521071570241, guid: 6d797a3af3ab1c94fa9671fac86dd6c5, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 896031908}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 6d797a3af3ab1c94fa9671fac86dd6c5, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
