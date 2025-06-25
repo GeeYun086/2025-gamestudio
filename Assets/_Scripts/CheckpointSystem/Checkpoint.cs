@@ -5,12 +5,12 @@ using UnityEngine;
 namespace GravityGame.CheckpointSystem
 {
     /// <summary>
-    /// Represents an individual checkpoint in the game.
-    /// Attach this component to a GameObject with a Collider (set to trigger) to define a checkpoint.
-    /// When a Player (with a <see cref="PlayerMovement"/> component) enters its trigger,
-    /// it notifies the <see cref="CheckpointController"/>.
-    /// It tracks whether it has been reached and if it's currently the active respawn point.
-    /// A unique <see cref="CheckpointID"/> is automatically generated or can be pre-set for identification.
+    ///     Represents an individual checkpoint in the game.
+    ///     Attach this component to a GameObject with a Collider (set to trigger) to define a checkpoint.
+    ///     When a Player (with a <see cref="PlayerMovement" /> component) enters its trigger,
+    ///     it notifies the <see cref="CheckpointController" />.
+    ///     It tracks whether it has been reached and if it's currently the active respawn point.
+    ///     A unique <see cref="CheckpointID" /> is automatically generated or can be pre-set for identification.
     /// </summary>
     [RequireComponent(typeof(Collider))]
     public class Checkpoint : MonoBehaviour
@@ -22,7 +22,8 @@ namespace GravityGame.CheckpointSystem
         public event Action<bool> OnHasBeenReachedChanged;
         public event Action<bool> OnIsActiveCheckpointChanged;
 
-        public bool HasBeenReached {
+        public bool HasBeenReached
+        {
             get => _hasBeenReached;
             set {
                 if (_hasBeenReached == value) return;
@@ -31,7 +32,8 @@ namespace GravityGame.CheckpointSystem
             }
         }
 
-        public bool IsActiveCheckpoint {
+        public bool IsActiveCheckpoint
+        {
             get => _isActiveCheckpoint;
             set {
                 if (_isActiveCheckpoint == value) return;
@@ -40,7 +42,8 @@ namespace GravityGame.CheckpointSystem
             }
         }
 
-        public string CheckpointID {
+        public string CheckpointID
+        {
             get {
                 if (string.IsNullOrEmpty(_checkpointID)) _checkpointID = gameObject.name + "_" + GetInstanceID();
                 return _checkpointID;
@@ -60,6 +63,12 @@ namespace GravityGame.CheckpointSystem
         {
             if (!other.GetComponent<PlayerMovement>()) return;
             if (CheckpointController.Instance) CheckpointController.Instance.TriggerCheckpointById(CheckpointID);
+        }
+        
+        void OnDrawGizmosSelected()
+        {
+            Gizmos.color = Color.red;
+            Gizmos.DrawLine(transform.position, transform.position + transform.forward * 3);
         }
     }
 }

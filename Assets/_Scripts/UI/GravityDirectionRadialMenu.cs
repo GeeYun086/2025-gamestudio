@@ -10,14 +10,15 @@ namespace GravityGame.UI
     [UxmlElement]
     public partial class GravityDirectionRadialMenu : VisualElement
     {
-        [UxmlAttribute] float _deadZoneRadius = 30f;
-        [UxmlAttribute] float _innerRadius = 130;
-        [UxmlAttribute] float _outerRadius = 1400;
+        [UxmlAttribute] float _deadZoneRadius = 45f;
+        [UxmlAttribute] float _innerRadius = 300;
+        [UxmlAttribute] float _horizontalAngle = 58.82f;
         [UxmlAttribute] Color _outlineColor = Color.white;
         [UxmlAttribute] float _outlineWidth = 4f;
 
         public float DeadZoneRadius => _deadZoneRadius * scaledPixelsPerPoint;
         public float InnerRadius => _innerRadius * scaledPixelsPerPoint;
+        public float HorizontalAngle => _horizontalAngle;
 
         public GravityDirectionRadialMenu()
         {
@@ -31,46 +32,36 @@ namespace GravityGame.UI
 
             painter.strokeColor = _outlineColor;
 
-            // Draw Inner Radial Menu (Up / Down)
-            DrawRadialSection(painter, Vector2.zero, _deadZoneRadius, _innerRadius, 0, 180);
-            DrawRadialSection(painter, Vector2.zero, _deadZoneRadius, _innerRadius, 180, 360);
-
-            // Draw Outer Radial Menu (Diagonals: Top-Left, Top-Right, Bottom-Left, Bottom-Right)
-            DrawRadialSection(painter, Vector2.zero, _innerRadius, _outerRadius, 45, 135);  // down
-            DrawRadialSection(painter, Vector2.zero, _innerRadius, _outerRadius, 135, 225); // left
-            DrawRadialSection(painter, Vector2.zero, _innerRadius, _outerRadius, 225, 315); // up
-            DrawRadialSection(painter, Vector2.zero, _innerRadius, _outerRadius, 315, 405); // right
-        }
-
-        static void DrawRadialSection(
-            Painter2D painter,
-            Vector2 center,
-            float innerRadius,
-            float outerRadius,
-            float startAngle,
-            float endAngle
-        )
-        {
+            var alpha = _horizontalAngle * 0.5f;
+            var angles = new[] { 180f + alpha, 360f - alpha, alpha, 180f - alpha};
+            
+            // Upper Arc
             painter.BeginPath();
-
-            // Move to the starting position on the inner circle
-            painter.MoveTo(center + AngleToVector(startAngle) * innerRadius);
-
-            // Draw arc at the outer radius
-            for (float angle = startAngle; angle < endAngle; angle += 5) {
-                painter.LineTo(center + AngleToVector(angle) * outerRadius);
-            }
-            painter.LineTo(center + AngleToVector(endAngle) * outerRadius);
-
-            // Draw arc back at the inner radius
-            for (float angle = endAngle; angle > startAngle; angle -= 5) {
-                painter.LineTo(center + AngleToVector(angle) * innerRadius);
-            }
-
-            painter.ClosePath();
+            painter.Arc(Vector2.zero, _innerRadius, angles[0], angles[1]);
             painter.Stroke();
-        }
 
+            // Lower Arc
+            painter.BeginPath();
+            painter.Arc(Vector2.zero, _innerRadius, angles[2], angles[3]);
+            painter.Stroke();
+            
+            // Draw major lines
+            foreach (var angle in angles) {
+                const float outerRadius = 2000f;
+                painter.BeginPath();
+                var direction = AngleToVector(angle);
+                painter.MoveTo(direction*_deadZoneRadius);
+                painter.LineTo(direction*outerRadius);
+                painter.Stroke();
+            }
+            
+            // Dead zone
+            painter.BeginPath();
+            painter.Arc(Vector2.zero, _deadZoneRadius, 0, 360);
+            painter.Stroke();
+            
+        }
+        
         static Vector2 AngleToVector(float angleDegrees)
         {
             float rad = Mathf.Deg2Rad * angleDegrees;

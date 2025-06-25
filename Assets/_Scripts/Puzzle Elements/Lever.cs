@@ -11,11 +11,16 @@ namespace GravityGame.Puzzle_Elements
     {
         [SerializeField] GameObject _leverOn;
         [SerializeField] GameObject _leverOff;
-        
+
         [Header("Lever Settings")]
         [SerializeField] bool _isPowered;
         [SerializeField] List<RedstoneComponent> _logicComponents;
-        
+
+        void Start()
+        {
+            if (_logicComponents.Count == 0) Debug.LogWarning($"{gameObject.name} has no connected redstone components, did you forget to add them?");
+        }
+
         void SetPowered(bool value)
         {
             _isPowered = value;
@@ -26,11 +31,11 @@ namespace GravityGame.Puzzle_Elements
                 component.IsPowered = _isPowered;
             }
         }
-        
+
         void OnEnable() => OnInteract.AddListener(Toggle);
         void OnDisable() => OnInteract.RemoveListener(Toggle);
         void Toggle() => SetPowered(!_isPowered);
-        
+
         void OnValidate() => SetPowered(_isPowered);
     }
 }

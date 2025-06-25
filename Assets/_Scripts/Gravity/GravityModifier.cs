@@ -1,3 +1,4 @@
+using GravityGame.Player;
 using GravityGame.Puzzle_Elements;
 using UnityEngine;
 
@@ -11,36 +12,43 @@ namespace GravityGame.Gravity
     [RequireComponent(typeof(Rigidbody))]
     public class GravityModifier : MonoBehaviour
     {
+        public Vector3 Gravity => GravityDirection * GravityMagnitude;
+
         public Vector3 GravityDirection
         {
-            get => _gravityDirection;
+            get => _gravityDirection.normalized;
             set {
                 if (value == _gravityDirection)
                     return;
-                if(Group != GravityGroup.None)
+                if (Group != GravityGroup.None)
                     GravityGroupHandler.Instance.AlertGravityGroup(Group, value);
                 _gravityDirection = value;
             }
         }
-        
-        Vector3 _gravityDirection = Vector3.down;
+
+        [SerializeField] Vector3 _gravityDirection = Vector3.down;
         public float GravityMagnitude = 9.81f;
         public GravityGroup Group = GravityGroup.None;
 
-        public enum GravityGroup { None, Red, Blue, Green }
+        public enum GravityGroup { None, Player, Red, Blue, Green }
 
         Rigidbody _rigidbody;
 
-        void Awake()
+        void OnEnable()
         {
             _rigidbody = GetComponent<Rigidbody>();
             _rigidbody.useGravity = false;
-            if(Group != GravityGroup.None)
-                GravityGroupHandler.Instance.OnGravityGroupDirectionChange += SetGravityDirectionWithoutGroupAlert;
+            GravityGroupHandler.Instance.OnGravityGroupDirectionChange += SetGravityDirectionWithoutGroupAlert;
+        }
+
+        void OnDisable()
+        {
+            if(GravityGroupHandler.Instance) GravityGroupHandler.Instance.OnGravityGroupDirectionChange -= SetGravityDirectionWithoutGroupAlert;
         }
 
         void FixedUpdate()
         {
+            if (GetComponent<PlayerMovement>() != null) return;
             _rigidbody.AddForce(GravityDirection.normalized * GravityMagnitude, ForceMode.Acceleration);
         }
 
@@ -48,11 +56,6 @@ namespace GravityGame.Gravity
         {
             if (gravityGroup == Group)
                 _gravityDirection = gravityDirection;
-        }
-
-        void OnDestroy()
-        {
-            GravityGroupHandler.Instance.OnGravityGroupDirectionChange -= SetGravityDirectionWithoutGroupAlert;
         }
     }
 }

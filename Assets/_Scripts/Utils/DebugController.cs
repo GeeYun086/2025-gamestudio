@@ -51,11 +51,11 @@ namespace GravityGame.Utils
             if (Input.GetKeyDown(TeleportToCheckpointKey) && _playerObject) {
                 TeleportPlayerToActiveCheckpoint();
             }
-            
+
             if (Input.GetKeyDown(HealPlayerKey)) {
                 PlayerHealth.Instance.Heal(20f);
             }
-            
+
             if (Input.GetKeyDown(DamagePlayerKey)) {
                 PlayerHealth.Instance.TakeDamage(20f);
             }
@@ -83,8 +83,8 @@ namespace GravityGame.Utils
             float verticalInput = (Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.E) ? 1f : 0f)
                                   - (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.Q) ? 1f : 0f);
 
-            var moveDirection = (_mainCamera.transform.forward * forwardInput)
-                                + (_mainCamera.transform.right * rightInput) + (Vector3.up * verticalInput);
+            var moveDirection = _mainCamera.transform.forward * forwardInput
+                                + _mainCamera.transform.right * rightInput + Vector3.up * verticalInput;
             _playerObject.transform.Translate(moveDirection.normalized * (NoclipSpeed * Time.deltaTime), Space.World);
         }
 
@@ -102,6 +102,6 @@ namespace GravityGame.Utils
             Instantiate(_debugGravityObject, spawnPos, Quaternion.identity);
         }
 
-        static void TeleportPlayerToActiveCheckpoint() => CheckpointController.Instance.RespawnPlayer();
+        static void TeleportPlayerToActiveCheckpoint() => CheckpointController.RespawnPlayer();
     }
 }
