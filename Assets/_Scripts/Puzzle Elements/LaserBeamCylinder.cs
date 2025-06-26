@@ -13,13 +13,6 @@ namespace GravityGame.PuzzleElements
         float _knockbackForce;
         float _damageCooldown;
         LayerMask _obstacleMask;
-
-        float MaxDistance => _maxDistance;
-        float BeamRadius => _beamRadius;
-        float FlatDamage => _flatDamage;
-        float KnockbackForce => _knockbackForce;
-        float DamageCooldown => _damageCooldown;
-        LayerMask ObstacleMask => _obstacleMask;
         
         MeshFilter _meshFilter;
         MeshRenderer _meshRenderer;
@@ -77,19 +70,19 @@ namespace GravityGame.PuzzleElements
 
             // Cooldown check
             if (_cooldowns.TryGetValue(playerHealth, out float lastTime) &&
-                Time.time - lastTime < DamageCooldown)
+                Time.time - lastTime < _damageCooldown)
                 return;
 
-            playerHealth.TakeDamage(FlatDamage);
-            Debug.Log($"[LaserBeamCylinder] Player hit by collision! Damage applied: {FlatDamage}. Current Health: {playerHealth.CurrentHealth}");
+            playerHealth.TakeDamage(_flatDamage);
+            Debug.Log($"[LaserBeamCylinder] Player hit by collision! Damage applied: {_flatDamage}. Current Health: {playerHealth.CurrentHealth}");
 
             var playerRb = other.GetComponent<Rigidbody>();
             if (playerRb != null) {
                 // Push away from the center of the beam
                 var knockbackDir = (other.transform.position - transform.position).normalized;
                 knockbackDir.y = 0f; // Keep it horizontal
-                playerRb.AddForce(knockbackDir * KnockbackForce, ForceMode.Impulse);
-                Debug.Log($"[LaserBeamCylinder] Knockback applied to player: {knockbackDir * KnockbackForce}");
+                playerRb.AddForce(knockbackDir * _knockbackForce, ForceMode.Impulse);
+                Debug.Log($"[LaserBeamCylinder] Knockback applied to player: {knockbackDir * _knockbackForce}");
             }
 
             if (playerHealth.CurrentHealth <= 0)
@@ -110,20 +103,20 @@ namespace GravityGame.PuzzleElements
 
             var start = origin.position + origin.forward * 0.01f;
             var dir = origin.forward;
-            float length = MaxDistance;
+            float length = _maxDistance;
 
-            if (Physics.Raycast(start, dir, out var hit, MaxDistance, ObstacleMask)) {
+            if (Physics.Raycast(start, dir, out var hit, _maxDistance, _obstacleMask)) {
                 length = hit.distance;
             }
 
             // Always align and scale the laser cylinder forward
             transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
-            transform.localScale = new Vector3(BeamRadius, length * 0.5f, BeamRadius);
+            transform.localScale = new Vector3(_beamRadius, length * 0.5f, _beamRadius);
             transform.localPosition = new Vector3(0f, 0f, length * 0.5f);
 
             // Update collider to match visuals, compensating for transform scaling
             _collider.direction = 1; // Y-axis
-            _collider.radius = BeamRadius;
+            _collider.radius = _beamRadius;
 
             // Inverse of the Y-scale so that height * scaleY == world-space length
             float invScaleY = 1f / transform.localScale.y;
