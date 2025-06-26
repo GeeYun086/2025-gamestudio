@@ -202,18 +202,22 @@ namespace GravityGame.Player
         {
             var screenCenter = _camera.ViewportToScreenPoint(new Vector3(0.5f, 0.5f));
             var mouseOffset = Input.mousePosition - screenCenter;
-            float distance = mouseOffset.magnitude;
-            if (distance < GravityChangeMenu.DeadZoneRadius) return null;
-
+            var dir = GravityChangeMenu.GetDirection(mouseOffset);
+            
             var up = GetClosestCardinalDirection(_playerTransform.up);
             var right = GetClosestCardinalDirection(_camera.transform.right);
             var forward = Vector3.Cross(right, up).normalized;
 
-            float angle = Vector3.Angle(mouseOffset, Vector3.up);
-            float alpha = GravityChangeMenu.HorizontalAngle * 0.5f;
-            if (angle > 90 - alpha && angle < 90 + alpha) return mouseOffset.x > 0 ? right : -right;
-            if (distance > GravityChangeMenu.InnerRadius) return mouseOffset.y > 0 ? forward : -forward;
-            return mouseOffset.y > 0 ? up : -up;
+            return dir switch {
+                GravityDirectionRadialMenu.Zone.None => null,
+                GravityDirectionRadialMenu.Zone.Left => -right,
+                GravityDirectionRadialMenu.Zone.Right => right,
+                GravityDirectionRadialMenu.Zone.Up => up,
+                GravityDirectionRadialMenu.Zone.Down => -up,
+                GravityDirectionRadialMenu.Zone.OuterUp => forward,
+                GravityDirectionRadialMenu.Zone.OuterDown => -forward,
+                _ => throw new ArgumentOutOfRangeException()
+            };
         }
 
         void SetVisualizedDirection(Vector3 direction)
