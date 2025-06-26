@@ -67,7 +67,6 @@ namespace GravityGame.PuzzleElements
                 return;
 
             playerHealth.TakeDamage(FlatDamage);
-            Debug.Log($"[LaserBeamCylinder] Player hit by collision! Damage applied: {FlatDamage}. Current Health: {playerHealth.CurrentHealth}");
 
             var playerRb = other.GetComponent<Rigidbody>();
             if (playerRb != null) {
@@ -75,15 +74,9 @@ namespace GravityGame.PuzzleElements
                 var knockbackDir = (other.transform.position - transform.position).normalized;
                 knockbackDir.y = 0f; // Keep it horizontal
                 playerRb.AddForce(knockbackDir * KnockbackForce, ForceMode.Impulse);
-                Debug.Log($"[LaserBeamCylinder] Knockback applied to player: {knockbackDir * KnockbackForce}");
             }
 
             if (playerHealth.CurrentHealth <= 0)
-                Debug.Log("[LaserBeamCylinder] Player killed by laser.");
-
-            // Subscribe to death event
-            playerHealth.OnPlayerDied.RemoveListener(LogPlayerDied);
-            playerHealth.OnPlayerDied.AddListener(LogPlayerDied);
 
             _cooldowns[playerHealth] = Time.time;
         }
@@ -119,11 +112,6 @@ namespace GravityGame.PuzzleElements
             // Center half-way along the beam in world space, then un-scale
             float unclampedCz = length * 0.5f * invScaleY;
             _collider.center = new Vector3(0f, 0f, unclampedCz);
-        }
-
-        void LogPlayerDied()
-        {
-            Debug.Log("[LaserBeamCylinder] Player death event received (OnPlayerDied).");
         }
     }
 }
