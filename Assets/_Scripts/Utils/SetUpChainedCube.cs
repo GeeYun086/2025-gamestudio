@@ -30,7 +30,7 @@ namespace GravityGame.Utils
             _cube.transform.localScale = new Vector3(_cube.transform.localScale.x, _cubePoint.transform.localScale.y, _cube.transform.localScale.z);
             _link.transform.parent = transform;
             _cube.transform.localScale = _cubePoint.transform.localScale;
-            _link.transform.localScale = new Vector3(0.05f, 0.2f, 0.05f);
+            _link.transform.localScale = new Vector3(0.05f, 0.1f, 0.05f);
 
             _link.GetComponent<Joint>().connectedBody = _cube.GetComponent<Rigidbody>();
         }
@@ -40,9 +40,9 @@ namespace GravityGame.Utils
             _currentLink = _link;
 
             int i = 0;
-            while ((_currentLink.transform.position - _anchor.transform.position).magnitude > .25f && i < 100) {
+            while ((_currentLink.transform.position - _anchor.transform.position).magnitude > .2f && i < 100) {
                 GameObject temp = Instantiate(
-                    _currentLink, _currentLink.transform.position + transform.up * .4f, _currentLink.transform.rotation, transform
+                    _currentLink, _currentLink.transform.position + transform.up * .1f, _currentLink.transform.rotation, transform
                 );
                 _previousLink = _currentLink;
                 _currentLink = temp;
