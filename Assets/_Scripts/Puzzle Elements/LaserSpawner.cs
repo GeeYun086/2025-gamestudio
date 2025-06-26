@@ -1,18 +1,34 @@
 ﻿using System;
+using GravityGame;
 using GravityGame.Puzzle_Elements;
+using GravityGame.PuzzleElements;
 using UnityEngine;
-using Object = UnityEngine.Object;
 
 /// <summary>
 ///     Spawns a laser beam prefab at a specified local-space offset from this GameObject.
 ///     Now supports Redstone power: the laser is active when "powered" (unless InvertRedstoneSignal is enabled).
 /// </summary>
 [RequireComponent(typeof(Transform))]
-public class LaserSpawner : RedstoneComponent
+public class LaserSpawner : RedstoneComponent, ILaserConfig
 {
     [Header("Laser Prefab")]
     [Tooltip("Drag your LaserBeam prefab here.")]
     [SerializeField] GameObject _laserPrefab;
+
+    [Header("Laser Settings")]
+    [SerializeField] float _maxDistance; 
+    [SerializeField] float _flatDamage;
+    [SerializeField] float _knockbackForce;
+    [SerializeField] float _beamRadius;
+    [SerializeField] float _damageCooldown;
+    [SerializeField] LayerMask _obstacleMask;
+    
+    public float MaxDistance => _maxDistance;
+    public float FlatDamage => _flatDamage;
+    public float KnockbackForce => _knockbackForce;
+    public float BeamRadius => _beamRadius;
+    public float DamageCooldown => _damageCooldown;
+    public LayerMask ObstacleMask => _obstacleMask;
 
     [Header("Spawn Settings")]
     [Tooltip("Offset from this GameObject’s position to spawn the beam origin.")]
@@ -22,7 +38,6 @@ public class LaserSpawner : RedstoneComponent
     [Tooltip("If true, laser is ON by default and turns OFF when powered. If false, laser is OFF by default and turns ON when powered.")]
     public bool InvertRedstoneSignal;
 
-    Transform _beamOrigin;
     GameObject _spawnedLaser;
     bool _isPowered;
 
@@ -45,12 +60,6 @@ public class LaserSpawner : RedstoneComponent
 
     void Start()
     {
-        _beamOrigin = transform.Find("BeamOrigin");
-        Debug.Log($"BeamOrigin found: {_beamOrigin != null}");
-        if (_beamOrigin == null) {
-            Debug.LogError($"{nameof(LaserSpawner)}: Could not find a child named 'BeamOrigin' in the transform.", this);
-            return;
-        }
         UpdateLaserState();
     }
 
@@ -77,18 +86,21 @@ public class LaserSpawner : RedstoneComponent
             Debug.LogError($"{nameof(LaserSpawner)}: Cannot spawn – no prefab assigned.", this);
             return;
         }
-        if (_beamOrigin == null) {
-            Debug.LogError($"{nameof(LaserSpawner)}: Cannot spawn - BeamOrigin not found.", this);
-        }
         DestroyLaser();
-        //var worldPos = transform.TransformPoint(_spawnOffset);
-        _spawnedLaser = Instantiate(_laserPrefab, _beamOrigin.position, _beamOrigin.rotation);
+        var worldPos = transform.TransformPoint(_spawnOffset);
+        _spawnedLaser = Instantiate(_laserPrefab, worldPos, new Quaternion(0, 0, 0, 0));
         _spawnedLaser.transform.SetParent(transform, worldPositionStays: true);
+        var laserBeam = _spawnedLaser.GetComponent<LaserBeamCylinder>();
+        if (laserBeam != null) {
+            laserBeam.Configure(this);
+        } else {
+            Debug.LogError($"{nameof(LaserSpawner)}: Laser prefab does not have a {nameof(LaserBeamCylinder)} component.", this);
+        }
         OnLaserSpawned?.Invoke(_spawnedLaser);
     }
 
     /// <summary>
-    ///     Destroys the last spawned laser instance, if one exists.
+    ///     Destroys the last spawned laser instance if one exists.
     /// </summary>
     void DestroyLaser()
     {

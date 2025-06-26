@@ -7,26 +7,40 @@ namespace GravityGame.PuzzleElements
     [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer), typeof(CapsuleCollider))]
     public class LaserBeamCylinder : MonoBehaviour
     {
-        [Header("Beam Settings")]
-        public float MaxDistance = 20f;
-        public LayerMask ObstacleMask;
+        float _maxDistance;
+        float _beamRadius;
+        float _flatDamage;
+        float _knockbackForce;
+        float _damageCooldown;
+        LayerMask _obstacleMask;
 
-        [Header("Damage Settings")]
-        public float FlatDamage = 80f;
-
-        [Header("Knockback Settings")]
-        public float KnockbackForce = 8f;
-
-        [Header("Visual Settings")]
-        public float BeamRadius = 0.1f;
-
+        float MaxDistance => _maxDistance;
+        float BeamRadius => _beamRadius;
+        float FlatDamage => _flatDamage;
+        float KnockbackForce => _knockbackForce;
+        float DamageCooldown => _damageCooldown;
+        LayerMask ObstacleMask => _obstacleMask;
+        
         MeshFilter _meshFilter;
         MeshRenderer _meshRenderer;
         CapsuleCollider _collider;
 
-        // Cooldown to avoid spamming player with damage every frame
+        // Cooldown to avoid spamming the player with damage every frame
         readonly Dictionary<PlayerHealth, float> _cooldowns = new();
-        public float DamageCooldown = 0.3f;
+
+        ///public float DamageCooldown = 0.3f;
+
+        public void Configure(ILaserConfig config)
+        {
+            _maxDistance = config.MaxDistance;
+            _beamRadius = config.BeamRadius;
+            _flatDamage = config.FlatDamage;
+            _knockbackForce = config.KnockbackForce;
+            _damageCooldown = config.DamageCooldown;
+            _obstacleMask = config.ObstacleMask;
+            UpdateBeamAndCollider();
+        }
+
 
         void Awake()
         {
@@ -46,10 +60,10 @@ namespace GravityGame.PuzzleElements
         void OnEnable() => UpdateBeamAndCollider();
         void Update() => UpdateBeamAndCollider();
 
-        void OnCollisionEnter(Collision collision)
-        {
-            TryDamageAndKnockback(collision.collider);
-        }
+        //void OnCollisionEnter(Collision collision)
+        //{
+        //    TryDamageAndKnockback(collision.collider);
+        //}
 
         void OnCollisionStay(Collision collision)
         {
@@ -71,7 +85,7 @@ namespace GravityGame.PuzzleElements
 
             var playerRb = other.GetComponent<Rigidbody>();
             if (playerRb != null) {
-                // Push away from center of the beam
+                // Push away from the center of the beam
                 var knockbackDir = (other.transform.position - transform.position).normalized;
                 knockbackDir.y = 0f; // Keep it horizontal
                 playerRb.AddForce(knockbackDir * KnockbackForce, ForceMode.Impulse);
@@ -116,7 +130,7 @@ namespace GravityGame.PuzzleElements
             float unclampedH = length * invScaleY;
             _collider.height = Mathf.Max(0.01f, unclampedH);
 
-            // Center half-way along the beam in world space, then un-scale
+            // Center half-way along the beam in world space, then unscale
             float unclampedCz = length * 0.5f * invScaleY;
             _collider.center = new Vector3(0f, 0f, unclampedCz);
         }
