@@ -45,7 +45,7 @@ namespace GravityGame.Player
 
         /// Used for box casts. Should be the (absolute) scale of the carried cube
         /// Note TG: We currently rely on the carried object being a cube mesh of size (1,1,1), which can then be scaled in unity
-        Vector3 CarryBoxScale => _carry.Object?.transform.lossyScale ?? Vector3.one;
+        Vector3 CarryBoxScale => _carry.Object ? _carry.Object.transform.lossyScale : Vector3.one;
 
         /* ---------------------------- settings end ----------------------------- */
 

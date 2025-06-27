@@ -1,3 +1,4 @@
+using System;
 using GravityGame.Player;
 using GravityGame.Puzzle_Elements;
 using GravityGame.SaveAndLoadSystem;
@@ -11,7 +12,7 @@ namespace GravityGame.Gravity
     ///     <see cref="GravityDirection" /> is shared between all objects with the same <see cref="Group" />
     /// </summary>
     [RequireComponent(typeof(Rigidbody))]
-    public class GravityModifier : MonoBehaviour, ISaveData<Vector3>
+    public class GravityModifier : MonoBehaviour, ISaveData<GravityModifier.SaveData>
     {
         [SerializeField] Vector3 _gravityDirection = Vector3.down;
         public Vector3 GravityDirection
@@ -61,14 +62,28 @@ namespace GravityGame.Gravity
         }
 
     #region Save and Load
-
-        // Note TG: Objects that are just serialized this way have to be non-destructible!
-        public Vector3 Save() => Gravity;
-
-        public void Load(Vector3 data)
+        
+        [Serializable]
+        public struct SaveData
         {
-            GravityMagnitude = data.magnitude;
-            GravityDirection = data.normalized;
+            public Vector3 Gravity;
+            public Vector3 Position;
+            public Quaternion Rotation;
+        }
+        
+        public SaveData Save() =>
+            new() {
+                Gravity = Gravity,
+                Position = _rigidbody.position,
+                Rotation = _rigidbody.rotation,
+            };
+
+        public void Load(SaveData data)
+        {
+            GravityMagnitude = data.Gravity.magnitude;
+            GravityDirection = data.Gravity.normalized;
+            _rigidbody.position = data.Position;
+            _rigidbody.rotation = data.Rotation;
         }
         
         [field: SerializeField] public int SaveDataID { get; set; }

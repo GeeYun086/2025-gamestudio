@@ -74,7 +74,7 @@ namespace GravityGame.Puzzle_Elements
                 IsSpawned = true,
                 CubePosition = _currentCube.transform.position,
                 CubeRotation = _currentCube.transform.rotation,
-                CubeGravity = _currentCube.TryGetComponent<GravityModifier>(out var gm) ? gm.Save() : Vector3.zero
+                CubeGravity = _currentCube.TryGetComponent<GravityModifier>(out var gm) ? gm.Gravity : Vector3.zero
             };
         }
 
@@ -87,7 +87,8 @@ namespace GravityGame.Puzzle_Elements
                     rb.rotation = data.CubeRotation;
                 }
                 if (_currentCube.TryGetComponent<GravityModifier>(out var gravityModifier)) {
-                    gravityModifier.Load(data.CubeGravity);
+                    gravityModifier.GravityMagnitude = data.CubeGravity.magnitude;
+                    gravityModifier.GravityDirection = data.CubeGravity.normalized;
                 }
             } else {
                 if (_currentCube) Destroy(_currentCube);

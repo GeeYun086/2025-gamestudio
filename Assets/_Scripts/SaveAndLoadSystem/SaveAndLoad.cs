@@ -39,6 +39,7 @@ namespace GravityGame.SaveAndLoadSystem
                 data[saveData.SaveDataID] = entry;
             }
             Data.Entries = data.Values.ToList();
+            Debug.Log($"[{typeof(SaveAndLoad)}] saved ({Data.Entries.Count}) entries.");
         }
 
         public void Load()
@@ -49,13 +50,16 @@ namespace GravityGame.SaveAndLoadSystem
                     saveData.LoadFromJson(objData.JsonData);
                 }
             }
+            Debug.Log($"[{typeof(SaveAndLoad)}] loaded ({Data.Entries.Count}) entries.");
         }
 
         public static IEnumerable<(GameObject, ISaveData)> FindObjectsWithSaveData()
         {
             foreach (var obj in FindObjectsByType<MonoBehaviour>(FindObjectsInactive.Include, FindObjectsSortMode.None)) {
-                if (obj.TryGetComponent<ISaveData>(out var saveData) && saveData.ShouldBeSaved) {
-                    yield return (obj.gameObject, saveData);
+                foreach (var saveData in obj.GetComponents<ISaveData>()) {
+                    if (saveData is { ShouldBeSaved: true }) {
+                        yield return (obj.gameObject, saveData);
+                    }
                 }
             }
         }
