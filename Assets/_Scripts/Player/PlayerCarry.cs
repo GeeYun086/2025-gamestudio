@@ -275,7 +275,7 @@ namespace GravityGame.Player
                 axis.Normalize();
 
                 // Only apply if rotation is meaningful
-                if (Mathf.Abs(angleInRadians) > 0.001f && !IsOverlappingWithSomething(rb.position, rb.rotation, 1.2f)) {
+                if (Mathf.Abs(angleInRadians) > 0.001f && !IsOverlappingWithSomething(rb.position, rb.rotation, 1.05f)) {
                     // Smoothly rotate toward the target at a constant angular speed
                     float angularSpeed = RotationSpeed;
                     float rotationThisFrame = Mathf.Min(angleInRadians, angularSpeed * deltaTime);
