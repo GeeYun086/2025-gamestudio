@@ -43,6 +43,9 @@ namespace GravityGame.Player
         [Tooltip("Max distance before carry disconnects")]
         public float MaxCarryDistance = 5f;
 
+        [Header("Audio")]
+        public AudioClip CannotReleaseCarrySound;
+
         /// Used for box casts. Should be the (absolute) scale of the carried cube
         /// Note TG: We currently rely on the carried object being a cube mesh of size (1,1,1), which can then be scaled in unity
         Vector3 CarryBoxScale => _carry.Object ? _carry.Object.transform.lossyScale : Vector3.one;
@@ -56,11 +59,10 @@ namespace GravityGame.Player
             public Vector3 Position;
             public Quaternion Rotation;
 
-            public Vector3? ObstructedCarryPosition;
             public bool ShouldUseBackpack;
             public bool UsingBackpack;
             // (literal) edge case (at edges) where box sweep does not collide will wall
-            public bool IsOtherwiseOverlappingWithPlayer;
+            public bool IsOverlappingWithPlayer;
 
             public CarryPhysicsState PreCarryPhysicsState;
         }
@@ -93,11 +95,14 @@ namespace GravityGame.Player
             return true;
         }
 
-        public bool AttemptRelease()
+        public bool AttemptRelease(bool isFirstAttempt = true)
         {
             if (!_carry.Object) return false;
-            if (_carry.ShouldUseBackpack || _carry.UsingBackpack) return false;
-            if (_carry.IsOtherwiseOverlappingWithPlayer) return false;
+            if (_carry.ShouldUseBackpack || _carry.UsingBackpack || _carry.IsOverlappingWithPlayer) {
+                if(isFirstAttempt)
+                    GetComponent<AudioSource>().PlayOneShot(CannotReleaseCarrySound, 0.2f);
+                return false;
+            }
             ForceDrop();
             return true;
         }
@@ -190,14 +195,19 @@ namespace GravityGame.Player
         bool ShouldUseBackpack()
         {
             if (!_carry.Object) return false;
-            _carry.ObstructedCarryPosition = FindObstructedCarryPosition();
-            _carry.IsOtherwiseOverlappingWithPlayer = IsOverlappingWithPlayer(_carry.Object.Rigidbody.position, _carry.Object.Rigidbody.rotation);
-            if (IsOverlappingWithPlayer(_carry.Position, _carry.Rotation))
+            _carry.IsOverlappingWithPlayer = IsOverlappingWithPlayer(_carry.Object.Rigidbody.position, _carry.Object.Rigidbody.rotation);
+
+            // unobstructed look directions that get you into backpack mode (e.g. looking down)
+            if (-_camera.LookDownRotation < MinBackpackAngle || IsOverlappingWithPlayer(_carry.Position, _carry.Rotation))
                 return true;
-            if (_carry.ObstructedCarryPosition is { } pos && IsOverlappingWithPlayer(pos, _carry.Rotation))
-                return true;
-            if (-_camera.LookDownRotation < MinBackpackAngle)
-                return true;
+
+            var takeOutOfBackpackPos = FindObstructedCarryPosition();
+            bool cannotTakeOutOfBackpack = takeOutOfBackpackPos is { } pos && IsOverlappingWithPlayer(pos, _carry.Rotation);
+            if (cannotTakeOutOfBackpack) {
+                if (_carry.UsingBackpack) return true;
+                if (_carry.IsOverlappingWithPlayer) return true;
+            }
+
             return false;
 
             bool IsOverlappingWithPlayer(Vector3 position, Quaternion rotation)
@@ -225,7 +235,6 @@ namespace GravityGame.Player
                 foreach (var hit in results.Take(hitCount)) {
                     if (hit.collider == _carry.Object.Collider) continue;
                     if (hit.collider.enabled == false) continue;
-                    if (hit.collider.gameObject.TryGetComponent<Carryable>(out _)) continue; // ignore other cubes
                     var hitPos = start + direction.normalized * hit.distance;
                     DebugDraw.DrawCube(hitPos, 1f);
                     Debug.DrawRay(start, direction, Color.yellow);
@@ -275,7 +284,7 @@ namespace GravityGame.Player
                 axis.Normalize();
 
                 // Only apply if rotation is meaningful
-                if (Mathf.Abs(angleInRadians) > 0.001f && !IsOverlappingWithSomething(rb.position, rb.rotation, 1.2f)) {
+                if (Mathf.Abs(angleInRadians) > 0.001f && !IsOverlappingWithSomething(rb.position, rb.rotation, 1.05f)) {
                     // Smoothly rotate toward the target at a constant angular speed
                     float angularSpeed = RotationSpeed;
                     float rotationThisFrame = Mathf.Min(angleInRadians, angularSpeed * deltaTime);
