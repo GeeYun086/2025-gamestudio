@@ -56,11 +56,10 @@ namespace GravityGame.Player
             public Vector3 Position;
             public Quaternion Rotation;
 
-            public Vector3? ObstructedCarryPosition;
             public bool ShouldUseBackpack;
             public bool UsingBackpack;
             // (literal) edge case (at edges) where box sweep does not collide will wall
-            public bool IsOtherwiseOverlappingWithPlayer;
+            public bool IsOverlappingWithPlayer;
 
             public CarryPhysicsState PreCarryPhysicsState;
         }
@@ -97,7 +96,7 @@ namespace GravityGame.Player
         {
             if (!_carry.Object) return false;
             if (_carry.ShouldUseBackpack || _carry.UsingBackpack) return false;
-            if (_carry.IsOtherwiseOverlappingWithPlayer) return false;
+            if (_carry.IsOverlappingWithPlayer) return false;
             ForceDrop();
             return true;
         }
@@ -190,14 +189,19 @@ namespace GravityGame.Player
         bool ShouldUseBackpack()
         {
             if (!_carry.Object) return false;
-            _carry.ObstructedCarryPosition = FindObstructedCarryPosition();
-            _carry.IsOtherwiseOverlappingWithPlayer = IsOverlappingWithPlayer(_carry.Object.Rigidbody.position, _carry.Object.Rigidbody.rotation);
-            if (IsOverlappingWithPlayer(_carry.Position, _carry.Rotation))
+            _carry.IsOverlappingWithPlayer = IsOverlappingWithPlayer(_carry.Object.Rigidbody.position, _carry.Object.Rigidbody.rotation);
+            
+            // unobstructed look directions that get you into backpack mode (e.g. looking down)
+            if (-_camera.LookDownRotation < MinBackpackAngle || IsOverlappingWithPlayer(_carry.Position, _carry.Rotation))
                 return true;
-            if (_carry.ObstructedCarryPosition is { } pos && IsOverlappingWithPlayer(pos, _carry.Rotation))
-                return true;
-            if (-_camera.LookDownRotation < MinBackpackAngle)
-                return true;
+
+            var takeOutOfBackpackPos = FindObstructedCarryPosition();
+            bool cannotTakeOutOfBackpack = takeOutOfBackpackPos is { } pos && IsOverlappingWithPlayer(pos, _carry.Rotation);
+            if (cannotTakeOutOfBackpack) {
+                if (_carry.UsingBackpack) return true;
+                if (_carry.IsOverlappingWithPlayer) return true;
+            }
+            
             return false;
 
             bool IsOverlappingWithPlayer(Vector3 position, Quaternion rotation)
@@ -225,7 +229,6 @@ namespace GravityGame.Player
                 foreach (var hit in results.Take(hitCount)) {
                     if (hit.collider == _carry.Object.Collider) continue;
                     if (hit.collider.enabled == false) continue;
-                    if (hit.collider.gameObject.TryGetComponent<Carryable>(out _)) continue; // ignore other cubes
                     var hitPos = start + direction.normalized * hit.distance;
                     DebugDraw.DrawCube(hitPos, 1f);
                     Debug.DrawRay(start, direction, Color.yellow);
