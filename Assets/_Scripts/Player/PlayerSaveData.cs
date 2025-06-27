@@ -52,6 +52,7 @@ namespace GravityGame.Player
             ActiveCheckpoint = data.LastCheckpointID;
             
             Rigidbody.linearVelocity = Vector3.zero;
+            PlayerHealth.Instance.Heal(PlayerHealth.MaxHealth);
         }
 
         public int SaveDataID
