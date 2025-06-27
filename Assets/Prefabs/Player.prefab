@@ -201,7 +201,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   CarryPoint: {fileID: 7671548427145666092}
   BackpackCarryPoint: {fileID: 5950629897803535775}
-  MaxAngle: 60
+  MaxAngle: 70
   MinAngle: -30
   MinBackpackAngle: -82
   MinHeight: 0.55
@@ -216,6 +216,7 @@ MonoBehaviour:
     Duration: 0.1
   MaxCarryMass: 250
   MaxCarryDistance: 5
+  CannotReleaseCarrySound: {fileID: 8300000, guid: 8f0c661a6fc37ea4a861fab3e3c59794, type: 3}
   <SaveDataID>k__BackingField: 0
 --- !u!114 &4356562832223538105
 MonoBehaviour:
@@ -282,6 +283,7 @@ MonoBehaviour:
   _previewMaterial: {fileID: 2100000, guid: b5c181c7184bac24ca8b62ff5170b404, type: 2}
   _previewDistance: 4
   _previewCycleDuration: 1.5
+  _changeGravitySound: {fileID: 0}
   _cannotChangeGravitySound: {fileID: 8300000, guid: 8f0c661a6fc37ea4a861fab3e3c59794, type: 3}
 --- !u!114 &8679695408541047993
 MonoBehaviour:
@@ -504,7 +506,7 @@ Transform:
   m_GameObject: {fileID: 3644912071924156095}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.069, z: -0.892}
+  m_LocalPosition: {x: 0, y: 0.861, z: -1.1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -807,7 +809,7 @@ Transform:
   m_GameObject: {fileID: 6467587918198617616}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.7, z: 1.5}
+  m_LocalPosition: {x: 0, y: -0.65, z: 1.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

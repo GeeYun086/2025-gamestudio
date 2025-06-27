@@ -43,6 +43,9 @@ namespace GravityGame.Player
         [Tooltip("Max distance before carry disconnects")]
         public float MaxCarryDistance = 5f;
 
+        [Header("Audio")]
+        public AudioClip CannotReleaseCarrySound;
+
         /// Used for box casts. Should be the (absolute) scale of the carried cube
         /// Note TG: We currently rely on the carried object being a cube mesh of size (1,1,1), which can then be scaled in unity
         Vector3 CarryBoxScale => _carry.Object ? _carry.Object.transform.lossyScale : Vector3.one;
@@ -92,11 +95,14 @@ namespace GravityGame.Player
             return true;
         }
 
-        public bool AttemptRelease()
+        public bool AttemptRelease(bool isFirstAttempt = true)
         {
             if (!_carry.Object) return false;
-            if (_carry.ShouldUseBackpack || _carry.UsingBackpack) return false;
-            if (_carry.IsOverlappingWithPlayer) return false;
+            if (_carry.ShouldUseBackpack || _carry.UsingBackpack || _carry.IsOverlappingWithPlayer) {
+                if(isFirstAttempt)
+                    GetComponent<AudioSource>().PlayOneShot(CannotReleaseCarrySound, 0.2f);
+                return false;
+            }
             ForceDrop();
             return true;
         }
@@ -190,7 +196,7 @@ namespace GravityGame.Player
         {
             if (!_carry.Object) return false;
             _carry.IsOverlappingWithPlayer = IsOverlappingWithPlayer(_carry.Object.Rigidbody.position, _carry.Object.Rigidbody.rotation);
-            
+
             // unobstructed look directions that get you into backpack mode (e.g. looking down)
             if (-_camera.LookDownRotation < MinBackpackAngle || IsOverlappingWithPlayer(_carry.Position, _carry.Rotation))
                 return true;
@@ -201,7 +207,7 @@ namespace GravityGame.Player
                 if (_carry.UsingBackpack) return true;
                 if (_carry.IsOverlappingWithPlayer) return true;
             }
-            
+
             return false;
 
             bool IsOverlappingWithPlayer(Vector3 position, Quaternion rotation)
