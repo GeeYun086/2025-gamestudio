@@ -1,6 +1,9 @@
+using System;
 using System.Collections;
 using System.Linq;
+using GravityGame.SaveAndLoadSystem;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace GravityGame.Puzzle_Elements
 {
@@ -8,7 +11,7 @@ namespace GravityGame.Puzzle_Elements
     // When it breaks, it replaces itself with a shattered version and assigns proper settings to debris.
 
     [RequireComponent(typeof(Collider))]
-    public class Breakable : MonoBehaviour
+    public class Breakable : MonoBehaviour, ISaveData<Breakable.SaveData>
     {
         [Header("Destruction Settings")]
         public float BreakForceThreshold = 9f; // Minimum velocity required to break the object.
@@ -28,12 +31,20 @@ namespace GravityGame.Puzzle_Elements
             Break(collision.GetContact(0).point, collision.relativeVelocity);
         }
 
+        void SetBrokenState(bool broken)
+        {
+            GetComponent<Collider>().enabled = !broken;
+            IntactVersion.SetActive(!broken);
+        }
+
         public void Break(Vector3 contact, Vector3 velocity)
         {
-            // Break
-            GetComponent<Collider>().enabled = false;
-            IntactVersion.SetActive(false);
-                
+            SetBrokenState(true);
+            SpawnBrokenInstance(contact, velocity);
+        }
+
+        void SpawnBrokenInstance(Vector3 contact, Vector3 velocity)
+        {
             var brokenInstance = Instantiate(
                 BrokenVersionPrefab,
                 transform
@@ -45,33 +56,30 @@ namespace GravityGame.Puzzle_Elements
             int index = 0;
             foreach (var rb in brokenRbs.OrderBy(rb => Vector3.Distance(rb.position, contact))) {
                 rb.gameObject.layer = LayerMask.NameToLayer(DebrisLayer);
-                
-                
+
                 float minLifetime = DebrisLifetime * 0.25f;
                 float lifetime = (float)index / brokenRbs.Count;
-                lifetime *= (DebrisLifetime - minLifetime) + minLifetime;                
+                lifetime *= DebrisLifetime - minLifetime + minLifetime;
                 lifetime *= Random.Range(0.8f, 1.2f);
-                
-                // rb.AddExplosionForce(magnitude, contact, magnitude);
-                var distance = (rb.position - contact);
+
+                var distance = rb.position - contact;
                 var v = velocity / distance.magnitude;
                 rb.AddForceAtPosition(v, contact, ForceMode.VelocityChange);
                 if (v.magnitude > BreakOffThreshold) {
                     rb.useGravity = true;
-                    // rb.AddForceAtPosition(magnitude * (contact - rb.position), contact, ForceMode.VelocityChange);
                 } else {
                     rb.isKinematic = true;
-                    StartCoroutine(Fall());
+                    StartCoroutine(Fall(afterSeconds: lifetime * 0.5f));
                     rb.useGravity = false;
                 }
-                
-                
+
                 Destroy(rb.gameObject, lifetime);
                 index++;
+                continue;
 
-                IEnumerator Fall()
+                IEnumerator Fall(float afterSeconds)
                 {
-                    yield return new WaitForSeconds(lifetime*0.5f);
+                    yield return new WaitForSeconds(afterSeconds);
                     if (rb) {
                         rb.isKinematic = false;
                         rb.useGravity = true;
@@ -79,5 +87,21 @@ namespace GravityGame.Puzzle_Elements
                 }
             }
         }
+
+    #region Save and Load
+
+        [Serializable]
+        public struct SaveData
+        {
+            public bool IsBroken;
+        }
+
+        public SaveData Save() => new() { IsBroken = !GetComponent<Collider>().enabled };
+
+        public void Load(SaveData data) => SetBrokenState(data.IsBroken);
+
+        [field: SerializeField] public int SaveDataID { get; set; }
+
+    #endregion
     }
 }
