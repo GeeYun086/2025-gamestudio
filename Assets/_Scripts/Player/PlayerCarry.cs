@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using GravityGame.Gravity;
 using GravityGame.Puzzle_Elements;
+using GravityGame.SaveAndLoadSystem;
 using GravityGame.Utils;
 using JetBrains.Annotations;
 using UnityEngine;
@@ -11,7 +12,7 @@ namespace GravityGame.Player
     /// <summary>
     ///     Manages the state of carrying a Carryable object.
     /// </summary>
-    public class PlayerCarry : MonoBehaviour
+    public class PlayerCarry : MonoBehaviour, ISaveData
     {
         [Header("Carry Position Settings")]
         public Transform CarryPoint;
@@ -44,9 +45,25 @@ namespace GravityGame.Player
 
         /// Used for box casts. Should be the (absolute) scale of the carried cube
         /// Note TG: We currently rely on the carried object being a cube mesh of size (1,1,1), which can then be scaled in unity
-        Vector3 CarryBoxScale => _carry.Object?.transform.lossyScale ?? Vector3.one;
+        Vector3 CarryBoxScale => _carry.Object ? _carry.Object.transform.lossyScale : Vector3.one;
 
         /* ---------------------------- settings end ----------------------------- */
+
+        struct CarryInfo
+        {
+            [CanBeNull] public Carryable Object;
+
+            public Vector3 Position;
+            public Quaternion Rotation;
+
+            public Vector3? ObstructedCarryPosition;
+            public bool ShouldUseBackpack;
+            public bool UsingBackpack;
+            // (literal) edge case (at edges) where box sweep does not collide will wall
+            public bool IsOtherwiseOverlappingWithPlayer;
+
+            public CarryPhysicsState PreCarryPhysicsState;
+        }
 
         Rigidbody _rigidbody;
         FirstPersonCameraController _camera;
@@ -220,6 +237,7 @@ namespace GravityGame.Player
         }
 
         Vector3 _lastLinearVelocity;
+
         void FixedUpdate()
         {
             MoveCarriedObject(Time.fixedDeltaTime);
@@ -235,7 +253,7 @@ namespace GravityGame.Player
                 var velocity = direction / deltaTime;
                 if (IsOverlappingWithSomething(newPosition, rb.rotation, 0.95f) && !_carry.UsingBackpack) {
                     var delta = rb.linearVelocity - _lastLinearVelocity;
-                    var otherVelocity = Vector3.MoveTowards(delta, Vector3.zero, 10f/Time.fixedDeltaTime);
+                    var otherVelocity = Vector3.MoveTowards(delta, Vector3.zero, 10f / Time.fixedDeltaTime);
                     velocity = Vector3.ClampMagnitude(velocity, 5f); // avoid cramming box into wall with too much speed
                     velocity += otherVelocity;
                 }
@@ -267,6 +285,7 @@ namespace GravityGame.Player
                     rb.angularVelocity = Vector3.zero;
                 }
             }
+
             Collider IsOverlappingWithSomething(Vector3 position, Quaternion rotation, float scale = 1.0f)
             {
                 var halfExtents = CarryBoxScale * (0.5f * scale);
@@ -289,24 +308,20 @@ namespace GravityGame.Player
             if (Application.isPlaying) {
                 DebugDraw.DrawGizmoCube(_carry.Position, _carry.Rotation, CarryBoxScale);
             }
-            return;
         }
 
-        struct CarryInfo
+    #region Save and Load
+
+        public string SaveToJson() => "";
+
+        public void LoadFromJson(string _)
         {
-            [CanBeNull] public Carryable Object;
-
-            public Vector3 Position;
-            public Quaternion Rotation;
-
-            public Vector3? ObstructedCarryPosition;
-            public bool ShouldUseBackpack;
-            public bool UsingBackpack;
-            // (literal) edge case (at edges) where box sweep does not collide will wall
-            public bool IsOtherwiseOverlappingWithPlayer;
-
-            public CarryPhysicsState PreCarryPhysicsState;
+            if (_carry.Object) ForceDrop(_carry.Object.transform.position); // ensure restoring the physics state
         }
+
+        [field: SerializeField] public int SaveDataID { get; set; }
+
+    #endregion
     }
 
     [Serializable]

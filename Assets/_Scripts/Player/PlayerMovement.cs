@@ -364,8 +364,8 @@ namespace GravityGame.Player
         {
             GroundInfo noStep = default;
             if (_ground is { HasAnyGround: true, HasStableGround: false }) return noStep; // no stepping on steep slope
-            // if (!_ground.HasAnyGround && Vector3.Dot(_rigidbody.linearVelocity, transform.up) > 1.0f)
-            //     return noStep; // no air stepping when velocity is too high
+            if (!_ground.HasAnyGround && Vector3.Dot(_rigidbody.linearVelocity, transform.up) > 1.0f)
+                return noStep; // no air stepping when velocity is too high
             if (_inputDirection == Vector3.zero) return noStep; // no unintended stepping
 
             const float minStepHeight = 0.05f;
