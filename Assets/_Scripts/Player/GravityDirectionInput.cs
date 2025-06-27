@@ -78,20 +78,22 @@ namespace GravityGame.Player
             if (canSwitchTarget) {
                 var last = _target;
                 var hit = RaycastForSelectableObject();
-                if (_gravityChangeCooldown.IsActive) {
-                    // cannot have target when on cooldown
-                    _target = null;
-                    if (start && hit) GetComponent<AudioSource>().PlayOneShot(_cannotChangeGravitySound, 0.2f);
-                } else if (_carry.CarriedObject && !wasChangingGravity) {
-                    // carried object is always target
-                    _target = _carry.CarriedObject.GetComponent<GravityModifier>();
-                } else if (hit) {
+                if (hit) {
                     // switch to new hit
                     _target = hit;
                     _aimBuffer.Start();
                 } else if (!_aimBuffer.IsActive) {
                     // switch from old hit
                     _target = null;
+                }
+                
+                if (_gravityChangeCooldown.IsActive) {
+                    // cannot have target when on cooldown
+                    if (start && _target) GetComponent<AudioSource>().PlayOneShot(_cannotChangeGravitySound, 0.2f);
+                    _target = null;
+                } else if (_carry.CarriedObject && !wasChangingGravity) {
+                    // carried object is always target
+                    _target = _carry.CarriedObject.GetComponent<GravityModifier>();
                 }
 
                 if (_target != last) {
