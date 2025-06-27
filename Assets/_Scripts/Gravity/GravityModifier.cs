@@ -22,7 +22,7 @@ namespace GravityGame.Gravity
                 if (value == _gravityDirection)
                     return;
                 if (Group != GravityGroup.None)
-                    GravityGroupHandler.Instance.AlertGravityGroup(Group, value);
+                    GravityGroupHandler.AlertGravityGroup(Group, value);
                 _gravityDirection = value;
             }
         }
@@ -41,12 +41,12 @@ namespace GravityGame.Gravity
         {
             _rigidbody = GetComponent<Rigidbody>();
             _rigidbody.useGravity = false;
-            GravityGroupHandler.Instance.OnGravityGroupDirectionChange += SetGravityDirectionWithoutGroupAlert;
+            GravityGroupHandler.OnGravityGroupDirectionChange += SetGravityDirectionWithoutGroupAlert;
         }
 
         void OnDisable()
         {
-            if (GravityGroupHandler.Instance) GravityGroupHandler.Instance.OnGravityGroupDirectionChange -= SetGravityDirectionWithoutGroupAlert;
+            GravityGroupHandler.OnGravityGroupDirectionChange -= SetGravityDirectionWithoutGroupAlert;
         }
 
         void FixedUpdate()
