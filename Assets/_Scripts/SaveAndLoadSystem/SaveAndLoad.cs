@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using GravityGame.Utils;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace GravityGame.SaveAndLoadSystem
 {
@@ -27,6 +28,13 @@ namespace GravityGame.SaveAndLoadSystem
     {
         [NonSerialized] public GameSaveData Data = new() { Entries = new List<SaveDataEntry>() };
 
+        void OnEnable()
+        {
+            SceneManager.sceneLoaded += (_, _) => {
+                if(Data.Entries.Count == 0) Save(); // initial save
+            };
+        }
+        
         public void Save()
         {
             var data = Data.Entries.ToDictionary(e => e.DataID);
@@ -39,7 +47,7 @@ namespace GravityGame.SaveAndLoadSystem
                 data[saveData.SaveDataID] = entry;
             }
             Data.Entries = data.Values.ToList();
-            Debug.Log($"[{typeof(SaveAndLoad)}] saved ({Data.Entries.Count}) entries.");
+            Debug.Log($"[{nameof(SaveAndLoad)}] saved ({Data.Entries.Count}) entries.");
         }
 
         public void Load()
@@ -50,7 +58,7 @@ namespace GravityGame.SaveAndLoadSystem
                     saveData.LoadFromJson(objData.JsonData);
                 }
             }
-            Debug.Log($"[{typeof(SaveAndLoad)}] loaded ({Data.Entries.Count}) entries.");
+            Debug.Log($"[{nameof(SaveAndLoad)}] loaded ({Data.Entries.Count}) entries.");
         }
 
         public static IEnumerable<(GameObject, ISaveData)> FindObjectsWithSaveData()

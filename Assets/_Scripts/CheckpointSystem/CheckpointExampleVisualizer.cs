@@ -25,18 +25,18 @@ namespace GravityGame.CheckpointSystem
         {
             if (!_checkpoint) return;
             _checkpoint.OnHasBeenReachedChanged += HandleHasBeenReachedChanged;
-            _checkpoint.OnIsActiveCheckpointChanged += HandleIsActiveCheckpointChanged;
-            HandleStateChange(_checkpoint.HasBeenReached, _checkpoint.IsActiveCheckpoint);
+            // _checkpoint.OnIsActiveCheckpointChanged += HandleIsActiveCheckpointChanged;
+            HandleStateChange(_checkpoint.HasBeenReached, false/*_checkpoint.IsActiveCheckpoint*/);
         }
 
         void OnDisable()
         {
             if (!_checkpoint) return;
             _checkpoint.OnHasBeenReachedChanged -= HandleHasBeenReachedChanged;
-            _checkpoint.OnIsActiveCheckpointChanged -= HandleIsActiveCheckpointChanged;
+            // _checkpoint.OnIsActiveCheckpointChanged -= HandleIsActiveCheckpointChanged;
         }
 
-        void HandleHasBeenReachedChanged(bool isReached) => HandleStateChange(isReached, _checkpoint.IsActiveCheckpoint);
+        void HandleHasBeenReachedChanged(bool isReached) => HandleStateChange(isReached, false/*_checkpoint.IsActiveCheckpoint*/);
 
         void HandleIsActiveCheckpointChanged(bool isActive) => HandleStateChange(_checkpoint.HasBeenReached, isActive);
 
