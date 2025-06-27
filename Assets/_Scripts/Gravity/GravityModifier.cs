@@ -84,6 +84,8 @@ namespace GravityGame.Gravity
             GravityDirection = data.Gravity.normalized;
             _rigidbody.position = data.Position;
             _rigidbody.rotation = data.Rotation;
+            _rigidbody.linearVelocity = Vector3.zero;
+            _rigidbody.angularVelocity = Vector3.zero;
         }
         
         [field: SerializeField] public int SaveDataID { get; set; }
