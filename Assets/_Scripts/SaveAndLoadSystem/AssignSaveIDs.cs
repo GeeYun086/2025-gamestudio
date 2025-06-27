@@ -33,14 +33,17 @@ namespace GravityGame.SaveAndLoadSystem
             int count = 0;
             foreach (var (gameObject, saveData) in SaveAndLoad.FindObjectsWithSaveData()) {
                 int id = GlobalObjectId.GetGlobalObjectIdSlow(gameObject).GetHashCode();
-                saveData.SaveDataID = id;
-                if (!Application.isPlaying && saveData.SaveDataID != id) {
+                
+                if (saveData.SaveDataID != id) {
+                    saveData.SaveDataID = id;
                     // Mark the object as dirty so Unity knows it was modified
-                    var a = (MonoBehaviour)saveData;
-                    EditorUtility.SetDirty(a);
-                    PrefabUtility.RecordPrefabInstancePropertyModifications(a);
-                    // Also mark the scene as dirty so the user is prompted to save it
-                    EditorSceneManager.MarkSceneDirty(gameObject.scene);
+                    if (!Application.isPlaying) {
+                        var a = (MonoBehaviour)saveData;
+                        EditorUtility.SetDirty(a);
+                        PrefabUtility.RecordPrefabInstancePropertyModifications(a);
+                        // Also mark the scene as dirty so the user is prompted to save it
+                        EditorSceneManager.MarkSceneDirty(gameObject.scene);
+                    }
                     count++;
                 }
             }
