@@ -83,6 +83,7 @@ namespace GravityGame.Player
                     Cursor.lockState = CursorLockMode.None;
                     Cursor.visible = true;
                     GravityChangeMenu.visible = true;
+                    SetGravityChangeMenuColors();
                 }
             } else {
                 if (wasChangingGravity) {
@@ -113,6 +114,24 @@ namespace GravityGame.Player
                     _currentPreviewDirection = direction;
                 }
             } 
+        }
+
+        void SetGravityChangeMenuColors()
+        {
+            var up = GetClosestCardinalDirection(_playerTransform.up);
+            var right = GetClosestCardinalDirection(_camera.transform.right);
+            var forward = Vector3.Cross(right, up).normalized;
+            var rightColor = GravityChangeMenu.CardinalDirectionToColor(right);
+            var upColor = GravityChangeMenu.CardinalDirectionToColor(up);
+            var forwardColor = GravityChangeMenu.CardinalDirectionToColor(forward);
+            GravityChangeMenu.ColorForZone = zone => zone switch {
+                GravityDirectionRadialMenu.Zone.None => Color.clear,
+                GravityDirectionRadialMenu.Zone.Left or GravityDirectionRadialMenu.Zone.Right => rightColor,
+                GravityDirectionRadialMenu.Zone.Up or GravityDirectionRadialMenu.Zone.Down => upColor,
+                GravityDirectionRadialMenu.Zone.OuterUp or GravityDirectionRadialMenu.Zone.OuterDown => forwardColor,
+                _ => throw new ArgumentOutOfRangeException(nameof(zone), zone, null)
+            };
+            return;
         }
 
         void OnEnable() => SetVisualizedDirection(Vector3.zero);

@@ -1,3 +1,5 @@
+using System;
+using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -11,7 +13,6 @@ namespace GravityGame.UI
     public partial class GravityDirectionRadialMenu : VisualElement
     {
         [UxmlAttribute] float _deadZoneRadius = 45f;
-        [UxmlAttribute] float _innerRadius = 300;
         [UxmlAttribute] float _horizontalAngle = 58.82f;
         [UxmlAttribute] Color _outlineColor = Color.white;
         [UxmlAttribute] float _outlineWidth = 4f;
@@ -19,13 +20,33 @@ namespace GravityGame.UI
         [UxmlAttribute] float _upWidth = 100f;
         [UxmlAttribute] float _upLength = 350f;
 
-
-        public GravityDirectionRadialMenu()
-        {
-            generateVisualContent += DrawRadialMenu;
-        }
+        [UxmlAttribute] Color _xAxisColor = Color.red;
+        [UxmlAttribute] Color _yAxisColor = Color.cyan;
+        [UxmlAttribute] Color _zAxisColor = Color.green;
 
         public enum Zone { None, Left, Right, Up, Down, OuterUp, OuterDown }
+
+        public Func<Zone, Color> ColorForZone;
+
+        [UsedImplicitly] public GravityDirectionRadialMenu()
+        {
+            generateVisualContent += DrawRadialMenu;
+            ColorForZone = zone => zone switch {
+                Zone.None => Color.clear,
+                Zone.Left or Zone.Right => _xAxisColor,
+                Zone.Up or Zone.Down => _yAxisColor,
+                Zone.OuterUp or Zone.OuterDown => _zAxisColor,
+                _ => throw new ArgumentOutOfRangeException(nameof(zone), zone, null)
+            };
+        }
+
+        public Color CardinalDirectionToColor(Vector3 dir)
+        {
+            if (dir.x != 0) return _xAxisColor;
+            if (dir.y != 0) return _yAxisColor;
+            if (dir.z != 0) return _zAxisColor;
+            return Color.clear;
+        }
 
         public Zone GetDirection(Vector2 mouse)
         {
@@ -37,23 +58,23 @@ namespace GravityGame.UI
             float alpha = _horizontalAngle * 0.5f;
             if (angle > 90 - alpha && angle < 90 + alpha) return mouse.x > 0 ? Zone.Right : Zone.Left;
 
-            var right = new Vector2(_upWidth, 0);
+            var right = LowerUpSection(alpha);
+            var left = LowerUpSection(alpha + 180f);
             var up = new Vector2(0, _upLength);
-            if (PointInTriangle(mouse, right, -right, up)) return Zone.Up;
-            if (PointInTriangle(mouse, right, -right, -up)) return Zone.Down;
-            
-            if (mouse.y > 0) return Zone.OuterUp;
-            return Zone.OuterDown;
-            
+            var down = new Vector2(0, -_upLength);
+            if (PointInTriangle(mouse, right, left, up)) return Zone.Up;
+            if (PointInTriangle(mouse, right, left, down)) return Zone.Down;
+
+            return mouse.y > 0 ? Zone.OuterUp : Zone.OuterDown;
+
             static bool PointInTriangle(Vector2 pt, Vector2 a, Vector2 b, Vector2 c)
             {
                 float d1 = Sign(pt, a, b);
                 float d2 = Sign(pt, b, c);
                 float d3 = Sign(pt, c, a);
                 return (d1 >= 0 && d2 >= 0 && d3 >= 0) || (d1 <= 0 && d2 <= 0 && d3 <= 0);
-                
-                static float Sign(Vector2 p1, Vector2 p2, Vector2 p3) => 
-                    (p1.x - p3.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p3.y);
+
+                static float Sign(Vector2 p1, Vector2 p2, Vector2 p3) => (p1.x - p3.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p3.y);
             }
         }
 
@@ -65,69 +86,97 @@ namespace GravityGame.UI
             painter.strokeColor = _outlineColor;
 
             float alpha = _horizontalAngle * 0.5f;
-            float[] angles = { 180f + alpha, 360f - alpha, alpha, 180f - alpha };
+            (float upLeft, float upRight, float downRight, float downLeft) angles = (180f + alpha, 360f - alpha, alpha, 180f - alpha);
 
-            const float outerRadius = 2000;
-            var upLeft = AngleToVector(angles[0]) * outerRadius;
-            var upRight = AngleToVector(angles[1]) * outerRadius;
-            var downRight = AngleToVector(angles[2]) * outerRadius;
-            var downLeft = AngleToVector(angles[3]) * outerRadius;
+            float outer = Screen.width;
+            float inner = LowerUpSection(alpha).magnitude;
+            float dead = _deadZoneRadius;
+            var upLeft = AngleToVector(angles.upLeft);
+            var upRight = AngleToVector(angles.upRight);
+            var downRight = AngleToVector(angles.downRight);
+            var downLeft = AngleToVector(angles.downLeft);
 
-            DrawTriangle(Vector3.zero, upLeft, upRight, Color.green); // up
-            DrawTriangle(Vector3.zero, downRight, downLeft, Color.green); // down
+            // left
+            DrawShape(
+                ColorForZone(Zone.Left), () => {
+                    painter.MoveTo(upLeft * outer);
+                    painter.LineTo(downLeft * outer);
+                    painter.LineTo(downLeft * dead);
+                    painter.Arc(Vector3.zero, dead, angles.downLeft, angles.upLeft);
+                    painter.ClosePath();
+                }
+            );
+            // right
+            DrawShape(
+                ColorForZone(Zone.Right), () => {
+                    painter.MoveTo(upRight * outer);
+                    painter.LineTo(downRight * outer);
+                    painter.LineTo(downRight * dead);
+                    painter.Arc(Vector3.zero, dead, angles.downRight, angles.upRight, ArcDirection.CounterClockwise);
+                    painter.ClosePath();
+                }
+            );
 
-            var right = new Vector2(_upWidth, 0);
-            var up = new Vector2(0, _upLength);
-            
-            DrawTriangle(up, right, -right, Color.cyan); // middle down
-            DrawTriangle(-up, right, -right, Color.cyan); // middle down
-            
-            DrawTriangle(Vector3.zero, upLeft, downLeft, Color.red); // left
-            DrawTriangle(Vector3.zero, upRight, downRight, Color.red); // right
-            
+            // spike up
+            var spikeUp = new Vector2(0, -_upLength);
+            DrawShape(
+                ColorForZone(Zone.Up), () => {
+                    painter.MoveTo(spikeUp);
+                    painter.LineTo(upRight * inner);
+                    painter.LineTo(upRight * dead);
+                    painter.Arc(Vector3.zero, dead, angles.upRight, angles.upLeft, ArcDirection.CounterClockwise);
+                    painter.LineTo(upLeft * inner);
+                    painter.ClosePath();
+                }
+            );
 
-            void DrawTriangle(Vector3 a, Vector3 b, Vector3 c, Color color)
+            // spike Down
+            var spikeDown = new Vector2(0, _upLength);
+            DrawShape(
+                ColorForZone(Zone.Down), () => {
+                    painter.MoveTo(spikeDown);
+                    painter.LineTo(downRight * inner);
+                    painter.LineTo(downRight * dead);
+                    painter.Arc(Vector3.zero, dead, angles.downRight, angles.downLeft);
+                    painter.LineTo(downLeft * inner);
+                    painter.ClosePath();
+                }
+            );
+
+            // up
+            DrawShape(
+                ColorForZone(Zone.OuterUp), () => {
+                    painter.MoveTo(upLeft * outer);
+                    painter.LineTo(upRight * outer);
+                    painter.LineTo(upRight * inner);
+                    painter.LineTo(spikeUp);
+                    painter.LineTo(upLeft * inner);
+                    painter.ClosePath();
+                }
+            );
+            // down
+            DrawShape(
+                ColorForZone(Zone.OuterDown), () => {
+                    painter.MoveTo(downLeft * outer);
+                    painter.LineTo(downRight * outer);
+                    painter.LineTo(downRight * inner);
+                    painter.LineTo(spikeDown);
+                    painter.LineTo(downLeft * inner);
+                    painter.ClosePath();
+                }
+            );
+            return;
+
+            void DrawShape(Color color, Action drawPath)
             {
                 painter.fillColor = color;
                 painter.BeginPath();
-                painter.MoveTo(a);
-                painter.LineTo(b);
-                painter.LineTo(c);
-                painter.LineTo(a);
-                painter.ClosePath();
+                drawPath();
                 painter.Fill();
                 painter.Stroke();
             }
-
-
-            // // Upper Arc
-            // painter.BeginPath();
-            // painter.Arc(Vector2.zero, _innerRadius, angles[0], angles[1]);
-            // painter.Stroke();
-            //
-            // // Lower Arc
-            // painter.BeginPath();
-            // painter.Arc(Vector2.zero, _innerRadius, angles[2], angles[3]);
-            // painter.Stroke();
-            //
-            // // Draw major lines
-            // foreach (float angle in angles) {
-            //     const float outerRadius = 2000f;
-            //     painter.BeginPath();
-            //     var direction = AngleToVector(angle);
-            //     painter.MoveTo(direction * _deadZoneRadius);
-            //     painter.LineTo(direction * outerRadius);
-            //     painter.Stroke();
-            // }
-
-            // Dead zone
-            painter.fillColor = Color.white;
-            painter.BeginPath();
-            painter.Arc(Vector2.zero, _deadZoneRadius, 0, 360);
-            painter.Stroke();
-            painter.Fill();
         }
-        
+
         Vector2 LowerUpSection(float angle)
         {
             var v = AngleToVector(angle);
