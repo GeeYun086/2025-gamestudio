@@ -1,5 +1,6 @@
 using GravityGame.Player;
 using GravityGame.Puzzle_Elements;
+using GravityGame.SaveAndLoadSystem;
 using UnityEngine;
 
 namespace GravityGame.Gravity
@@ -10,10 +11,9 @@ namespace GravityGame.Gravity
     ///     <see cref="GravityDirection" /> is shared between all objects with the same <see cref="Group" />
     /// </summary>
     [RequireComponent(typeof(Rigidbody))]
-    public class GravityModifier : MonoBehaviour
+    public class GravityModifier : MonoBehaviour, ISaveData<Vector3>
     {
-        public Vector3 Gravity => GravityDirection * GravityMagnitude;
-
+        [SerializeField] Vector3 _gravityDirection = Vector3.down;
         public Vector3 GravityDirection
         {
             get => _gravityDirection.normalized;
@@ -26,11 +26,13 @@ namespace GravityGame.Gravity
             }
         }
 
-        [SerializeField] Vector3 _gravityDirection = Vector3.down;
         public float GravityMagnitude = 9.81f;
-        public GravityGroup Group = GravityGroup.None;
+
+        public Vector3 Gravity => GravityDirection * GravityMagnitude;
 
         public enum GravityGroup { None, Player, Red, Blue, Green }
+
+        public GravityGroup Group = GravityGroup.None;
 
         Rigidbody _rigidbody;
 
@@ -43,7 +45,7 @@ namespace GravityGame.Gravity
 
         void OnDisable()
         {
-            if(GravityGroupHandler.Instance) GravityGroupHandler.Instance.OnGravityGroupDirectionChange -= SetGravityDirectionWithoutGroupAlert;
+            if (GravityGroupHandler.Instance) GravityGroupHandler.Instance.OnGravityGroupDirectionChange -= SetGravityDirectionWithoutGroupAlert;
         }
 
         void FixedUpdate()
@@ -57,5 +59,22 @@ namespace GravityGame.Gravity
             if (gravityGroup == Group)
                 _gravityDirection = gravityDirection;
         }
+
+    #region Save and Load
+
+        // Note TG: Objects that are just serialized this way have to be non-destructible!
+        public Vector3 Save() => Gravity;
+
+        public void Load(Vector3 data)
+        {
+            GravityMagnitude = data.magnitude;
+            GravityDirection = data.normalized;
+        }
+        
+        [field: SerializeField] public int SaveDataID { get; set; }
+
+        public bool ShouldBeSaved { get; set; } = true;
+
+    #endregion
     }
 }

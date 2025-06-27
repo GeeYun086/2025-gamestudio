@@ -16,6 +16,7 @@ namespace GravityGame.SaveAndLoadSystem
         ///     Must be implemented as a serialized field: <code>[field: SerializeField] public int SaveDataID { get; set; }</code>
         /// </summary>
         int SaveDataID { get; set; }
+        bool ShouldBeSaved => true;
     }
 
     /// <summary>

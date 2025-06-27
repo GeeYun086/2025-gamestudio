@@ -54,7 +54,7 @@ namespace GravityGame.SaveAndLoadSystem
         public static IEnumerable<(GameObject, ISaveData)> FindObjectsWithSaveData()
         {
             foreach (var obj in FindObjectsByType<MonoBehaviour>(FindObjectsInactive.Include, FindObjectsSortMode.None)) {
-                if (obj.TryGetComponent<ISaveData>(out var saveData)) {
+                if (obj.TryGetComponent<ISaveData>(out var saveData) && saveData.ShouldBeSaved) {
                     yield return (obj.gameObject, saveData);
                 }
             }

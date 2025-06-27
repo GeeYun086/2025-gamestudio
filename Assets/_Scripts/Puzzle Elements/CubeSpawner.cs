@@ -1,5 +1,4 @@
 using System;
-using GravityGame.CheckpointSystem;
 using GravityGame.Gravity;
 using GravityGame.SaveAndLoadSystem;
 using UnityEngine;
@@ -51,18 +50,21 @@ namespace GravityGame.Puzzle_Elements
                 transform
             );
 
-            if (_currentCube.TryGetComponent<GravityModifier>(out var gm))
+            if (_currentCube.TryGetComponent<GravityModifier>(out var gm)) {
                 gm.GravityDirection = -transform.up;
+                gm.ShouldBeSaved = false;
+            }
         }
 
     #region Save and Load
-    
+
         [Serializable]
         public struct SaveData
         {
             public bool IsSpawned;
             public Vector3 CubePosition;
             public Quaternion CubeRotation;
+            public Vector3 CubeGravity;
         }
 
         public SaveData Save()
@@ -71,7 +73,8 @@ namespace GravityGame.Puzzle_Elements
             return new SaveData {
                 IsSpawned = true,
                 CubePosition = _currentCube.transform.position,
-                CubeRotation = _currentCube.transform.rotation
+                CubeRotation = _currentCube.transform.rotation,
+                CubeGravity = _currentCube.TryGetComponent<GravityModifier>(out var gm) ? gm.Save() : Vector3.zero
             };
         }
 
@@ -82,6 +85,9 @@ namespace GravityGame.Puzzle_Elements
                 if (_currentCube.TryGetComponent<Rigidbody>(out var rb)) {
                     rb.position = data.CubePosition;
                     rb.rotation = data.CubeRotation;
+                }
+                if (_currentCube.TryGetComponent<GravityModifier>(out var gravityModifier)) {
+                    gravityModifier.Load(data.CubeGravity);
                 }
             } else {
                 if (_currentCube) Destroy(_currentCube);
