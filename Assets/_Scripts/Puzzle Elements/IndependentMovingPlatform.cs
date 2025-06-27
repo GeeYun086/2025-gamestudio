@@ -1,4 +1,7 @@
-﻿using GravityGame.Utils;
+﻿using System;
+using GravityGame.Gravity;
+using GravityGame.SaveAndLoadSystem;
+using GravityGame.Utils;
 using UnityEngine;
 
 namespace GravityGame.Puzzle_Elements
@@ -8,7 +11,7 @@ namespace GravityGame.Puzzle_Elements
     ///     and a specified target position by controlling its velocity.
     ///     /// The platform only moves when IsPowered is true.
     /// </summary>
-    public class IndependentMovingPlatform : RedstoneComponent
+    public class IndependentMovingPlatform : RedstoneComponent, ISaveData<IndependentMovingPlatform.SaveData>
     {
         [SerializeField] Transform _startPoint;
         [SerializeField] Transform _endPoint;
@@ -82,5 +85,30 @@ namespace GravityGame.Puzzle_Elements
             Gizmos.DrawLine(_startPoint.position, _endPoint.position);
             DebugDraw.DrawGizmoCube(_endPoint.position, _endPoint.rotation, _rigidbody.transform.lossyScale);
         }
+
+    #region Save and Load
+
+        [Serializable]
+        public struct SaveData
+        {
+            public bool IsMovingToEnd;
+            public Vector3 Position;
+        }
+
+        public SaveData Save() =>
+            new() {
+                IsMovingToEnd = _isMovingToEnd,
+                Position = _rigidbody.position
+            };
+
+        public void Load(SaveData data)
+        {
+            _rigidbody.MovePosition(data.Position);
+            _isMovingToEnd = data.IsMovingToEnd;
+        }
+
+        [field: SerializeField] public int SaveDataID { get; set; }
+
+    #endregion
     }
 }
