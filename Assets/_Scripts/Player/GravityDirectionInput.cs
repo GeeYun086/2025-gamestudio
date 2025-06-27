@@ -38,6 +38,7 @@ namespace GravityGame.Player
         [SerializeField] float _previewCycleDuration = 1.5f;
 
         [Header("Audio")]
+        [SerializeField] AudioClip _changeGravitySound;
         [SerializeField] AudioClip _cannotChangeGravitySound;
 
         static GravityDirectionRadialMenu GravityChangeMenu => GameUI.Instance.Elements.GravityDirectionRadialMenu;
@@ -114,7 +115,10 @@ namespace GravityGame.Player
                     var direction = GetRadialMenuGravityDirection();
                     bool applyGravity = _target && direction.HasValue && !canceled;
                     if (applyGravity) {
-                        if (_target.GravityDirection != direction.Value) _gravityChangeCooldown.Start();
+                        if (_target.GravityDirection != direction.Value) {
+                            if (_changeGravitySound) GetComponent<AudioSource>().PlayOneShot(_changeGravitySound, 0.3f);
+                            _gravityChangeCooldown.Start();
+                        }
                         _target.GravityDirection = direction.Value;
                     }
 
