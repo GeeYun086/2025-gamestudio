@@ -46,6 +46,7 @@ namespace GravityGame.Player
             Camera.LookRightRotation = data.LookRight;
             Camera.LookDownRotation = 0;
             transform.up = data.Up;
+            Rigidbody.linearVelocity = Vector3.zero;
         }
 
         public int SaveDataID
