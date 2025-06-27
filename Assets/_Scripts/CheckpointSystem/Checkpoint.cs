@@ -16,22 +16,13 @@ namespace GravityGame.CheckpointSystem
     [RequireComponent(typeof(Collider))]
     public class Checkpoint : MonoBehaviour, ISaveData<Checkpoint.SaveData>
     {
-        [SerializeField] string _checkpointID;
+        public event Action OnHasBeenReachedChanged;
 
-        bool _hasBeenReached;
-        public event Action<bool> OnHasBeenReachedChanged;
+        public bool HasBeenReached { get; private set; }
 
-        public bool HasBeenReached
-        {
-            get => _hasBeenReached;
-            set {
-                if (_hasBeenReached == value) return;
-                _hasBeenReached = value;
-                OnHasBeenReachedChanged?.Invoke(_hasBeenReached);
-            }
-        }
+        public bool IsActiveCheckpoint => PlayerSaveData.Instance.ActiveCheckpoint == SaveDataID;
 
-        void Awake()
+        void OnEnable()
         {
             var tCollider = GetComponent<Collider>();
             if (tCollider && !tCollider.isTrigger) tCollider.isTrigger = true;
@@ -43,13 +34,25 @@ namespace GravityGame.CheckpointSystem
             if (!other.TryGetComponent<PlayerSaveData>(out var playerSaveData)) return;
             // Trigger Checkpoint
             HasBeenReached = true;
+            playerSaveData.ActiveCheckpoint = SaveDataID;
 
-            const float checkpointRespawnHeightOffset = 0.2f;
-            var pos = transform.position + playerSaveData.transform.up * checkpointRespawnHeightOffset;
-            var forward = -transform.right; // prefab is rotated in weird way, so left is forward
-            playerSaveData.InjectedCheckpointPose = (pos, forward);
+            playerSaveData.InjectCheckpointData = InjectCheckpointData;
             SaveAndLoad.Instance.Save();
-            playerSaveData.InjectedCheckpointPose = null;
+            playerSaveData.InjectCheckpointData = null;
+            
+            OnHasBeenReachedChanged?.Invoke();
+            return;
+
+            PlayerSaveData.SaveData InjectCheckpointData(PlayerSaveData.SaveData saveData)
+            {
+                const float checkpointRespawnHeightOffset = 0.2f;
+                var pos = transform.position + transform.up * checkpointRespawnHeightOffset;
+                var forward = -transform.right; // prefab is rotated in weird way, so left is forward
+                saveData.Position = pos;
+                saveData.LookRight = Vector3.SignedAngle(playerSaveData.transform.forward, forward, playerSaveData.transform.up);
+                saveData.LastCheckpointID = SaveDataID;
+                return saveData;
+            }
         }
         
         void OnDrawGizmosSelected()
@@ -66,9 +69,11 @@ namespace GravityGame.CheckpointSystem
             public bool HasBeenReached;
         }
 
-        public SaveData Save() => new() { HasBeenReached = HasBeenReached };
+        public SaveData Save() => new() { HasBeenReached = HasBeenReached};
 
         public void Load(SaveData data) => HasBeenReached = data.HasBeenReached;
+
+        public void OnAfterLoad() => OnHasBeenReachedChanged?.Invoke();
 
         [field: SerializeField] public int SaveDataID { get; set; }
 

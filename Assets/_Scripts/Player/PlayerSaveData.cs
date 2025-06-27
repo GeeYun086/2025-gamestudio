@@ -1,6 +1,7 @@
 using System;
 using GravityGame.Gravity;
 using GravityGame.SaveAndLoadSystem;
+using GravityGame.Utils;
 using UnityEngine;
 
 namespace GravityGame.Player
@@ -8,13 +9,14 @@ namespace GravityGame.Player
     /// <summary>
     ///     Handles saving / loading of Player state
     /// </summary>
-    public class PlayerSaveData : MonoBehaviour, ISaveData<PlayerSaveData.SaveData>
+    public class PlayerSaveData : SingletonMonoBehavior<PlayerSaveData>, ISaveData<PlayerSaveData.SaveData>
     {
         GravityModifier GravityModifier => GetComponent<GravityModifier>();
         Rigidbody Rigidbody => GetComponent<Rigidbody>();
         FirstPersonCameraController Camera => GetComponentInChildren<FirstPersonCameraController>();
 
-        public (Vector3 position, Vector3 forward)? InjectedCheckpointPose { get; set; }
+        public Func<SaveData, SaveData> InjectCheckpointData { get; set; }
+        public int ActiveCheckpoint { get; set; }
 
         void OnEnable() => GravityModifier.ShouldBeSaved = false;
 
@@ -24,19 +26,20 @@ namespace GravityGame.Player
             public Vector3 Position;
             public float LookRight;
             public Vector3 Up;
+            public int LastCheckpointID;
         }
 
         public SaveData Save()
         {
-            var saveData = new SaveData();
-            if (InjectedCheckpointPose is { } pose) {
-                saveData.Position = pose.position;
-                saveData.LookRight = Vector3.SignedAngle(transform.forward, pose.forward, transform.up);
-            } else {
-                saveData.Position = transform.position;
-                saveData.LookRight = Camera.LookRightRotation;
-            }
-            saveData.Up = transform.up;
+            var saveData = new SaveData {
+                Position = transform.position,
+                LookRight = Camera.LookRightRotation,
+                Up = transform.up,
+                LastCheckpointID = 0
+            };
+            if (InjectCheckpointData != null) {
+                saveData = InjectCheckpointData(saveData);
+            } 
             return saveData;
         }
 
@@ -46,6 +49,8 @@ namespace GravityGame.Player
             Camera.LookRightRotation = data.LookRight;
             Camera.LookDownRotation = 0;
             transform.up = data.Up;
+            ActiveCheckpoint = data.LastCheckpointID;
+            
             Rigidbody.linearVelocity = Vector3.zero;
         }
 

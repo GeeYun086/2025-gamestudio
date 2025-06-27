@@ -17,6 +17,8 @@ namespace GravityGame.SaveAndLoadSystem
         /// </summary>
         int SaveDataID { get; set; }
         bool ShouldBeSaved => true;
+
+        void OnAfterLoad() {}
     }
 
     /// <summary>

@@ -31,8 +31,9 @@ namespace GravityGame.SaveAndLoadSystem
         void OnEnable()
         {
             SceneManager.sceneLoaded += (_, _) => {
-                if(Data.Entries.Count == 0) Save(); // initial save
+                // if(Data.Entries.Count == 0) Save(); // initial save
             };
+            DontDestroyOnLoad(this);
         }
         
         public void Save()
@@ -53,10 +54,14 @@ namespace GravityGame.SaveAndLoadSystem
         public void Load()
         {
             var data = Data.Entries.ToDictionary(e => e.DataID);
-            foreach (var (_, saveData) in FindObjectsWithSaveData()) {
+            var toLoad = FindObjectsWithSaveData().ToList();
+            foreach (var (_, saveData) in toLoad) {
                 if (data.TryGetValue(saveData.SaveDataID, out var objData)) {
                     saveData.LoadFromJson(objData.JsonData);
                 }
+            }
+            foreach (var (_, saveData) in toLoad) {
+                saveData.OnAfterLoad();
             }
             Debug.Log($"[{nameof(SaveAndLoad)}] loaded ({Data.Entries.Count}) entries.");
         }

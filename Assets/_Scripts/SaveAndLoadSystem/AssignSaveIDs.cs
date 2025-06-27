@@ -10,20 +10,42 @@ namespace GravityGame.SaveAndLoadSystem
     {
         static AssignSaveIDs()
         {
-            EditorSceneManager.sceneSaving += (_, _) => AssignSaveIDsToLoadedObjects();
             EditorApplication.playModeStateChanged += p => {
                 if (p == PlayModeStateChange.EnteredPlayMode)
                     AssignSaveIDsToLoadedObjects();
             };
+
+            bool justSaved = false;
+            EditorSceneManager.sceneSaving += (scene, path) => {
+                if (justSaved) return;
+                AssignSaveIDsToLoadedObjects();
+                justSaved = true;
+                var f = EditorSceneManager.SaveScene(scene, path);
+                Debug.Log(f);
+                justSaved = false;
+            };
+
+            AssignSaveIDsToLoadedObjects();
         }
 
         static void AssignSaveIDsToLoadedObjects()
         {
             int count = 0;
             foreach (var (gameObject, saveData) in SaveAndLoad.FindObjectsWithSaveData()) {
-                var id = GlobalObjectId.GetGlobalObjectIdSlow(gameObject);
-                saveData.SaveDataID = id.GetHashCode();
+                int id = GlobalObjectId.GetGlobalObjectIdSlow(gameObject).GetHashCode();
+
+                saveData.SaveDataID = id;
+
+                // Mark the object as dirty so Unity knows it was modified
+                var a = (MonoBehaviour)saveData;
+                EditorUtility.SetDirty(a);
+                PrefabUtility.RecordPrefabInstancePropertyModifications(a);
+                
                 count++;
+                if (!Application.isPlaying && saveData.SaveDataID != id) {
+                    // Also mark the scene as dirty so the user is prompted to save it
+                    EditorSceneManager.MarkSceneDirty(gameObject.scene);
+                }
             }
             Debug.Log($"[{typeof(AssignSaveIDs)}] assigned save ids to objects in scene ({count}).");
         }
