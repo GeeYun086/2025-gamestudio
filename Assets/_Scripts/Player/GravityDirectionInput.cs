@@ -22,14 +22,14 @@ namespace GravityGame.Player
         [SerializeField] Transform _playerTransform;
         [SerializeField] Camera _camera;
         [SerializeField] Axes _visualizationAxes;
-        
+
         [Header("Input")]
         [SerializeField] InputActionReference _startGravityInput;
         [SerializeField] InputActionReference _cancelGravityInput;
-        
+
         [Header("Parameters")]
         [SerializeField] float _maxObjectRange = 30;
-        [SerializeField] Timer _gravityChangeCooldown = new (1.5f);
+        [SerializeField] Timer _gravityChangeCooldown = new(1.5f);
         [SerializeField] Timer _aimBuffer = new(0.25f);
 
         [Header("Preview")]
@@ -37,10 +37,13 @@ namespace GravityGame.Player
         [SerializeField] float _previewDistance = 4f;
         [SerializeField] float _previewCycleDuration = 1.5f;
 
+        [Header("Audio")]
+        [SerializeField] AudioClip _cannotChangeGravitySound;
+
         static GravityDirectionRadialMenu GravityChangeMenu => GameUI.Instance.Elements.GravityDirectionRadialMenu;
 
         PlayerCarry _carry;
-        
+
         GravityModifier _target;
         bool _tryChangingGravity;
 
@@ -56,63 +59,68 @@ namespace GravityGame.Player
 
         void OnDisable() => StopGravityPreview();
         void OnDestroy() => StopGravityPreview();
-        
+
         void Update()
         {
+            // Update Input
+            bool start = _startGravityInput.action.WasPressedThisFrame();
+            bool stopped = !_startGravityInput.action.IsPressed();
+            bool canceled = _cancelGravityInput.action.WasPressedThisFrame();
+
+            if (start) _tryChangingGravity = true;
+            if (stopped || canceled) _tryChangingGravity = false;
+
             bool wasChangingGravity = GravityChangeMenu.visible;
 
             // Switch Target
             bool canSwitchTarget = !wasChangingGravity || _target == null;
             if (canSwitchTarget) {
                 var last = _target;
-                if (_carry.CarriedObject && !wasChangingGravity) {
+                var hit = RaycastForSelectableObject();
+                if (_gravityChangeCooldown.IsActive) {
+                    // cannot have target when on cooldown
+                    _target = null;
+                    if (start && hit) GetComponent<AudioSource>().PlayOneShot(_cannotChangeGravitySound, 0.2f);
+                } else if (_carry.CarriedObject && !wasChangingGravity) {
                     // carried object is always target
                     _target = _carry.CarriedObject.GetComponent<GravityModifier>();
-                } else {
-                    var hit = RaycastForSelectableObject();
-                    if (hit) {
-                        _target = hit;
-                        _aimBuffer.Start();
-                    } else if (!_aimBuffer.IsActive) {
-                        _target = null;
-                    }
+                } else if (hit) {
+                    // switch to new hit
+                    _target = hit;
+                    _aimBuffer.Start();
+                } else if (!_aimBuffer.IsActive) {
+                    // switch from old hit
+                    _target = null;
                 }
-                
+
                 if (_target != last) {
                     if (_target) ToggleOutlineOnObject(_target.gameObject, 1);
                     if (last) ToggleOutlineOnObject(last.gameObject, 0);
                 }
             }
 
-            // Update Input
-            var start = _startGravityInput.action.WasPressedThisFrame();
-            var stopped = !_startGravityInput.action.IsPressed();
-            var canceled = _cancelGravityInput.action.WasPressedThisFrame();
-            if (start) {
-                _tryChangingGravity = true;
-            }
-            if (stopped || canceled) {
-                _tryChangingGravity = false;
-            }
-
             // Start / Stop changing gravity
             if (_tryChangingGravity) {
                 if (_target && !wasChangingGravity) {
+                    // Start changing gravity
                     Cursor.lockState = CursorLockMode.None;
                     Cursor.visible = true;
                     GravityChangeMenu.visible = true;
                     SetGravityChangeMenuColors();
                 }
             } else {
+                // Stop changing gravity
                 if (wasChangingGravity) {
                     var direction = GetRadialMenuGravityDirection();
-                    if (_target && direction.HasValue && !canceled) {
+                    bool applyGravity = _target && direction.HasValue && !canceled;
+                    if (applyGravity) {
+                        if (_target.GravityDirection != direction.Value) _gravityChangeCooldown.Start();
                         _target.GravityDirection = direction.Value;
                     }
-                    
+
                     _aimBuffer.Stop();
                     StopGravityPreview();
-                    
+
                     Cursor.lockState = CursorLockMode.Locked;
                     Cursor.visible = false;
                     GravityChangeMenu.visible = false;
@@ -131,7 +139,7 @@ namespace GravityGame.Player
                     StartGravityPreview(_target, direction);
                     _currentPreviewDirection = direction;
                 }
-            } 
+            }
         }
 
         void SetGravityChangeMenuColors()
@@ -150,7 +158,7 @@ namespace GravityGame.Player
                 _ => throw new ArgumentOutOfRangeException(nameof(zone), zone, null)
             };
         }
-        
+
         void StartGravityPreview(GravityModifier originalObjectToPreview, Vector3 direction)
         {
             SetVisualizedDirection(direction);
@@ -182,7 +190,7 @@ namespace GravityGame.Player
         void StopGravityPreview()
         {
             SetVisualizedDirection(Vector3.zero);
-            
+
             if (_previewCoroutine != null) {
                 StopCoroutine(_previewCoroutine);
                 _previewCoroutine = null;
@@ -224,7 +232,7 @@ namespace GravityGame.Player
             int layerMask = ~LayerMask.GetMask("AxisGizmo", "Player");
 
             if (Physics.Raycast(ray, out var hitInfo, _maxObjectRange, layerMask, QueryTriggerInteraction.Ignore)) {
-                if (hitInfo.transform.gameObject.TryGetComponent<GravityModifier>(out var g)) 
+                if (hitInfo.transform.gameObject.TryGetComponent<GravityModifier>(out var g))
                     return g;
             }
             return null;
@@ -235,7 +243,7 @@ namespace GravityGame.Player
             var screenCenter = _camera.ViewportToScreenPoint(new Vector3(0.5f, 0.5f));
             var mouseOffset = Input.mousePosition - screenCenter;
             var dir = GravityChangeMenu.GetDirection(mouseOffset);
-            
+
             var up = GetClosestCardinalDirection(_playerTransform.up);
             var right = GetClosestCardinalDirection(_camera.transform.right);
             var forward = Vector3.Cross(right, up).normalized;
