@@ -76,8 +76,6 @@ namespace GravityGame.PuzzleElements
                 playerRb.AddForce(knockbackDir * KnockbackForce, ForceMode.Impulse);
             }
 
-            if (playerHealth.CurrentHealth <= 0)
-
             _cooldowns[playerHealth] = Time.time;
         }
 

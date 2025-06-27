@@ -5,6 +5,9 @@ using Debug = UnityEngine.Debug;
 
 namespace GravityGame
 {
+    /// <summary>
+    ///     Ignores player on far distance, gets provoked on middle distance and shoots after 2s. Gets aggressive on short distance and shoots after .5s.
+    /// </summary>
     public class CorruptionModule : MonoBehaviour
     {
         Transform _player;
