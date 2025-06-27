@@ -19,6 +19,7 @@ namespace GravityGame.SaveAndLoadSystem
     public struct GameSaveData
     {
         public List<SaveDataEntry> Entries;
+        public static GameSaveData New() => new () { Entries = new List<SaveDataEntry>() };
     }
 
     /// <summary>
@@ -27,8 +28,10 @@ namespace GravityGame.SaveAndLoadSystem
     /// </summary>
     public class SaveAndLoad : SingletonMonoBehavior<SaveAndLoad>
     {
-        [NonSerialized] public GameSaveData Data = new() { Entries = new List<SaveDataEntry>() };
-
+        [NonSerialized] public GameSaveData Data = GameSaveData.New();
+        public bool ShouldSaveToFile = true;
+        string SavePath => Application.persistentDataPath + "/SaveData.json"; 
+        
         void OnEnable()
         {
             SceneManager.sceneLoaded += (_, _) => {
@@ -50,10 +53,14 @@ namespace GravityGame.SaveAndLoadSystem
             }
             Data.Entries = data.Values.ToList();
             Debug.Log($"[{nameof(SaveAndLoad)}] saved ({Data.Entries.Count}) entries.");
+            
+            if(ShouldSaveToFile) SaveToFile.Save(Data, SavePath); 
         }
 
         public void Load()
         {
+            if(ShouldSaveToFile) Data = SaveToFile.Load(SavePath) ?? GameSaveData.New();
+            
             var data = Data.Entries.ToDictionary(e => e.DataID);
             var toLoad = FindObjectsWithSaveData().ToList();
             foreach (var (_, saveData) in toLoad) {
@@ -83,9 +90,13 @@ namespace GravityGame.SaveAndLoadSystem
     {
         public static void Save(GameSaveData data, string path)
         {
-            using var stream = new FileStream(path, FileMode.Create);
-            using var writer = new StreamWriter(stream);
-            writer.Write(JsonUtility.ToJson(data));
+            try {
+                using var stream = new FileStream(path, FileMode.Create);
+                using var writer = new StreamWriter(stream);
+                writer.Write(JsonUtility.ToJson(data));
+            } catch (Exception e) {
+                Debug.Log($"An Error occured while saving to {path}: {e}");
+            }
         }
 
         public static GameSaveData? Load(string path)
@@ -96,7 +107,7 @@ namespace GravityGame.SaveAndLoadSystem
                     using var reader = new StreamReader(stream);
                     return JsonUtility.FromJson<GameSaveData>(reader.ReadToEnd());    
                 } catch (Exception e) {
-                    Console.WriteLine(e);
+                    Debug.Log($"An Error occured while loading save from {path}: {e}");
                     return null;
                 }
             }
