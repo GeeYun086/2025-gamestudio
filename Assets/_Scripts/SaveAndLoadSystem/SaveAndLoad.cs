@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using GravityGame.Utils;
 using UnityEngine;
@@ -75,6 +76,31 @@ namespace GravityGame.SaveAndLoadSystem
                     }
                 }
             }
+        }
+    }
+
+    public static class SaveToFile
+    {
+        public static void Save(GameSaveData data, string path)
+        {
+            using var stream = new FileStream(path, FileMode.Create);
+            using var writer = new StreamWriter(stream);
+            writer.Write(JsonUtility.ToJson(data));
+        }
+
+        public static GameSaveData? Load(string path)
+        {
+            if (File.Exists(path)) {
+                try {
+                    using var stream = new FileStream(path, FileMode.Open);
+                    using var reader = new StreamReader(stream);
+                    return JsonUtility.FromJson<GameSaveData>(reader.ReadToEnd());    
+                } catch (Exception e) {
+                    Console.WriteLine(e);
+                    return null;
+                }
+            }
+            return null;
         }
     }
 }
