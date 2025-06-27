@@ -103,8 +103,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   MaxMoveSpeed: 8
-  MoveAcceleration: 40
-  GroundFriction: 10
+  MoveAcceleration: 50
+  GroundFriction: 13
   MaxStepHeight: 0.5
   MaxAirStepHeight: 0.1
   MaxSlopeAngle: 40
@@ -215,7 +215,7 @@ MonoBehaviour:
   BackpackDelay:
     Duration: 0.1
   MaxCarryMass: 250
-  MaxCarryDistance: 5
+  MaxCarryDistance: 3.5
   CannotReleaseCarrySound: {fileID: 8300000, guid: 8f0c661a6fc37ea4a861fab3e3c59794, type: 3}
   <SaveDataID>k__BackingField: 0
 --- !u!114 &4356562832223538105
