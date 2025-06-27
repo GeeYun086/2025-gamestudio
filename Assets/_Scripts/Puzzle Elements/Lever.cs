@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using GravityGame.SaveAndLoadSystem;
 using UnityEngine;
 
 namespace GravityGame.Puzzle_Elements
@@ -7,7 +9,7 @@ namespace GravityGame.Puzzle_Elements
     /// <summary>
     ///     Add to Lever GameObject and drag Doors into List
     /// </summary>
-    public class Lever : InteractableObject
+    public class Lever : InteractableObject, ISaveData<bool>
     {
         [SerializeField] GameObject _leverOn;
         [SerializeField] GameObject _leverOff;
@@ -37,5 +39,16 @@ namespace GravityGame.Puzzle_Elements
         void Toggle() => SetPowered(!_isPowered);
 
         void OnValidate() => SetPowered(_isPowered);
+        
+        
+    #region Save and Load
+
+        public bool Save() => _isPowered;
+
+        public void Load(bool data) => SetPowered(data);
+
+        [field: SerializeField] public int SaveDataID { get; set; }
+
+    #endregion
     }
 }

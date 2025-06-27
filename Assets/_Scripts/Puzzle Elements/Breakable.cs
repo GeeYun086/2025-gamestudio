@@ -11,7 +11,7 @@ namespace GravityGame.Puzzle_Elements
     // When it breaks, it replaces itself with a shattered version and assigns proper settings to debris.
 
     [RequireComponent(typeof(Collider))]
-    public class Breakable : MonoBehaviour, ISaveData<Breakable.SaveData>
+    public class Breakable : MonoBehaviour, ISaveData<bool>
     {
         [Header("Destruction Settings")]
         public float BreakForceThreshold = 9f; // Minimum velocity required to break the object.
@@ -90,15 +90,9 @@ namespace GravityGame.Puzzle_Elements
 
     #region Save and Load
 
-        [Serializable]
-        public struct SaveData
-        {
-            public bool IsBroken;
-        }
+        public bool Save() => !GetComponent<Collider>().enabled;
 
-        public SaveData Save() => new() { IsBroken = !GetComponent<Collider>().enabled };
-
-        public void Load(SaveData data) => SetBrokenState(data.IsBroken);
+        public void Load(bool data) => SetBrokenState(data);
 
         [field: SerializeField] public int SaveDataID { get; set; }
 
