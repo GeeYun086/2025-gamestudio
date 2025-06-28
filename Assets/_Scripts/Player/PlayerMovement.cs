@@ -121,8 +121,6 @@ namespace GravityGame.Player
             }
             _lastGroundVelocity = groundVelocity;
 
-            Debug.DrawRay(transform.position, _ground.Normal * 3.0f);
-            // _ground.Normal = transform.up;
             // Friction and Slopes
             if (_ground.HasAnyGround) {
                 // Ground Friction
