@@ -95,25 +95,31 @@ namespace GravityGame.Player
             var gravity = Gravity;
             
             _ground = CheckGround(transform.position);
-            var dynamicGround = _ground.Hit.rigidbody; // or null
 
             // Get ground velocity (e.g. moving platform)
+            var dynamicGround = _ground.Hit.rigidbody; // can be null
             var groundVelocity = Vector3.zero;
             if (_ground.HasStableGround) {
-                if (dynamicGround)
+                if (dynamicGround) {
                     groundVelocity = dynamicGround.linearVelocity;
-                else if (_ground.Hit.collider.gameObject.TryGetComponent<ConveyorBelt>(out var conveyorBelt))
+                }
+                else if (_ground.Hit.collider.gameObject.TryGetComponent<ConveyorBelt>(out var conveyorBelt)) {
                     groundVelocity = conveyorBelt.Velocity;
+                }
+                 
+                var groundVelocityDelta = groundVelocity - _lastGroundVelocity;
+                const float platformStopThreshold = 1.0f;
+                bool groundStoppedImmediately = Vector3.Dot(groundVelocityDelta, _lastGroundVelocity) < 0
+                                                && groundVelocityDelta.magnitude > platformStopThreshold;
+                if (groundStoppedImmediately) {
+                    // player should get launched off
+                    groundVelocity = Vector3.zero;
+                } else {
+                    // Player should move with ground
+                    velocity += groundVelocityDelta;
+                }
             }
-            var groundVelocityDelta = groundVelocity - _lastGroundVelocity;
-
-            const float platformStopThreshold = 1.0f;
-            bool groundStoppedImmediately = Vector3.Dot(groundVelocityDelta, _lastGroundVelocity) < 0
-                                            && groundVelocityDelta.magnitude > platformStopThreshold;
             _lastGroundVelocity = groundVelocity;
-
-            // Get jump velocity
-            bool jumped = TryJump();
 
             Debug.DrawRay(transform.position, _ground.Normal * 3.0f);
             // _ground.Normal = transform.up;
@@ -147,7 +153,7 @@ namespace GravityGame.Player
                         if (_inputDirection == Vector3.zero) {
                             // stick to slope when standing still
                             gravity = -_ground.Normal * 50f;
-                        } else if (upVelocityValue > 0f && !jumped) {
+                        } else if (upVelocityValue > 0f) {
                             // stick to slope when walking up it
                             gravity = -_ground.Normal * 50f;
                         }
@@ -170,11 +176,6 @@ namespace GravityGame.Player
                     if (Vector3.Dot(slopeUp, slopeUpInput) > 0) {
                         _inputDirection -= slopeUpInput;
                     }
-                }
-
-                // Add moving ground velocity, don't apply if sudden platform movement -> player should get launched off
-                if (!groundStoppedImmediately) {
-                    velocity += groundVelocityDelta;
                 }
             } else {
                 // Air Drag
@@ -200,7 +201,7 @@ namespace GravityGame.Player
             }
 
             // Jump
-            if (jumped) {
+            if (TryJump()) {
                 // Jump only preserves velocity in inputDirection
                 var jumpForward = Vector3.zero;
                 if (_inputDirection != Vector3.zero) {
