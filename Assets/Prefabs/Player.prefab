@@ -204,7 +204,7 @@ MonoBehaviour:
   MaxAngle: 70
   MinAngle: -30
   MinBackpackAngle: -82
-  MinHeight: 0.55
+  MinHeight: 0.57
   MaxHeight: 2.5
   MoveSpeed: 30
   RotationSpeed: 20

@@ -300,7 +300,7 @@ namespace GravityGame.Player
                 var halfExtents = CarryBoxScale * (0.5f * scale);
                 int layerMask = ~LayerMask.GetMask("Player", "Laser");
                 var results = new Collider[2];
-                int overlappingObjects = Physics.OverlapBoxNonAlloc(position, halfExtents, results, rotation, layerMask);
+                int overlappingObjects = Physics.OverlapBoxNonAlloc(position, halfExtents, results, rotation, layerMask, QueryTriggerInteraction.Ignore);
                 var coll = results.Take(overlappingObjects).FirstOrDefault(b => b != _carry.Object?.Collider);
                 // DebugDraw.DrawCube(position, scale, coll ? Color.green : Color.red);
                 return coll;
