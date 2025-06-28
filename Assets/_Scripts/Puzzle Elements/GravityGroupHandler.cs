@@ -1,6 +1,7 @@
 using GravityGame.Gravity;
 using GravityGame.Utils;
 using UnityEngine;
+using static GravityGame.Gravity.GravityModifier;
 
 namespace GravityGame.Puzzle_Elements
 {
@@ -11,19 +12,19 @@ namespace GravityGame.Puzzle_Elements
     ///     <see cref="GravityModifier.GravityGroup" /> are then notified to change their
     ///     <see cref="GravityModifier.GravityDirection" /> respectivly.
     /// </summary>
-    public class GravityGroupHandler : SingletonMonoBehavior<GravityGroupHandler>
+    public static class GravityGroupHandler
     {
         public delegate void OnGravityGroupDirectionChangeDelegate(
-            GravityModifier.GravityGroup gravityGroup,
+            GravityGroup gravityGroup,
             Vector3 newDirection
         );
 
-        public event OnGravityGroupDirectionChangeDelegate OnGravityGroupDirectionChange;
+        public static event OnGravityGroupDirectionChangeDelegate OnGravityGroupDirectionChange;
 
 
-        public void AlertGravityGroup(GravityModifier.GravityGroup gravityGroup, Vector3 newGravityDirection)
+        public static void AlertGravityGroup(GravityGroup gravityGroup, Vector3 newGravityDirection)
         {
-            if (gravityGroup != GravityModifier.GravityGroup.None)
+            if (gravityGroup != GravityGroup.None)
                 OnGravityGroupDirectionChange?.Invoke(gravityGroup, newGravityDirection);
         }
     }
