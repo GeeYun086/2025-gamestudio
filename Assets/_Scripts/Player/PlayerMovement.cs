@@ -250,7 +250,7 @@ namespace GravityGame.Player
                 var difference = step.Hit.point - transform.position;
                 var up = Vector3.Project(difference, transform.up);
                 // Move up
-                const float tpUpBonus = 0.05f;
+                const float tpUpBonus = 0.02f;
                 _rigidbody.MovePosition(transform.position + up.normalized * (up.magnitude + tpUpBonus));
 
                 // eliminate downwards velocity
