@@ -138,7 +138,7 @@ namespace GravityGame.Player
             if (isChangingGravity) {
                 ToggleOutlineOnObject(_target.gameObject, 1);
 
-                var direction = GetRadialMenuGravityDirection() ?? _target.GravityDirection;
+                var direction = GetRadialMenuGravityDirection() ?? GetClosestCardinalDirection(_target.GravityDirection);
                 SetVisualizedDirection(direction);
 
                 if (!_previewCloneInstance || _currentPreviewDirection != direction) {
@@ -248,12 +248,12 @@ namespace GravityGame.Player
         {
             var screenCenter = _camera.ViewportToScreenPoint(new Vector3(0.5f, 0.5f));
             var mouseOffset = Input.mousePosition - screenCenter;
-            var dir = GravityChangeMenu.GetDirection(mouseOffset);
 
             var up = GetClosestCardinalDirection(_playerTransform.up);
             var right = GetClosestCardinalDirection(_camera.transform.right);
             var forward = Vector3.Cross(right, up).normalized;
-
+            
+            var dir = GravityChangeMenu.GetDirection(mouseOffset);
             return dir switch {
                 GravityDirectionRadialMenu.Zone.None => null,
                 GravityDirectionRadialMenu.Zone.Left => -right,
