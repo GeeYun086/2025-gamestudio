@@ -85,9 +85,7 @@ namespace GravityGame.Player
         void FixedUpdate()
         {
             transform.up = -Gravity;
-            _ground = CheckGround(transform.position);
             Move();
-            TryStepUp();
         }
 
         void Move()
@@ -95,9 +93,11 @@ namespace GravityGame.Player
             float deltaTime = Time.fixedDeltaTime;
             var velocity = _rigidbody.linearVelocity;
             var gravity = Gravity;
+            
+            _ground = CheckGround(transform.position);
+            var dynamicGround = _ground.Hit.rigidbody; // or null
 
             // Get ground velocity (e.g. moving platform)
-            var dynamicGround = _ground.Hit.rigidbody; // or null
             var groundVelocity = Vector3.zero;
             if (_ground.HasStableGround) {
                 if (dynamicGround)
@@ -115,6 +115,8 @@ namespace GravityGame.Player
             // Get jump velocity
             bool jumped = TryJump();
 
+            Debug.DrawRay(transform.position, _ground.Normal * 3.0f);
+            // _ground.Normal = transform.up;
             // Friction and Slopes
             if (_ground.HasAnyGround) {
                 // Ground Friction
@@ -149,8 +151,10 @@ namespace GravityGame.Player
                             // stick to slope when walking up it
                             gravity = -_ground.Normal * 50f;
                         }
-                    } else {
+                    } else if (dynamicGround) {
                         gravity = -_ground.Normal * 10f;
+                    } else {
+                        gravity = -_ground.Normal * 100f;
                     }
                 }
                 // On Steep Slope
@@ -221,6 +225,7 @@ namespace GravityGame.Player
 
                 // un-ground yourself
                 _ground = default;
+                gravity = Gravity;
 
                 // push ground down
                 if (dynamicGround) {
@@ -238,6 +243,21 @@ namespace GravityGame.Player
                 // Overwrite velocity
                 velocity = jumpUp + jumpForward + groundVelocity;
                 // Debug.Log($"up: {jumpUp} fwd: {jumpForward} ground: {groundVelocity}");
+            }
+            
+            // Step
+            if (FindStep() is { HasStableGround: true } step) {
+                if (DebugStepDetection) Debug.Log("Player Stepped!");
+                var difference = step.Hit.point - transform.position;
+                var up = Vector3.Project(difference, transform.up);
+                // Move up
+                const float tpUpBonus = 0.05f;
+                _rigidbody.MovePosition(transform.position + up.normalized * (up.magnitude + tpUpBonus));
+
+                // eliminate downwards velocity
+                var upVelocity = Mathf.Max(0f, Vector3.Dot(_rigidbody.linearVelocity, transform.up));
+                _rigidbody.AddForce(-upVelocity * transform.up, ForceMode.VelocityChange);
+                gravity = Vector3.zero;
             }
 
             // Apply Force
@@ -281,29 +301,6 @@ namespace GravityGame.Player
             DebugDraw(false);
             return false;
             void DebugDraw(bool grounded) => Utils.DebugDraw.DrawCube(endPos, 1.0f, grounded ? Color.green : Color.red, 1.0f);
-        }
-
-        void TryStepUp()
-        {
-            if (FindStep() is { HasStableGround: true } step) {
-                if (DebugStepDetection) Debug.Log("Player Stepped!");
-                var difference = step.Hit.point - transform.position;
-                var up = Vector3.Project(difference, transform.up);
-                // Move up
-                _rigidbody.MovePosition(transform.position + up.normalized * (up.magnitude + 0.05f));
-
-                // Note TG: I think this is no longer needed (?)
-                // Add fwd speed so you have enough to climb stair
-                // float climbStairFwdBoost = 1.0f;
-                // var fwd = difference - up;
-                // _rigidbody.AddForce(fwd.normalized * climbStairFwdBoost, ForceMode.VelocityChange);
-
-                // eliminate downwards velocity
-                var upVelocity = Vector3.Project(_rigidbody.linearVelocity, transform.up);
-                var onlyUpVelocity = Vector3.Dot(upVelocity, transform.up) > 0 ? upVelocity : Vector3.zero;
-                _rigidbody.AddForce(onlyUpVelocity - upVelocity, ForceMode.VelocityChange);
-                _rigidbody.AddForce(transform.up * 1.0f, ForceMode.VelocityChange);
-            }
         }
 
         bool TryJump()
@@ -368,7 +365,7 @@ namespace GravityGame.Player
                 return noStep; // no air stepping when velocity is too high
             if (_inputDirection == Vector3.zero) return noStep; // no unintended stepping
 
-            const float minStepHeight = 0.05f;
+            const float minStepHeight = 0.01f;
             const float stepForward = 0.05f;
             int layerMask = ~LayerMask.GetMask("Player");
             var input = Vector3.ProjectOnPlane(_inputDirection, _ground.HasStableGround ? _ground.Normal : transform.up);
