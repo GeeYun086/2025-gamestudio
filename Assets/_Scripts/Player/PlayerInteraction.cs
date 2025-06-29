@@ -33,12 +33,13 @@ namespace GravityGame.Player
         {
             CheckForAimedInteractable();
 
-            if (_interactInput.action.WasPressedThisFrame()) {
+            bool justPressedInteract = _interactInput.action.WasPressedThisFrame();
+            if (justPressedInteract) {
                 _interactBuffer.Start();
             }
 
             if (_interactBuffer.IsActive) {
-                if (_playerCarry.AttemptRelease()) {
+                if (_playerCarry.AttemptRelease(isFirstAttempt: justPressedInteract)) {
                     _interactBuffer.Stop();
                 } else if (_currentlyAimedInteractable is { IsInteractable: true }) {
                     _currentlyAimedInteractable.Interact();
