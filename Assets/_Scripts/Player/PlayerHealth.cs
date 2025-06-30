@@ -1,4 +1,5 @@
-﻿using GravityGame.SaveAndLoadSystem;
+﻿using System.Collections;
+using GravityGame.SaveAndLoadSystem;
 using GravityGame.Utils;
 using UnityEngine;
 using UnityEngine.Events;
@@ -15,6 +16,9 @@ namespace GravityGame.Player
         public static float MaxHealth => 100f;
         public float CurrentHealth { get; private set; }
         bool IsDead => CurrentHealth <= 0;
+
+        const float DeathFadeDuration = 1.0f;
+        float _deathFadeAlpha;
 
         void Awake() => OnEnable();
 
@@ -40,8 +44,30 @@ namespace GravityGame.Player
 
         void Die()
         {
+            if (_deathFadeAlpha > 0f) return;
+            StartCoroutine(FadeToBlackThenRespawn());
+        }
+
+        IEnumerator FadeToBlackThenRespawn()
+        {
+            float timer = 0f;
+            while (timer < DeathFadeDuration) {
+                _deathFadeAlpha = Mathf.Lerp(0f, 1f, timer / DeathFadeDuration);
+                timer += Time.deltaTime;
+                yield return null;
+            }
+
             OnPlayerDied?.Invoke();
             SaveAndLoad.Instance.Load();
+            _deathFadeAlpha = 0f;
+        }
+
+        void OnGUI()
+        {
+            if (_deathFadeAlpha > 0f) {
+                GUI.color = new Color(0, 0, 0, _deathFadeAlpha);
+                GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), Texture2D.whiteTexture);
+            }
         }
     }
 }
