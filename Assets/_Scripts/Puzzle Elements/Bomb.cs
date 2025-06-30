@@ -120,10 +120,9 @@ namespace GravityGame.Puzzle_Elements
 
         void HandleEnemyImpact(SpiderCarrierWalker enemy, float distance)
         {
-            var enemyRb = enemy.GetComponentInParent<Rigidbody>();
+            var enemyRb = enemy.GetComponent<Rigidbody>();
             if (distance <= _explosionRadius) {
-                // TODO FS: Change to damage enemy when enemy health is implemented)
-                Destroy(enemy.gameObject);
+                enemy.ForceDropCarryable();
                 enemyRb.AddExplosionForce(_pushbackForce, transform.position, _explosionRadius, 0f, ForceMode.Impulse);
             } else if (_pushbackRadius > 0 && distance <= _pushbackRadius) {
                 enemyRb.AddExplosionForce(_pushbackForce, transform.position, _pushbackRadius, 0f, ForceMode.Impulse);

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using GravityGame.Gravity;
 using GravityGame.Puzzle_Elements;
 using log4net.Appender;
 using UnityEngine;
@@ -9,29 +10,30 @@ namespace GravityGame.AI
     [RequireComponent(typeof(NavMeshAgent))]
     public class SpiderCarrierWalker : MonoBehaviour
     {
-        [Tooltip("Set your floor & wall waypoints here in order.")]
         [SerializeField] Transform _waypointParent;
         
         [SerializeField] Transform _carrySocket;
         [SerializeField] float _detectionRadius = 2f;
         
-        [Tooltip("Speed at which the spider rotates to face its next move.")]
         [SerializeField] float _rotationSpeed = 5f;
 
-        [Tooltip("Maximum distance to raycast for detecting surface normals.")]
         [SerializeField] float _normalRayDistance = 1f;
 
-        [Tooltip("Layers that define walkable surfaces (floor + walls).")]
         [SerializeField] LayerMask _surfaceMask = ~0;
         [SerializeField] LayerMask _carryableMask = ~0;
-
+        [SerializeField] float _ignoreSeconds = 3f;
+        Dictionary<GameObject, float> _ignoreUntil = new();
+        GravityModifier _carriedGravity;
+        FixedJoint _carryJoint;
+        
         private NavMeshAgent _agent;
-        SphereCollider _detectionCollider;
+        SphereCollider _detectionTrigger;
         private List<Transform> _waypoints = new List<Transform>();
         private int _currentIndex = 0;
         private int _direction = 1; // +1 = forward, -1 = backward
         
         private Carryable _targetCarryable;
+        private Carryable _carriedCarryable;
         bool _isApproachingObject = false;
         bool _isCarrying = false;
         float _originalStoppingDistance;
@@ -42,10 +44,12 @@ namespace GravityGame.AI
             _agent.updatePosition = true;
             _agent.updateRotation = false;
             
-            _detectionCollider = GetComponent<SphereCollider>();
-            _detectionCollider.isTrigger = true;
-            _detectionCollider.radius = _detectionRadius;
-            _detectionCollider.center = Vector3.zero;
+            _ignoreUntil.Clear();
+            
+            _detectionTrigger = GetComponent<SphereCollider>();
+            _detectionTrigger.isTrigger = true;
+            _detectionTrigger.radius = _detectionRadius;
+            _detectionTrigger.center = Vector3.zero;
             
             _originalStoppingDistance = _agent.stoppingDistance;
 
@@ -60,10 +64,10 @@ namespace GravityGame.AI
 
         void OnValidate()
         {
-            if (_detectionCollider == null)
-                _detectionCollider = GetComponent<SphereCollider>();
-            if (_detectionCollider != null)
-                _detectionCollider.radius = _detectionRadius;
+            if (_detectionTrigger == null)
+                _detectionTrigger = GetComponent<SphereCollider>();
+            if (_detectionTrigger != null)
+                _detectionTrigger.radius = _detectionRadius;
         }
 
         void Start()
@@ -74,6 +78,8 @@ namespace GravityGame.AI
 
         void Update()
         {
+            if (_isCarrying && _carriedGravity != null && !IsDefaultGravity(_carriedGravity.GravityDirection))
+                DropCarried();
             if (_isApproachingObject && _targetCarryable != null) {
                 if (!_agent.pathPending && _agent.remainingDistance <= _agent.stoppingDistance) {
                     PickUp();
@@ -94,15 +100,19 @@ namespace GravityGame.AI
 
         private void PickUp()
         {
-            _targetCarryable.transform.SetParent(_carrySocket);
-            _targetCarryable.transform.localPosition = Vector3.zero;
-            _targetCarryable.transform.localRotation = Quaternion.identity;
-            _targetCarryable.GetComponent<Rigidbody>().isKinematic = true;
+            Transform objT = _targetCarryable.transform;
+            objT.SetParent(_carrySocket, true);
+            objT.localPosition = Vector3.zero;
+            objT.localRotation = Quaternion.identity;
+            objT.GetComponent<Rigidbody>().isKinematic = true;
+
+            _carriedCarryable = _targetCarryable;
+            _carriedGravity = _carriedCarryable.GetComponent<GravityModifier>();
             _isCarrying = true;
             _isApproachingObject = false;
-            _agent.stoppingDistance = _originalStoppingDistance;
             _targetCarryable = null;
             
+            _agent.stoppingDistance = _originalStoppingDistance;
             _agent.SetDestination(_waypoints[_currentIndex].position);
         }
         
@@ -126,34 +136,60 @@ namespace GravityGame.AI
         private Vector3 SampleSurfaceNormal(Vector3 moveDir)
         {
             RaycastHit hit;
-            if (Physics.Raycast(transform.position, -moveDir, out hit,
-                    _normalRayDistance, _surfaceMask))
-            {
+            if (Physics.Raycast(transform.position, -moveDir, out hit, _normalRayDistance, _surfaceMask))
                 return hit.normal;
-            }
-            if (Physics.Raycast(transform.position, Vector3.down, out hit,
-                    _normalRayDistance, _surfaceMask))
-            {
+            if (Physics.Raycast(transform.position, Vector3.down, out hit, _normalRayDistance, _surfaceMask))
                 return hit.normal;
-            }
             return Vector3.up;
         }
 
         private void OnTriggerEnter(Collider other)
         {
-            if (!_isCarrying && !_isApproachingObject) {
-                if (((1 << other.gameObject.layer) & _carryableMask) != 0) {
-                    Carryable carry = other.gameObject.GetComponent<Carryable>();
-                    if (carry != null) {
-                        _targetCarryable = carry;
-                        _isApproachingObject = true;
-                        //Vector3 dir = (carry.transform.position - transform.position).normalized;
-                        //Vector3 approachPos = carry.transform.position - dir * _agent.stoppingDistance;
-                        _agent.stoppingDistance = 1f;
-                        _agent.SetDestination(carry.transform.position);
-                    }
+            if (_isCarrying || _isApproachingObject)
+                return;
+            if (((1 << other.gameObject.layer) & _carryableMask) == 0)
+                return;
+            GameObject go = other.gameObject;
+            if (_ignoreUntil.TryGetValue(go, out float t) && Time.time < t)
+                return;
+            var carry = go.GetComponent<Carryable>();
+            if (carry == null)
+                return;
+            var gm = go.GetComponent<GravityModifier>();
+            if (gm != null && !IsDefaultGravity(gm.GravityDirection))
+                return;
+            _targetCarryable = carry;
+            _isApproachingObject = true;
+            _agent.stoppingDistance = 1f;
+            _agent.SetDestination(carry.transform.position);
+        }
+
+        void DropCarried()
+        {
+            if (_carriedCarryable != null) {
+                _carriedCarryable.transform.SetParent(null, true);
+                Rigidbody rb = _carriedCarryable.GetComponent<Rigidbody>();
+                if (rb != null) {
+                    rb.isKinematic = false;
                 }
+                GameObject go = _carriedCarryable.gameObject;
+                _ignoreUntil[go] = Time.time + _ignoreSeconds;
+                
+                _carriedCarryable = null;
+                _isCarrying = false;
+                _carriedGravity = null;
+                
+                _agent.stoppingDistance = _originalStoppingDistance;
+                _agent.SetDestination(_waypoints[_currentIndex].position);
             }
         }
+
+        public void ForceDropCarryable()
+        {
+            if (_isCarrying || _carriedCarryable != null)
+                DropCarried();
+        }
+        
+        bool IsDefaultGravity(Vector3 dir) => Vector3.Angle(dir.normalized, Vector3.down) < 1f;
     }
 }
