@@ -119,11 +119,6 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!4 &867233074 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 4715745792198065692, guid: 6d797a3af3ab1c94fa9671fac86dd6c5, type: 3}
-  m_PrefabInstance: {fileID: 1206160268}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &943329427
 GameObject:
   m_ObjectHideFlags: 0
@@ -177,54 +172,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 283067789367325205, guid: 6d797a3af3ab1c94fa9671fac86dd6c5, type: 3}
-      propertyPath: m_Enabled
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 283067789367325205, guid: 6d797a3af3ab1c94fa9671fac86dd6c5, type: 3}
-      propertyPath: carrySocket
-      value: 
-      objectReference: {fileID: 867233074}
-    - target: {fileID: 283067789367325205, guid: 6d797a3af3ab1c94fa9671fac86dd6c5, type: 3}
-      propertyPath: _detectRadius
-      value: 3.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 283067789367325205, guid: 6d797a3af3ab1c94fa9671fac86dd6c5, type: 3}
-      propertyPath: _detectForward
-      value: 2.05
-      objectReference: {fileID: 0}
     - target: {fileID: 1048923521071570241, guid: 6d797a3af3ab1c94fa9671fac86dd6c5, type: 3}
       propertyPath: m_Name
       value: SpiderCarrier (1)
       objectReference: {fileID: 0}
-    - target: {fileID: 1048923521071570241, guid: 6d797a3af3ab1c94fa9671fac86dd6c5, type: 3}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 2429256306779573535, guid: 6d797a3af3ab1c94fa9671fac86dd6c5, type: 3}
-      propertyPath: m_Speed
-      value: 3
-      objectReference: {fileID: 0}
-    - target: {fileID: 2429256306779573535, guid: 6d797a3af3ab1c94fa9671fac86dd6c5, type: 3}
-      propertyPath: m_Enabled
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 3620783818044481209, guid: 6d797a3af3ab1c94fa9671fac86dd6c5, type: 3}
-      propertyPath: m_Enabled
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3620783818044481209, guid: 6d797a3af3ab1c94fa9671fac86dd6c5, type: 3}
-      propertyPath: WaypointsRoot
-      value: 
-      objectReference: {fileID: 2950253383699510651}
-    - target: {fileID: 4685033414570588993, guid: 6d797a3af3ab1c94fa9671fac86dd6c5, type: 3}
-      propertyPath: m_Enabled
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4685033414570588993, guid: 6d797a3af3ab1c94fa9671fac86dd6c5, type: 3}
-      propertyPath: _waypointsRoot
-      value: 
-      objectReference: {fileID: 2950253383699510651}
     - target: {fileID: 6245572535198503719, guid: 6d797a3af3ab1c94fa9671fac86dd6c5, type: 3}
       propertyPath: m_LocalPosition.x
       value: -4.27
@@ -265,20 +216,14 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 7437308235850982932, guid: 6d797a3af3ab1c94fa9671fac86dd6c5, type: 3}
-      propertyPath: m_Enabled
-      value: 0
-      objectReference: {fileID: 0}
+    - target: {fileID: 6957728184661553550, guid: 6d797a3af3ab1c94fa9671fac86dd6c5, type: 3}
+      propertyPath: _waypointParent
+      value: 
+      objectReference: {fileID: 2950253383699510651}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 1048923521071570241, guid: 6d797a3af3ab1c94fa9671fac86dd6c5, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1592464364}
-    - targetCorrespondingSourceObject: {fileID: 1048923521071570241, guid: 6d797a3af3ab1c94fa9671fac86dd6c5, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1592464365}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 6d797a3af3ab1c94fa9671fac86dd6c5, type: 3}
 --- !u!1 &1288511669
 GameObject:
@@ -337,55 +282,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1592464357 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 1048923521071570241, guid: 6d797a3af3ab1c94fa9671fac86dd6c5, type: 3}
-  m_PrefabInstance: {fileID: 1206160268}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &1592464364
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1592464357}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4a4191eeadb64630bfc8d60dbefd443b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _waypointParent: {fileID: 2950253383699510651}
-  _carrySocket: {fileID: 867233074}
-  _detectionRadius: 3
-  _rotationSpeed: 5
-  _normalRayDistance: 1
-  _surfaceMask:
-    serializedVersion: 2
-    m_Bits: 1
-  _carryableMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
---- !u!135 &1592464365
-SphereCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1592464357}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Radius: 3
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &1809289686
 GameObject:
   m_ObjectHideFlags: 0
