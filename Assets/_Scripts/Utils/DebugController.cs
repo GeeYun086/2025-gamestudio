@@ -1,6 +1,8 @@
 ﻿using GravityGame.CheckpointSystem;
 using GravityGame.Player;
+using GravityGame.SaveAndLoadSystem;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace GravityGame.Utils
 {
@@ -8,9 +10,11 @@ namespace GravityGame.Utils
     {
         const KeyCode NoclipToggleKey = KeyCode.F1;
         const KeyCode SpawnGravityObjectKey = KeyCode.F2;
-        const KeyCode TeleportToCheckpointKey = KeyCode.F3;
+        const KeyCode ReloadSceneKey = KeyCode.F3;
         const KeyCode HealPlayerKey = KeyCode.F4;
         const KeyCode DamagePlayerKey = KeyCode.F5;
+        const KeyCode SaveKey = KeyCode.C;
+        const KeyCode LoadKey = KeyCode.V;
 
         const float NoclipSpeed = 15.0f;
 
@@ -48,8 +52,8 @@ namespace GravityGame.Utils
             if (Input.GetKeyDown(SpawnGravityObjectKey) && _debugGravityObject && _mainCamera)
                 SpawnGravityObject();
 
-            if (Input.GetKeyDown(TeleportToCheckpointKey) && _playerObject) {
-                TeleportPlayerToActiveCheckpoint();
+            if (Input.GetKeyDown(ReloadSceneKey)) {
+                SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
             }
 
             if (Input.GetKeyDown(HealPlayerKey)) {
@@ -58,6 +62,11 @@ namespace GravityGame.Utils
 
             if (Input.GetKeyDown(DamagePlayerKey)) {
                 PlayerHealth.Instance.TakeDamage(20f);
+            }
+
+            if (Input.GetKey(KeyCode.LeftControl)) {
+                if(Input.GetKeyDown(SaveKey)) SaveAndLoad.Instance.Save();
+                if(Input.GetKeyDown(LoadKey)) SaveAndLoad.Instance.Load();    
             }
         }
 
@@ -101,7 +110,5 @@ namespace GravityGame.Utils
             }
             Instantiate(_debugGravityObject, spawnPos, Quaternion.identity);
         }
-
-        static void TeleportPlayerToActiveCheckpoint() => CheckpointController.RespawnPlayer();
     }
 }
