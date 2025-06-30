@@ -18,6 +18,7 @@ namespace GravityGame.Utils
         {
             get {
                 if (!_instance) _instance = FindFirstObjectByType<TSelf>();
+                if (!_instance) _instance = new GameObject(typeof(TSelf).Name).AddComponent<TSelf>();
                 return _instance;
             }
         }
