@@ -5,8 +5,8 @@ using UnityEngine;
 namespace GravityGame._Scripts.Audio
 {
     /// <summary>
-    /// This class manages the background music and the transitions between different background tracks.
-    /// The script has to be attached on a GameObject with two audio sources
+    ///     This class manages the background music and the transitions between different background tracks.
+    ///     The script has to be attached on a GameObject with two audio sources
     /// </summary>
     public class AmbientMusicManager : MonoBehaviour
     {
@@ -16,10 +16,10 @@ namespace GravityGame._Scripts.Audio
 
         // TODO connect this value to the music value set in the settings
         [SerializeField] [Range(0, 1)] float _ambientDefaultVolume;
-        
+
         AudioSource _audioSource1;
         AudioSource _audioSource2;
-        
+
         // Start is called once before the first execution of Update after the MonoBehaviour is created
         void Start()
         {
@@ -58,18 +58,18 @@ namespace GravityGame._Scripts.Audio
 
         IEnumerator CrossfadeAudioSources(AudioSource activeSource, AudioSource targetSource)
         {
-            var fadeDuration = _transitionTime / 2;
-            var fadeInDelay = (_transitionTime - _crossfadeOverlapTime) / 2;
-            
+            float fadeDuration = _transitionTime / 2;
+            float fadeInDelay = (_transitionTime - _crossfadeOverlapTime) / 2;
+
             targetSource.volume = 0;
             targetSource.Play();
-            
+
             float activeSourceVolumePercentage = 0;
             float targetSourceVolumePercentage = 0;
             float elapsedTime = 0;
             while (elapsedTime < _transitionTime) {
                 elapsedTime += Time.deltaTime;
-                
+
                 if (activeSource.volume > 0) {
                     activeSource.volume = Mathf.Lerp(_ambientDefaultVolume, 0, activeSourceVolumePercentage);
                     activeSourceVolumePercentage += Time.deltaTime / fadeDuration;
@@ -89,12 +89,12 @@ namespace GravityGame._Scripts.Audio
         {
             audioSource.volume = 0;
             audioSource.Play();
-            
+
             float percentage = 0;
             while (audioSource.volume < _ambientDefaultVolume) {
                 audioSource.volume = Mathf.Lerp(0, _ambientDefaultVolume, percentage);
                 percentage += Time.deltaTime / _transitionTime;
-                
+
                 yield return null;
             }
         }
