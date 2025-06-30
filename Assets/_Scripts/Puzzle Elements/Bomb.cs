@@ -131,7 +131,11 @@ namespace GravityGame.Puzzle_Elements
 
         void HandleBreakableImpact(Breakable breakable, float distance)
         {
-            if (distance <= _explosionRadius) breakable.Break();
+            if (distance <= _explosionRadius) {
+                var velocity = breakable.transform.position - transform.position;
+                velocity = velocity.normalized * 30f;
+                breakable.Break(transform.position, velocity);
+            }
         }
 
         void HandleRigidbodyImpact(Rigidbody rb, float distance)
