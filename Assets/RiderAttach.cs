@@ -1,4 +1,6 @@
+using System;
 using UnityEngine;
+using UnityEngine.Rendering.Universal;
 
 namespace GravityGame
 {
@@ -7,6 +9,17 @@ namespace GravityGame
     {
         [Tooltip("Drag in your spider's carrySocket here.")]
         [SerializeField] Transform _carrySocket;
+        GameObject _player;
+
+        void Update()
+        {
+            if(_player != null)
+                _player.transform.localPosition = Vector3.zero;
+            if (Input.GetButtonDown("Jump") && _player != null) {
+                _player.transform.SetParent(null, true);
+                _player = null;
+            }
+        }
 
         void Reset()
         {
@@ -18,9 +31,10 @@ namespace GravityGame
         {
             if (other.CompareTag("Player"))
             {
-                other.transform.SetParent(_carrySocket, true);
-                other.transform.localPosition = Vector3.zero;
-                other.transform.localRotation = Quaternion.identity;
+                _player = other.gameObject;
+                _player.transform.SetParent(_carrySocket, true);
+                _player.transform.localPosition = Vector3.zero;
+                _player.transform.localRotation = Quaternion.identity;
             }
         }
 
