@@ -207,9 +207,8 @@ GameObject:
   m_Component:
   - component: {fileID: 6245572535198503719}
   - component: {fileID: 2429256306779573535}
-  - component: {fileID: 3620783818044481209}
-  - component: {fileID: 283067789367325205}
-  - component: {fileID: 7437308235850982932}
+  - component: {fileID: 6957728184661553550}
+  - component: {fileID: 8362038230200651538}
   m_Layer: 0
   m_Name: SpiderCarrier
   m_TagString: Untagged
@@ -249,7 +248,7 @@ NavMeshAgent:
   m_Enabled: 1
   m_AgentTypeID: 0
   m_Radius: 0.5
-  m_Speed: 3.5
+  m_Speed: 3
   m_Acceleration: 8
   avoidancePriority: 50
   m_AngularSpeed: 120
@@ -261,7 +260,7 @@ NavMeshAgent:
   m_BaseOffset: 0.65
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
---- !u!114 &3620783818044481209
+--- !u!114 &6957728184661553550
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -270,94 +269,41 @@ MonoBehaviour:
   m_GameObject: {fileID: 1048923521071570241}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 453aa452a7b9ca04a98b32de1383bae5, type: 3}
+  m_Script: {fileID: 11500000, guid: 4a4191eeadb64630bfc8d60dbefd443b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  WaypointsRoot: {fileID: 0}
-  SelectedMode: 0
-  WaitAtEnds: 0
-  WaitAtPoints: 0
---- !u!114 &283067789367325205
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1048923521071570241}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2ec0235e20e551540b18db10d54456c2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _waitBeforePickup: 0.35
-  _moveTime: 0.25
-  _heightCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  _targetTag: Carryable
-  _lookAhead: 2
-  _detectionRadius: 2
-  _grabDistance: 1.5
+  _waypointParent: {fileID: 0}
   _carrySocket: {fileID: 4715745792198065692}
---- !u!114 &7437308235850982932
-MonoBehaviour:
+  _detectionRadius: 3
+  _rotationSpeed: 5
+  _normalRayDistance: 1
+  _surfaceMask:
+    serializedVersion: 2
+    m_Bits: 1
+  _carryableMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+--- !u!135 &8362038230200651538
+SphereCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1048923521071570241}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4022a5a44d5a8a44492fdfa5691aae40, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _hangTime: 0.35
-  _climbTime: 1.25
-  _ease:
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
     serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Radius: 3
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &2487129246002527110
 GameObject:
   m_ObjectHideFlags: 0
