@@ -159,6 +159,7 @@ namespace GravityGame.AI
             if (gm != null && !IsDefaultGravity(gm.GravityDirection))
                 return;
             _targetCarryable = carry;
+            GetComponentInChildren<RiderAttach>().CanAttach = true;
             _isApproachingObject = true;
             _agent.stoppingDistance = 1f;
             _agent.SetDestination(carry.transform.position);
@@ -178,6 +179,8 @@ namespace GravityGame.AI
                 _carriedCarryable = null;
                 _isCarrying = false;
                 _carriedGravity = null;
+                
+                GetComponentInChildren<RiderAttach>().CanAttach = false;
                 
                 _agent.stoppingDistance = _originalStoppingDistance;
                 _agent.SetDestination(_waypoints[_currentIndex].position);

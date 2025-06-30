@@ -1,6 +1,6 @@
 using System;
 using UnityEngine;
-using UnityEngine.Rendering.Universal;
+using UnityEngine.Rendering;
 
 namespace GravityGame
 {
@@ -10,6 +10,7 @@ namespace GravityGame
         [Tooltip("Drag in your spider's carrySocket here.")]
         [SerializeField] Transform _carrySocket;
         GameObject _player;
+        public bool CanAttach = false;
 
         void Update()
         {
@@ -29,7 +30,7 @@ namespace GravityGame
 
         void OnTriggerEnter(Collider other)
         {
-            if (other.CompareTag("Player"))
+            if (CanAttach && other.CompareTag("Player"))
             {
                 _player = other.gameObject;
                 _player.transform.SetParent(_carrySocket, true);
