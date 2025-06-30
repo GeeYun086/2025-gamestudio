@@ -149,7 +149,7 @@ namespace GravityGame.AI
                         _isApproachingObject = true;
                         //Vector3 dir = (carry.transform.position - transform.position).normalized;
                         //Vector3 approachPos = carry.transform.position - dir * _agent.stoppingDistance;
-                        _agent.stoppingDistance = 0.5f;
+                        _agent.stoppingDistance = 1f;
                         _agent.SetDestination(carry.transform.position);
                     }
                 }

@@ -92,7 +92,7 @@ namespace GravityGame.Puzzle_Elements
                     continue;
                 }
 
-                var enemy = hitColliders[i].GetComponentInParent<NavMeshPatrol>();
+                var enemy = hitColliders[i].GetComponentInParent<SpiderCarrierWalker>();
                 if (enemy) {
                     HandleEnemyImpact(enemy, distance);
                     continue;
@@ -118,7 +118,7 @@ namespace GravityGame.Puzzle_Elements
             }
         }
 
-        void HandleEnemyImpact(NavMeshPatrol enemy, float distance)
+        void HandleEnemyImpact(SpiderCarrierWalker enemy, float distance)
         {
             var enemyRb = enemy.GetComponentInParent<Rigidbody>();
             if (distance <= _explosionRadius) {
