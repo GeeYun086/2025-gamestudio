@@ -53,10 +53,10 @@ namespace GravityGame.PuzzleElements
         void OnEnable() => UpdateBeamAndCollider();
         void Update() => UpdateBeamAndCollider();
 
-        //void OnCollisionEnter(Collision collision)
-        //{
-        //    TryDamageAndKnockback(collision.collider);
-        //}
+        void OnCollisionEnter(Collision collision)
+        {
+            TryDamageAndKnockback(collision.collider);
+        }
 
         void OnCollisionStay(Collision collision)
         {
@@ -79,7 +79,10 @@ namespace GravityGame.PuzzleElements
             var playerRb = other.GetComponent<Rigidbody>();
             if (playerRb != null) {
                 // Push away from the center of the beam
-                var knockbackDir = (other.transform.position - transform.position).normalized;
+                var beamDirection = transform.parent.forward;
+                var pushDir = (other.transform.position - transform.position).normalized;
+                var projectedPushDir = Vector3.ProjectOnPlane(pushDir, beamDirection).normalized;
+                var knockbackDir = projectedPushDir;
                 knockbackDir.y = 0f; // Keep it horizontal
                 playerRb.AddForce(knockbackDir * _knockbackForce, ForceMode.Impulse);
                 Debug.Log($"[LaserBeamCylinder] Knockback applied to player: {knockbackDir * _knockbackForce}");
