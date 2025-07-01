@@ -21,18 +21,13 @@ namespace GravityGame.Player
         const float RegenerationRate = 20f;
         const float RegenerationDelay = 2f;
 
-        static readonly Color EffectColor = new(1f, 0f, 0f, 0.6f);
-        const float IndicatorHeight = 100f;
-
         float _deathFadeAlpha;
         float _timeSinceLastDamage;
         Texture2D _vignetteTexture;
-        Texture2D _healthIndicatorTexture;
 
         void Awake()
         {
             CreateVignetteTexture();
-            CreateHealthIndicatorTexture();
             OnEnable();
         }
 
@@ -96,46 +91,16 @@ namespace GravityGame.Player
             }
 
             float damageAlpha = Mathf.Max(1f - CurrentHealth / MaxHealth, Mathf.Max(0f, 1f - _timeSinceLastDamage / RegenerationDelay));
-            if (damageAlpha > 0f) {
-                GUI.color = new Color(EffectColor.r, EffectColor.g, EffectColor.b, EffectColor.a * damageAlpha);
-                DrawDamagedHealthIndicator();
-                DrawVignette();
-
-                GUI.color = Color.white;
+            if (damageAlpha > 0f && _vignetteTexture) {
+                GUI.color = new Color(255, 0, 0, 0.6f * damageAlpha);
+                GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), _vignetteTexture);
             }
-        }
-
-        void DrawVignette()
-        {
-            if (_vignetteTexture) GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), _vignetteTexture);
-        }
-
-        void DrawDamagedHealthIndicator()
-        {
-            if (!_healthIndicatorTexture) return;
-            float indicatorWidth = Screen.width * Mathf.Clamp01(CurrentHealth / MaxHealth);
-            GUI.DrawTexture(
-                new Rect(0, Screen.height - IndicatorHeight, indicatorWidth, IndicatorHeight), _healthIndicatorTexture, ScaleMode.StretchToFill
-            );
         }
 
         void HandleHealthRegeneration()
         {
             _timeSinceLastDamage += Time.deltaTime;
             if (_timeSinceLastDamage >= RegenerationDelay && CurrentHealth < MaxHealth) Heal(RegenerationRate * Time.deltaTime);
-        }
-
-        void CreateHealthIndicatorTexture()
-        {
-            const int indicatorHeight = 64;
-            _healthIndicatorTexture = new Texture2D(1, indicatorHeight, TextureFormat.RGBA32, false) {
-                name = "HealthIndicator",
-                wrapMode = TextureWrapMode.Clamp
-            };
-
-            for (int y = 0; y < indicatorHeight; y++)
-                _healthIndicatorTexture.SetPixel(0, y, new Color(1, 1, 1, Mathf.Pow(1.0f - y / (float)indicatorHeight, 1.5f)));
-            _healthIndicatorTexture.Apply();
         }
 
         void CreateVignetteTexture()
