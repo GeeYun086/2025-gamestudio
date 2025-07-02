@@ -32,7 +32,7 @@ namespace GravityGame.Utils
             };
             DebugElement.MarkDirtyRepaint();
         }
-        
+
         public static void DrawCube(
             Vector3 center,
             float size,
@@ -47,14 +47,14 @@ namespace GravityGame.Utils
             var corners = new Vector3[8];
 
             corners[0] = center + new Vector3(-halfSize, -halfSize, -halfSize); // LBB
-            corners[1] = center + new Vector3(halfSize, -halfSize, -halfSize);  // RBB
-            corners[2] = center + new Vector3(halfSize, -halfSize, halfSize);   // RBF
-            corners[3] = center + new Vector3(-halfSize, -halfSize, halfSize);  // LBF
+            corners[1] = center + new Vector3(halfSize, -halfSize, -halfSize); // RBB
+            corners[2] = center + new Vector3(halfSize, -halfSize, halfSize); // RBF
+            corners[3] = center + new Vector3(-halfSize, -halfSize, halfSize); // LBF
 
-            corners[4] = center + new Vector3(-halfSize, halfSize, -halfSize);  // LTB
-            corners[5] = center + new Vector3(halfSize, halfSize, -halfSize);   // RTB
-            corners[6] = center + new Vector3(halfSize, halfSize, halfSize);    // RTF
-            corners[7] = center + new Vector3(-halfSize, halfSize, halfSize);   // LTF
+            corners[4] = center + new Vector3(-halfSize, halfSize, -halfSize); // LTB
+            corners[5] = center + new Vector3(halfSize, halfSize, -halfSize); // RTB
+            corners[6] = center + new Vector3(halfSize, halfSize, halfSize); // RTF
+            corners[7] = center + new Vector3(-halfSize, halfSize, halfSize); // LTF
 
             // Bottom face
             Debug.DrawLine(corners[0], corners[1], cubeColor, duration);
@@ -185,6 +185,17 @@ namespace GravityGame.Utils
             painter.MoveTo(targetPosition);
             painter.LineTo(arrowHeadPoint2);
             painter.Stroke();
+        }
+
+        public static void DrawGizmoCube(Vector3 position, Quaternion rotation, Vector3 scale, bool filled = false)
+        {
+            Gizmos.matrix = Matrix4x4.TRS(position, rotation, scale);
+            if (filled) {
+                Gizmos.DrawCube(Vector3.zero, Vector3.one);
+            } else {
+                Gizmos.DrawWireCube(Vector3.zero, Vector3.one);
+            }
+            Gizmos.matrix = Matrix4x4.identity;
         }
     }
 }

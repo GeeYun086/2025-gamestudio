@@ -1,32 +1,34 @@
-﻿using UnityEngine;
+﻿using System;
+using GravityGame.Gravity;
+using GravityGame.SaveAndLoadSystem;
+using GravityGame.Utils;
+using UnityEngine;
 
 namespace GravityGame.Puzzle_Elements
 {
     /// <summary>
-    /// Moves (and rotates) a platform back and forth between its initial start position
-    /// and a specified target position by controlling its velocity.
-    /// /// The platform only moves when IsPowered is true.
+    ///     Moves (and rotates) a platform back and forth between its initial start position
+    ///     and a specified target position by controlling its velocity.
+    ///     /// The platform only moves when IsPowered is true.
     /// </summary>
-    [RequireComponent(typeof(Rigidbody))]
-    public class IndependentMovingPlatform : RedstoneComponent
+    public class IndependentMovingPlatform : RedstoneComponent, ISaveData<IndependentMovingPlatform.SaveData>
     {
-        [SerializeField] Vector3 _endPosition = new(5, 0, 0);
-        [SerializeField] Vector3 _endRotation = new(0, 90, 0);
+        [SerializeField] Transform _startPoint;
+        [SerializeField] Transform _endPoint;
+        [SerializeField] Rigidbody _rigidbody;
+
         [SerializeField] float _speed = 5f;
+        [SerializeField] Behavior _behavior;
 
-        const float ReachThreshold = 0.1f;
+        const float ReachThreshold = 0.01f;
 
-        Rigidbody _rigidbody;
-        Vector3 _startPoint;
-        Quaternion _startRotation;
-        Vector3 _currentDestination;
-        bool _isMovingToEnd;
-        float _pathDistance;
+        enum Behavior { Looping, WhenPoweredLooping, WhenPoweredMoveToB }
+
         bool _isPowered;
+        bool _isMovingToEnd;
 
         void Awake()
         {
-            _rigidbody = GetComponent<Rigidbody>();
             _rigidbody.useGravity = false;
             _rigidbody.constraints = RigidbodyConstraints.FreezeRotation;
         }
@@ -36,52 +38,77 @@ namespace GravityGame.Puzzle_Elements
             get => _isPowered;
             set {
                 _isPowered = value;
-                if (!_isPowered && _rigidbody) _rigidbody.linearVelocity = Vector3.zero;
+                if (_behavior is Behavior.WhenPoweredMoveToB)
+                    _isMovingToEnd = _isPowered;
             }
-        }
-
-        void Start()
-        {
-            _startPoint = _rigidbody.position;
-            _startRotation = _rigidbody.rotation;
-            _currentDestination = _endPosition;
-            _isMovingToEnd = true;
-            _pathDistance = Vector3.Distance(_startPoint, _endPosition);
         }
 
         void FixedUpdate()
         {
-            if (!IsPowered) return;
-            if (Vector3.Distance(_rigidbody.position, _currentDestination) < ReachThreshold) {
-                _rigidbody.MovePosition(_currentDestination);
-                _rigidbody.MoveRotation(_isMovingToEnd ? Quaternion.Euler(_endRotation) : _startRotation);
-                SwitchDirection();
+            var startPos = _startPoint.position;
+            var startRot = _startPoint.rotation;
+            var endPos = _endPoint.position;
+            var endRot = _endPoint.rotation;
+
+            var destination = _isMovingToEnd ? endPos : startPos;
+            bool hasReachedDestination = Vector3.Distance(_rigidbody.position, destination) < ReachThreshold;
+            if (hasReachedDestination) {
+                _rigidbody.MovePosition(destination);
+                _rigidbody.MoveRotation(_isMovingToEnd ? endRot : startRot);
+                if (_behavior is Behavior.Looping or Behavior.WhenPoweredLooping) {
+                    SwitchDirection();
+                } else {
+                    _rigidbody.linearVelocity = Vector3.zero;
+                }
+            } else if (_behavior == Behavior.WhenPoweredLooping && !IsPowered) {
+                _rigidbody.linearVelocity = Vector3.zero;
             } else {
-                _rigidbody.linearVelocity = (_currentDestination - _rigidbody.position).normalized * _speed;
-                UpdateRotation();
+                // Update Position
+                var newPosition = Vector3.MoveTowards(_rigidbody.position, destination, _speed * Time.fixedDeltaTime);
+                _rigidbody.linearVelocity = (newPosition - _rigidbody.position) / Time.fixedDeltaTime;
+
+                // Update Rotation
+                float pathDistance = Vector3.Distance(startPos, endPos);
+                float t = Mathf.Clamp01(Vector3.Distance(_isMovingToEnd ? startPos : endPos, _rigidbody.position) / pathDistance);
+                var from = _isMovingToEnd ? startRot : endRot;
+                var to = _isMovingToEnd ? endRot : startRot;
+                _rigidbody.MoveRotation(Quaternion.Slerp(from, to, t));
             }
         }
 
-        void UpdateRotation()
-        {
-            float t = Mathf.Clamp01(Vector3.Distance(_isMovingToEnd ? _startPoint : _endPosition, _rigidbody.position) / _pathDistance);
+        void SwitchDirection() => _isMovingToEnd = !_isMovingToEnd;
 
-            var sourceRotation = _isMovingToEnd ? _startRotation : Quaternion.Euler(_endRotation);
-            var targetRotation = _isMovingToEnd ? Quaternion.Euler(_endRotation) : _startRotation;
-            _rigidbody.MoveRotation(Quaternion.Slerp(sourceRotation, targetRotation, t));
-        }
-
-        void SwitchDirection()
+        void OnDrawGizmos()
         {
-            _isMovingToEnd = !_isMovingToEnd;
-            _currentDestination = _isMovingToEnd ? _endPosition : _startPoint;
-        }
-
-        void OnDrawGizmosSelected()
-        {
+            if (_endPoint == null) return;
             Gizmos.color = Color.cyan;
-            Gizmos.DrawLine(transform.position, _endPosition);
-            Gizmos.DrawSphere(_endPosition, 0.25f);
+            Gizmos.DrawLine(_startPoint.position, _endPoint.position);
+            DebugDraw.DrawGizmoCube(_endPoint.position, _endPoint.rotation, _rigidbody.transform.lossyScale);
         }
+
+    #region Save and Load
+
+        [Serializable]
+        public struct SaveData
+        {
+            public bool IsMovingToEnd;
+            public Vector3 Position;
+        }
+
+        public SaveData Save() =>
+            new() {
+                IsMovingToEnd = _isMovingToEnd,
+                Position = _rigidbody.position
+            };
+
+        public void Load(SaveData data)
+        {
+            _rigidbody.MovePosition(data.Position);
+            _isMovingToEnd = data.IsMovingToEnd;
+        }
+
+        [field: SerializeField] public int SaveDataID { get; set; }
+
+    #endregion
     }
 }
