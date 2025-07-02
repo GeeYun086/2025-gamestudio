@@ -1,4 +1,5 @@
-﻿using GravityGame.Utils;
+﻿using GravityGame.SaveAndLoadSystem;
+using GravityGame.Utils;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -37,6 +38,10 @@ namespace GravityGame.Player
             CurrentHealth = Mathf.Min(CurrentHealth, MaxHealth);
         }
 
-        void Die() => OnPlayerDied?.Invoke();
+        void Die()
+        {
+            OnPlayerDied?.Invoke();
+            SaveAndLoad.Instance.Load();
+        }
     }
 }
