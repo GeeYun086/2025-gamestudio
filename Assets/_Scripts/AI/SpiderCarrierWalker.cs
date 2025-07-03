@@ -135,9 +135,6 @@ namespace GravityGame.AI
             _isApproachingObject = false;
             _targetCarryable = null;
             
-            Collider carriedCollider = _carriedCarryable.GetComponent<Collider>();
-            carriedCollider.enabled = true;
-            
             _carriedRb = _carriedCarryable.GetComponent<Rigidbody>();
             _carriedRb.useGravity = true;
             _carriedRb.freezeRotation = true;
@@ -190,7 +187,6 @@ namespace GravityGame.AI
                 return;
             _targetCarryable = carry;
             GetComponentInChildren<RiderAttach>().CanAttach = true;
-            //other.enabled = false;
             _isApproachingObject = true;
             _agent.stoppingDistance = 1f;
             _agent.SetDestination(carry.transform.position);
