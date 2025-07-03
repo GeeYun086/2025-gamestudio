@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using GravityGame.Gravity;
 using GravityGame.Puzzle_Elements;
@@ -37,6 +38,11 @@ namespace GravityGame.AI
         bool _isApproachingObject = false;
         bool _isCarrying = false;
         float _originalStoppingDistance;
+
+        Rigidbody _carriedRb;
+        SpringJoint _carrySpring;
+        [SerializeField] float _spring = 800f;
+        [SerializeField] float _damper = 50f;
 
         void Awake()
         {
@@ -98,19 +104,61 @@ namespace GravityGame.AI
             }
         }
 
+        void FixedUpdate()
+        {
+            if (_isCarrying && _carriedRb != null)
+            {
+                // 1) Position spring (unchanged)
+                Vector3 posError = _carrySocket.position - _carriedRb.position;
+                Vector3 posForce = posError * _spring - _carriedRb.linearVelocity * _damper;
+                _carriedRb.AddForce(posForce, ForceMode.Acceleration);
+
+                // 2) Compute target orientation on whatever surface we're on:
+                //    - Forward = spider's forward projected onto the surface plane
+                //    - Up      = sampled surface normal
+                Vector3 surfaceNormal = SampleSurfaceNormal(_agent.velocity.normalized);
+                Vector3 forwardOnPlane = Vector3.Cross(transform.right, surfaceNormal).normalized;
+                Quaternion targetRot = Quaternion.LookRotation(forwardOnPlane, surfaceNormal);
+
+                // 3) Find the quaternion error to rotate the cube from 
+                //    its current orientation into the target:
+                Quaternion qError = targetRot * Quaternion.Inverse(_carriedRb.rotation);
+                // 4) Convert that to angle-axis form:
+                qError.ToAngleAxis(out float angleDeg, out Vector3 axis);
+                if (angleDeg > 180f) angleDeg -= 360f;       // keep the shortest path
+                float angleRad = angleDeg * Mathf.Deg2Rad;
+
+                // 5) Apply a spring-damper torque along that axis:
+                Vector3 torque = axis.normalized * (angleRad * _spring)
+                                 - _carriedRb.angularVelocity * _damper;
+                _carriedRb.AddTorque(torque, ForceMode.Acceleration);
+            }
+        }
+
         private void PickUp()
         {
-            Transform objT = _targetCarryable.transform;
-            objT.SetParent(_carrySocket, true);
-            objT.localPosition = Vector3.zero;
-            objT.localRotation = Quaternion.identity;
-            objT.GetComponent<Rigidbody>().isKinematic = true;
-
+            //Transform objT = _targetCarryable.transform;
+            //objT.SetParent(_carrySocket, true);
+            //objT.localPosition = Vector3.zero;
+            //objT.localRotation = Quaternion.identity;
+            //objT.GetComponent<Rigidbody>().isKinematic = true;
+            
             _carriedCarryable = _targetCarryable;
             _carriedGravity = _carriedCarryable.GetComponent<GravityModifier>();
             _isCarrying = true;
             _isApproachingObject = false;
             _targetCarryable = null;
+            
+            _carriedRb = _carriedCarryable.GetComponent<Rigidbody>();
+            _carriedRb.useGravity = true;
+            /*var cubeRb = _carriedCarryable.GetComponent<Rigidbody>();
+            _carrySpring = cubeRb.gameObject.AddComponent<SpringJoint>();       
+            _carrySpring.connectedBody = GetComponent<Rigidbody>();
+            _carrySpring.autoConfigureConnectedAnchor = false;
+            _carrySpring.anchor = Vector3.zero;
+            _carrySpring.connectedAnchor = _carrySocket.localPosition;
+            _carrySpring.spring = _spring;
+            _carrySpring.damper = _damper;*/
             
             _agent.stoppingDistance = _originalStoppingDistance;
             _agent.SetDestination(_waypoints[_currentIndex].position);
@@ -172,6 +220,7 @@ namespace GravityGame.AI
                 Rigidbody rb = _carriedCarryable.GetComponent<Rigidbody>();
                 if (rb != null) {
                     rb.isKinematic = false;
+                    rb.useGravity = false;
                 }
                 GameObject go = _carriedCarryable.gameObject;
                 _ignoreUntil[go] = Time.time + _ignoreSeconds;

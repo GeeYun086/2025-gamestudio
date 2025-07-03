@@ -130,7 +130,7 @@ GameObject:
   - component: {fileID: 17704529}
   - component: {fileID: 17704528}
   m_Layer: 0
-  m_Name: PathParent
+  m_Name: SurfacePath
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -415,14 +415,57 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6957728184661553550, guid: 6d797a3af3ab1c94fa9671fac86dd6c5, type: 3}
+      propertyPath: _damper
+      value: 1000
+      objectReference: {fileID: 0}
+    - target: {fileID: 6957728184661553550, guid: 6d797a3af3ab1c94fa9671fac86dd6c5, type: 3}
+      propertyPath: _spring
+      value: 2000
+      objectReference: {fileID: 0}
+    - target: {fileID: 6957728184661553550, guid: 6d797a3af3ab1c94fa9671fac86dd6c5, type: 3}
       propertyPath: _waypointParent
       value: 
       objectReference: {fileID: 17704529}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1048923521071570241, guid: 6d797a3af3ab1c94fa9671fac86dd6c5, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1219702513}
   m_SourcePrefab: {fileID: 100100000, guid: 6d797a3af3ab1c94fa9671fac86dd6c5, type: 3}
+--- !u!1 &1219702508 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1048923521071570241, guid: 6d797a3af3ab1c94fa9671fac86dd6c5, type: 3}
+  m_PrefabInstance: {fileID: 1206160268}
+  m_PrefabAsset: {fileID: 0}
+--- !u!54 &1219702513
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1219702508}
+  serializedVersion: 4
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 1
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!1 &1288511669
 GameObject:
   m_ObjectHideFlags: 0
@@ -864,7 +907,7 @@ GameObject:
   - component: {fileID: 2950253383699510651}
   - component: {fileID: 6456338243104194804}
   m_Layer: 0
-  m_Name: PathParent
+  m_Name: WallPath
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
