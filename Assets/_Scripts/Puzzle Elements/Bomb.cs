@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using GravityGame.AI;
 using GravityGame.Gravity;
 using GravityGame.Player;
 using UnityEngine;
@@ -91,7 +92,7 @@ namespace GravityGame.Puzzle_Elements
                     continue;
                 }
 
-                var enemy = hitColliders[i].GetComponentInParent<NavMeshPatrol>();
+                var enemy = hitColliders[i].GetComponentInParent<SpiderCarrierWalker>();
                 if (enemy) {
                     HandleEnemyImpact(enemy, distance);
                     continue;
@@ -117,12 +118,11 @@ namespace GravityGame.Puzzle_Elements
             }
         }
 
-        void HandleEnemyImpact(NavMeshPatrol enemy, float distance)
+        void HandleEnemyImpact(SpiderCarrierWalker enemy, float distance)
         {
-            var enemyRb = enemy.GetComponentInParent<Rigidbody>();
+            var enemyRb = enemy.GetComponent<Rigidbody>();
             if (distance <= _explosionRadius) {
-                // TODO FS: Change to damage enemy when enemy health is implemented)
-                Destroy(enemy.gameObject);
+                enemy.ForceDropCarryable();
                 enemyRb.AddExplosionForce(_pushbackForce, transform.position, _explosionRadius, 0f, ForceMode.Impulse);
             } else if (_pushbackRadius > 0 && distance <= _pushbackRadius) {
                 enemyRb.AddExplosionForce(_pushbackForce, transform.position, _pushbackRadius, 0f, ForceMode.Impulse);
@@ -131,7 +131,11 @@ namespace GravityGame.Puzzle_Elements
 
         void HandleBreakableImpact(Breakable breakable, float distance)
         {
-            if (distance <= _explosionRadius) breakable.Break();
+            if (distance <= _explosionRadius) {
+                var velocity = breakable.transform.position - transform.position;
+                velocity = velocity.normalized * 30f;
+                breakable.Break(transform.position, velocity);
+            }
         }
 
         void HandleRigidbodyImpact(Rigidbody rb, float distance)

@@ -15,7 +15,7 @@ namespace GravityGame.VisualEffects
         void Start()
         {
             GetComponents();
-            _currentGravity = _gravity.GravityDirection;
+            UpdateFluidGravity();
         }
 
         void GetComponents()
@@ -29,25 +29,27 @@ namespace GravityGame.VisualEffects
         void Update()
         {
             //TODO: slerp gravity vector so fluid movement isn't abrupt
-            if (_gravity && _currentGravity != _gravity.GravityDirection) {
-                if (_startTime < 0) {
-                    _startTime = Time.time;
+            if (_gravity && _currentGravity != _gravity.GravityDirection) 
+                UpdateFluidGravity();
+        }
+
+        void UpdateFluidGravity()
+        {
+            if (_startTime < 0) {
+                _startTime = Time.time;
+            }
+            float frac = (Time.time - _startTime) / _swooshDuration;
+            if (_renderer.materials.Length > 1) {
+                foreach (var m in _renderer.materials) {
+                    if (m.name == "GravityFluid (Instance)")
+                        m.SetVector("_GravityDirection", Vector3.Slerp(_currentGravity, _gravity.GravityDirection.normalized, frac));
                 }
-                float frac = (Time.time - _startTime) / _swooshDuration;
-                if (_renderer.materials.Length > 1) {
-                    foreach (var m in _renderer.materials) {
-                        if (m.name == "GravityFluid (Instance)") {
-                            m.SetVector("_GravityDirection", Vector3.Slerp(_currentGravity, _gravity.GravityDirection.normalized, frac));
-                            ;
-                        }
-                    }
-                } else {
-                    _renderer.material.SetVector("_GravityDirection", Vector3.Slerp(_currentGravity, _gravity.GravityDirection.normalized, frac));
-                }
-                if (frac >= 1) {
-                    _startTime = -1;
-                    _currentGravity = _gravity.GravityDirection;
-                }
+            } else {
+                _renderer.material.SetVector("_GravityDirection", Vector3.Slerp(_currentGravity, _gravity.GravityDirection.normalized, frac));
+            }
+            if (frac >= 1) {
+                _startTime = -1;
+                _currentGravity = _gravity.GravityDirection;
             }
         }
     }

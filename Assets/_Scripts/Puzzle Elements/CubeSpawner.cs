@@ -1,5 +1,6 @@
-using System.Collections;
+using System;
 using GravityGame.Gravity;
+using GravityGame.SaveAndLoadSystem;
 using UnityEngine;
 
 namespace GravityGame.Puzzle_Elements
@@ -7,18 +8,15 @@ namespace GravityGame.Puzzle_Elements
     /// <summary>
     ///     (Re)spawns the assigned cube prefab on load and when redstone-powered.
     /// </summary>
-    public class CubeSpawner : RedstoneComponent
+    public class CubeSpawner : RedstoneComponent, ISaveData<CubeSpawner.SaveData>
     {
         [Tooltip("Cube prefab to spawn")]
         public GameObject Cube;
 
-        [Tooltip("Delay before allowing another spawn after power is applied")]
-        public float RespawnDelay = 1f;
-
         GameObject _currentCube;
         bool _isPowered;
-        Vector3 CubePosition => transform.position + 1.0f * transform.up;
-        
+        Vector3 SpawnPosition => transform.position + 1.0f * transform.up;
+
         /// <summary>
         ///     Called whenever redstone power changes.
         ///     Spawns a cube on the rising edge (false→true) only once per pulse.
@@ -34,6 +32,7 @@ namespace GravityGame.Puzzle_Elements
             }
         }
 
+
         /// <summary>
         ///     Instantiates a new cube and destroys the previous one.
         ///     Also applies custom gravity if available.
@@ -43,15 +42,61 @@ namespace GravityGame.Puzzle_Elements
             if (_currentCube != null)
                 Destroy(_currentCube);
 
+
             _currentCube = Instantiate(
                 Cube,
-                CubePosition,
+                SpawnPosition,
                 transform.rotation,
                 transform
             );
 
-            if (_currentCube.TryGetComponent<GravityModifier>(out var gm))
+            if (_currentCube.TryGetComponent<GravityModifier>(out var gm)) {
                 gm.GravityDirection = -transform.up;
+                gm.ShouldBeSaved = false;
+            }
         }
+
+    #region Save and Load
+
+        [Serializable]
+        public struct SaveData
+        {
+            public bool IsSpawned;
+            public Vector3 CubePosition;
+            public Quaternion CubeRotation;
+            public Vector3 CubeGravity;
+        }
+
+        public SaveData Save()
+        {
+            if (!_currentCube) return new SaveData { IsSpawned = false };
+            return new SaveData {
+                IsSpawned = true,
+                CubePosition = _currentCube.transform.position,
+                CubeRotation = _currentCube.transform.rotation,
+                CubeGravity = _currentCube.TryGetComponent<GravityModifier>(out var gm) ? gm.Gravity : Vector3.zero
+            };
+        }
+
+        public void Load(SaveData data)
+        {
+            if (data.IsSpawned) {
+                Respawn();
+                if (_currentCube.TryGetComponent<Rigidbody>(out var rb)) {
+                    rb.position = data.CubePosition;
+                    rb.rotation = data.CubeRotation;
+                }
+                if (_currentCube.TryGetComponent<GravityModifier>(out var gravityModifier)) {
+                    gravityModifier.GravityMagnitude = data.CubeGravity.magnitude;
+                    gravityModifier.GravityDirection = data.CubeGravity.normalized;
+                }
+            } else {
+                if (_currentCube) Destroy(_currentCube);
+            }
+        }
+
+        [field: SerializeField] public int SaveDataID { get; set; }
+
+    #endregion
     }
 }

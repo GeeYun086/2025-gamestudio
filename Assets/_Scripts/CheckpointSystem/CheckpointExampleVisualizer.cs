@@ -13,37 +13,27 @@ namespace GravityGame.CheckpointSystem
         readonly Color _hasBeenReached = Color.yellow;
         readonly Color _isActiveCheckpointColor = Color.green;
 
-        void Awake()
+        void OnEnable()
         {
             _checkpoint = GetComponent<Checkpoint>();
             _renderer = GetComponent<Renderer>();
 
             if (_renderer) _renderer.material.color = _normalColor;
-        }
-
-        void OnEnable()
-        {
+            
             if (!_checkpoint) return;
-            _checkpoint.OnHasBeenReachedChanged += HandleHasBeenReachedChanged;
-            _checkpoint.OnIsActiveCheckpointChanged += HandleIsActiveCheckpointChanged;
-            HandleStateChange(_checkpoint.HasBeenReached, _checkpoint.IsActiveCheckpoint);
+            _checkpoint.OnHasBeenReachedChanged += HandleStateChange;
         }
 
         void OnDisable()
         {
             if (!_checkpoint) return;
-            _checkpoint.OnHasBeenReachedChanged -= HandleHasBeenReachedChanged;
-            _checkpoint.OnIsActiveCheckpointChanged -= HandleIsActiveCheckpointChanged;
+            _checkpoint.OnHasBeenReachedChanged -= HandleStateChange;
         }
 
-        void HandleHasBeenReachedChanged(bool isReached) => HandleStateChange(isReached, _checkpoint.IsActiveCheckpoint);
-
-        void HandleIsActiveCheckpointChanged(bool isActive) => HandleStateChange(_checkpoint.HasBeenReached, isActive);
-
-        void HandleStateChange(bool isReached, bool isActive)
+        void HandleStateChange()
         {
-            if (isActive) _renderer.material.color = _isActiveCheckpointColor;
-            else if (isReached) _renderer.material.color = _hasBeenReached;
+            if (_checkpoint.IsActiveCheckpoint) _renderer.material.color = _isActiveCheckpointColor;
+            else if (_checkpoint.HasBeenReached) _renderer.material.color = _hasBeenReached;
             else _renderer.material.color = _normalColor;
         }
     }

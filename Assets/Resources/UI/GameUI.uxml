@@ -1,20 +1,10 @@
-<engine:UXML xmlns:engine="UnityEngine.UIElements"
-             noNamespaceSchemaLocation="../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
-    <engine:VisualElement name="Debug" picking-mode="Ignore"
-                          style="flex-grow: 0; justify-content: center; align-items: center; position: absolute; top: 0; right: 0; left: 0; bottom: 0; flex-shrink: 0;"/>
-    <engine:VisualElement name="HUD"
-                          style="flex-grow: 1; margin-top: 20px; margin-right: 20px; margin-bottom: 20px; margin-left: 20px;">
-        <engine:VisualElement name="BottomRight" style="flex-grow: 1; position: absolute; right: 0; bottom: 0;"/>
+<engine:UXML xmlns:engine="UnityEngine.UIElements" noNamespaceSchemaLocation="../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <engine:VisualElement name="Debug" picking-mode="Ignore" style="flex-grow: 0; justify-content: center; align-items: center; position: absolute; top: 0; right: 0; left: 0; bottom: 0; flex-shrink: 0;" />
+    <engine:VisualElement name="HUD" style="flex-grow: 1; margin-top: 20px; margin-right: 20px; margin-bottom: 20px; margin-left: 20px;">
+        <engine:VisualElement name="BottomRight" style="flex-grow: 1; position: absolute; right: 0; bottom: 0;" />
     </engine:VisualElement>
-    <engine:VisualElement name="Center"
-                          style="flex-grow: 0; justify-content: center; align-items: center; position: absolute; top: 0; right: 0; left: 0; bottom: 0; flex-shrink: 0;">
-        <engine:VisualElement name="Crosshair"
-                              style="flex-grow: 0; width: 5px; height: 5px; background-color: rgb(255, 255, 255); border-top-left-radius: 50px; border-top-right-radius: 50px; border-bottom-right-radius: 50px; border-bottom-left-radius: 50px; position: absolute;"/>
-        <GravityGame.UI.GravityDirectionRadialMenu deadzone-radius="30" inner-radius="130" outer-radius="1483"
-                                                   outline-color="#FFFFFF00" outer-color="#0000004C"
-                                                   dead-zone-color="#00000000" segment-margin="-0.95"
-                                                   inner-color="#0000004C" enabled="true" picking-mode="Ignore"
-                                                   _inner-color="#FF0000FF" _outer-color="#FF0000FF" _segment-gap="0"
-                                                   style="display: flex; visibility: visible; opacity: 0.04;"/>
+    <engine:VisualElement name="Center" style="flex-grow: 0; justify-content: center; align-items: center; position: absolute; top: -4px; right: -3px; left: 4px; bottom: 8px; flex-shrink: 0; opacity: 0.93;">
+        <engine:VisualElement name="Crosshair" style="flex-grow: 0; width: 5px; height: 5px; background-color: rgb(255, 255, 255); border-top-left-radius: 50px; border-top-right-radius: 50px; border-bottom-right-radius: 50px; border-bottom-left-radius: 50px; position: absolute;" />
+        <GravityGame.UI.GravityDirectionRadialMenu deadzone-radius="30" inner-radius="130" outer-radius="1483" outline-color="#FFFFFF00" outer-color="#0000004C" dead-zone-color="#00000000" segment-margin="-0.95" inner-color="#0000004C" enabled="true" picking-mode="Ignore" _inner-color="#FF0000FF" _outer-color="#FF0000FF" _segment-gap="0" _up-width="133.5" _up-length="468.8" _dead-zone-radius="39.2" x-axis-color="#FF00009C" y-axis-color="#00FFFF7D" z-axis-color="#00FF0076" _x-axis-color="#FFC6C600" _y-axis-color="#8FFFFF00" _z-axis-color="#D2EED200" _outline-color="#FFFFFFB3" _outline-width="3" _horizontal-angle="55.5" style="display: flex; visibility: visible; opacity: 0.17;" />
     </engine:VisualElement>
 </engine:UXML>
