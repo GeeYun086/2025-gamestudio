@@ -1,7 +1,7 @@
 ﻿using System.Collections;
-using GravityGame.AI;
 using GravityGame.Gravity;
 using GravityGame.Player;
+using GravityGame.AI;
 using UnityEngine;
 
 namespace GravityGame.Puzzle_Elements
