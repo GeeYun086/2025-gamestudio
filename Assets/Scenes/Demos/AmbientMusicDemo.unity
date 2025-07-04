@@ -494,7 +494,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 359691680859113906, guid: 20f183c53d63e61429e2e4e099ccd34f, type: 3}
       propertyPath: <SaveDataID>k__BackingField
-      value: 1940772955
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2446000720691385914, guid: 20f183c53d63e61429e2e4e099ccd34f, type: 3}
       propertyPath: m_Name
@@ -502,7 +502,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2766821908369855471, guid: 20f183c53d63e61429e2e4e099ccd34f, type: 3}
       propertyPath: <SaveDataID>k__BackingField
-      value: 240622198
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3415188100231383341, guid: 20f183c53d63e61429e2e4e099ccd34f, type: 3}
       propertyPath: m_LocalPosition.x
