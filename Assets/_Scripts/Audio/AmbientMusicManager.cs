@@ -13,12 +13,15 @@ namespace GravityGame._Scripts.Audio
         [SerializeField] AudioClip _defaultAmbientMusic;
         [SerializeField] float _transitionTime = 5;
         [SerializeField] float _crossfadeOverlapTime = 3;
+        [SerializeField] float _musicChangeCooldown = 10;
 
         // TODO connect this value to the music value set in the settings
-        [SerializeField] [Range(0, 1)] float _ambientDefaultVolume;
+        [SerializeField] [Range(0, 1)] float _ambientDefaultVolume = 1;
 
         AudioSource _audioSource1;
         AudioSource _audioSource2;
+
+        bool _canMusicBeChanged = true;
 
         // Start is called once before the first execution of Update after the MonoBehaviour is created
         void Start()
@@ -27,22 +30,27 @@ namespace GravityGame._Scripts.Audio
                 _crossfadeOverlapTime = _transitionTime;
             }
 
-            SetAudioSources();
+            SetupAudioSources();
+            _audioSource1.clip = _defaultAmbientMusic;
             StartCoroutine(FadeIn(_audioSource1));
         }
 
-        void SetAudioSources()
+        void SetupAudioSources()
         {
             var audioSources = GetComponents<AudioSource>();
             if (audioSources.Length != 2) {
-                throw new Exception("The AmbientMusicManager needs exactly two audio sources on the same GameObject in order to work.");
+                throw new Exception("The AmbientMusicManager needs to be attached on a GameObject with exactly two audio sources in order to work.");
             }
             _audioSource1 = audioSources[0];
             _audioSource2 = audioSources[1];
         }
 
-        public void ChangeTrack(AudioClip audioClip)
+        public void ChangeTrack(AudioClip audioClip, bool forceChange = false)
         {
+            if (!_canMusicBeChanged && !forceChange) {
+                return;
+            }
+
             if (_audioSource1.isPlaying) {
                 if (_audioSource1.clip != audioClip) {
                     _audioSource2.clip = audioClip;
@@ -54,6 +62,19 @@ namespace GravityGame._Scripts.Audio
                     StartCoroutine(CrossfadeAudioSources(_audioSource2, _audioSource1));
                 }
             }
+
+            StartCoroutine(MusicChangeCooldown());
+        }
+
+        public void SetAmbientVolume(float volume)
+        {
+            if (volume > 1) {
+                volume = 1;
+            }
+
+            _ambientDefaultVolume = volume;
+            _audioSource1.volume = 1;
+            _audioSource2.volume = 1;
         }
 
         IEnumerator CrossfadeAudioSources(AudioSource activeSource, AudioSource targetSource)
@@ -97,6 +118,13 @@ namespace GravityGame._Scripts.Audio
 
                 yield return null;
             }
+        }
+
+        IEnumerator MusicChangeCooldown()
+        {
+            _canMusicBeChanged = false;
+            yield return new WaitForSeconds(_musicChangeCooldown);
+            _canMusicBeChanged = true;
         }
     }
 }
