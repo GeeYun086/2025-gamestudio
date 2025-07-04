@@ -16,7 +16,6 @@ namespace GravityGame._Scripts.Audio
         [SerializeField] float _crossfadeOverlapTime = 3;
         [SerializeField] float _minPlayTime = 10;
 
-        // TODO connect this value to the music value set in the settings
         [SerializeField] [Range(0, 1)] float _ambientDefaultVolume = 1;
 
         AudioSource _audioSource1;
@@ -70,6 +69,7 @@ namespace GravityGame._Scripts.Audio
 
         }
 
+        // TODO call this method, when the music volume is set in the settings
         public void SetAmbientVolume(float volume)
         {
             if (volume > 1) {
@@ -77,8 +77,8 @@ namespace GravityGame._Scripts.Audio
             }
 
             _ambientDefaultVolume = volume;
-            _audioSource1.volume = 1;
-            _audioSource2.volume = 1;
+            _audioSource1.volume = volume;
+            _audioSource2.volume = volume;
         }
 
         IEnumerator CrossfadeAudioSources(AudioSource activeSource, AudioSource targetSource)
@@ -130,7 +130,6 @@ namespace GravityGame._Scripts.Audio
             yield return new WaitForSeconds(_minPlayTime);
             _canMusicBeChanged = true;
 
-            Debug.Log(_audioClipInQueue);
             if (_audioClipInQueue != null) {
                 ChangeTrack(_audioClipInQueue);
                 _audioClipInQueue = null;
