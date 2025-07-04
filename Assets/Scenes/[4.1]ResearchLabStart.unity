@@ -2087,7 +2087,7 @@ PrefabInstance:
     - target: {fileID: 4243474523800944153, guid: dab73d3d40a5b034081dbcf7282682db, type: 3}
       propertyPath: Cube
       value: 
-      objectReference: {fileID: 4662317870626134877, guid: fd5ee4e1e3bebc24a92165253ef57fe3, type: 3}
+      objectReference: {fileID: 2820950131080324713, guid: f2d0be5aef9c4c143ac81c226e0604c5, type: 3}
     - target: {fileID: 4243474523800944153, guid: dab73d3d40a5b034081dbcf7282682db, type: 3}
       propertyPath: <SaveDataID>k__BackingField
       value: -339440452
