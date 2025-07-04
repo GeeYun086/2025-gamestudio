@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using JetBrains.Annotations;
 using UnityEngine;
 
 namespace GravityGame._Scripts.Audio
@@ -13,14 +14,15 @@ namespace GravityGame._Scripts.Audio
         [SerializeField] AudioClip _defaultAmbientMusic;
         [SerializeField] float _transitionTime = 5;
         [SerializeField] float _crossfadeOverlapTime = 3;
-        [SerializeField] float _musicChangeCooldown = 10;
+        [SerializeField] float _minPlayTime = 10;
 
         // TODO connect this value to the music value set in the settings
         [SerializeField] [Range(0, 1)] float _ambientDefaultVolume = 1;
 
         AudioSource _audioSource1;
         AudioSource _audioSource2;
-
+        [CanBeNull] AudioClip _audioClipInQueue;
+        
         bool _canMusicBeChanged = true;
 
         // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -48,6 +50,7 @@ namespace GravityGame._Scripts.Audio
         public void ChangeTrack(AudioClip audioClip, bool forceChange = false)
         {
             if (!_canMusicBeChanged && !forceChange) {
+                _audioClipInQueue = audioClip;
                 return;
             }
 
@@ -55,15 +58,16 @@ namespace GravityGame._Scripts.Audio
                 if (_audioSource1.clip != audioClip) {
                     _audioSource2.clip = audioClip;
                     StartCoroutine(CrossfadeAudioSources(_audioSource1, _audioSource2));
+                    StartCoroutine(MusicChangeCooldown());
                 }
             } else {
                 if (_audioSource2.clip != audioClip) {
                     _audioSource1.clip = audioClip;
                     StartCoroutine(CrossfadeAudioSources(_audioSource2, _audioSource1));
+                    StartCoroutine(MusicChangeCooldown());
                 }
             }
 
-            StartCoroutine(MusicChangeCooldown());
         }
 
         public void SetAmbientVolume(float volume)
@@ -123,8 +127,14 @@ namespace GravityGame._Scripts.Audio
         IEnumerator MusicChangeCooldown()
         {
             _canMusicBeChanged = false;
-            yield return new WaitForSeconds(_musicChangeCooldown);
+            yield return new WaitForSeconds(_minPlayTime);
             _canMusicBeChanged = true;
+
+            Debug.Log(_audioClipInQueue);
+            if (_audioClipInQueue != null) {
+                ChangeTrack(_audioClipInQueue);
+                _audioClipInQueue = null;
+            }
         }
     }
 }
