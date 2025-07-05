@@ -102,19 +102,6 @@ public class RiderAttach : MonoBehaviour
         Vector3 torque = axis.normalized * (angleRad * _rotSpring)
                          - angVel * _rotDamper;
         _playerRb.AddTorque(torque, ForceMode.Acceleration);
-
-        /*if (_playerCollider != null && _carryCollider != null) {
-            bool overlapped = Physics.ComputePenetration(
-                _playerCollider, _playerCollider.transform.position, _playerCollider.transform.rotation, 
-                _carryCollider, _carryCollider.transform.position,_carryCollider.transform.rotation,
-                out var sepDir, out float sepDist
-            );
-            if (overlapped && sepDist > 0f) {
-                Vector3 velAlong = Vector3.Project(_playerRb.linearVelocity, sepDir);
-                Vector3 penForce = sepDir * (sepDist * _penSpring) -velAlong * _penDamper;
-                _playerRb.AddForce(penForce, ForceMode.Acceleration);
-            }
-        }*/
     }
     
     public bool CanAttach
