@@ -8,15 +8,21 @@ namespace GravityGame
     /// </summary>
     public class EditorDrawPathGizmo : MonoBehaviour
     {
-        public bool drawSphere = true;
+        [SerializeField] bool _drawSphere = true;
 
         void OnDrawGizmos()
         {
             Gizmos.color = Color.yellow;
-            if (drawSphere) Gizmos.DrawSphere(transform.position, 0.2f);
-
+            if (_drawSphere) Gizmos.DrawSphere(transform.position, 0.2f);
+            
             int count = transform.childCount;
-            if (count < 2) return;
+            if (count < 2) {
+                Vector3 localDown = Vector3.down;
+                Vector3 worldDown = transform.TransformDirection(localDown);
+                Gizmos.DrawLine(transform.position,
+                    transform.position + worldDown);
+                return;
+            }
 
             for (int i = 0; i < count - 1; i++) {
                 var a = transform.GetChild(i);
