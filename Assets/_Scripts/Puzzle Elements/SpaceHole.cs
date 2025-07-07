@@ -4,7 +4,7 @@ namespace GravityGame.Puzzle_Elements
 {
     /// <summary>
     /// Applies a pull force to Rigidbodies within a defined hemispherical area.
-    /// The force pulls objects towards the line-of-sight to the center of the hole.
+    /// The force pulls objects towards the closest point of the GO.
     /// </summary>
     [RequireComponent(typeof(MeshCollider))]
     public class SpaceHole : MonoBehaviour
