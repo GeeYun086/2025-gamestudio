@@ -252,6 +252,10 @@ MonoBehaviour:
   OnPlayerDied:
     m_PersistentCalls:
       m_Calls: []
+  _playerMovement: {fileID: 4446406959541147416}
+  _cameraController: {fileID: 29459555106466722}
+  _smoothCamera: {fileID: 7280529363264375583}
+  _cameraTransform: {fileID: 7517448131312483723}
 --- !u!114 &4573077508993898264
 MonoBehaviour:
   m_ObjectHideFlags: 0
