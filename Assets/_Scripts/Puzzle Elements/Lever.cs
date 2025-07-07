@@ -1,45 +1,54 @@
 using System;
 using System.Collections.Generic;
-using GravityGame.Puzzle_Elements;
+using System.Linq;
+using GravityGame.SaveAndLoadSystem;
 using UnityEngine;
 
-namespace GravityGame
+namespace GravityGame.Puzzle_Elements
 {
     /// <summary>
-    /// Add to Lever GameObject and drag Doors into List
+    ///     Add to Lever GameObject and drag Doors into List
     /// </summary>
-    public class Lever : InteractableObject
+    public class Lever : InteractableObject, ISaveData<bool>
     {
+        [SerializeField] GameObject _leverOn;
+        [SerializeField] GameObject _leverOff;
+
         [Header("Lever Settings")]
         [SerializeField] bool _isPowered;
-        /// <summary>
-        /// Need to Add Door script to doors and drag those GameObjects into this script of the Lever
-        /// </summary>
         [SerializeField] List<RedstoneComponent> _logicComponents;
-        public bool IsPowered
+
+        void Start()
         {
-            set {
-                _isPowered = value;
-                UpdateConnectedComponents();
+            if (_logicComponents.Count == 0) Debug.LogWarning($"{gameObject.name} has no connected redstone components, did you forget to add them?");
+        }
+
+        void SetPowered(bool value)
+        {
+            _isPowered = value;
+            _leverOn.SetActive(_isPowered);
+            _leverOff.SetActive(!_isPowered);
+            // Update connected components
+            foreach (var component in _logicComponents.Where(c => c != null)) {
+                component.IsPowered = _isPowered;
             }
         }
 
-        void Awake()
-        {
-            OnInteract.AddListener(() => IsPowered = !_isPowered);
-        }
+        void OnEnable() => OnInteract.AddListener(Toggle);
+        void OnDisable() => OnInteract.RemoveListener(Toggle);
+        void Toggle() => SetPowered(!_isPowered);
 
-        /// <summary>
-        /// Changes IsPowered of all Doors in List.
-        /// Switch between on and off.
-        /// Need to set in Door`s scripts which Doors are already powered.
-        /// </summary>
-        public void UpdateConnectedComponents()
-        {
-            foreach (var component in _logicComponents) {
-                if (component != null)
-                    component.IsPowered = !component.IsPowered;
-            }
-        }
+        void OnValidate() => SetPowered(_isPowered);
+        
+        
+    #region Save and Load
+
+        public bool Save() => _isPowered;
+
+        public void Load(bool data) => SetPowered(data);
+
+        [field: SerializeField] public int SaveDataID { get; set; }
+
+    #endregion
     }
 }

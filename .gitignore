@@ -62,6 +62,9 @@ ExportedObj/
 # Unity3D generated file on crash reports
 sysinfo.txt
 
+# Unity Probuilder settings
+/ProjectSettings/Packages/com.unity.probuilder/Settings.json
+
 # Builds
 *.apk
 *.aab
@@ -81,3 +84,5 @@ crashlytics-build.properties
 
 # Macos folder settings
 .DS_Store
+
+.vsconfig

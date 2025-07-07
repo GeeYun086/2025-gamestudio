@@ -3,7 +3,8 @@ using UnityEngine;
 namespace GravityGame.Puzzle_Elements
 {
     /// <summary>
-    /// Provides easier setup for Platform on Rails Prefab. User defines rail by moving the start- and endpoint. Platform can either be defined by its normal being parallel to an axis or have a custom rotation.
+    ///     Provides easier setup for Platform on Rails Prefab. User defines rail by moving the start- and endpoint. Platform
+    ///     can either be defined by its normal being parallel to an axis or have a custom rotation.
     /// </summary>
     public class SetUpPlatformOnRail : MonoBehaviour
     {
@@ -27,7 +28,7 @@ namespace GravityGame.Puzzle_Elements
 
         void RotatePlatform()
         {
-            Vector3 rotate = Vector3.zero;
+            var rotate = Vector3.zero;
             switch (_platformNormalParallelToAxis) {
                 case Direction.X:
                     rotate = new Vector3(0, 0, 90);
@@ -46,11 +47,11 @@ namespace GravityGame.Puzzle_Elements
 
         void SetUpRail()
         {
-            Vector3 path = _endPosition.transform.position - _startPosition.transform.position;
+            var path = _endPosition.transform.position - _startPosition.transform.position;
             if (path == Vector3.zero)
                 return;
             float length = path.magnitude;
-            Vector3 middlePoint = _startPosition.transform.position + path * .5f;
+            var middlePoint = _startPosition.transform.position + path * .5f;
             _rail.transform.parent.position = middlePoint;
             _rail.GetComponentInChildren<Transform>().localScale = new Vector3(1f, 1f, length);
             _rail.GetComponent<ConfigurableJoint>().linearLimit = new SoftJointLimit {

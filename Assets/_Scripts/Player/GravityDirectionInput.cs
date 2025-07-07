@@ -1,9 +1,12 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using GravityGame.Gravity;
 using GravityGame.UI;
+using GravityGame.Utils;
 using JetBrains.Annotations;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using Cursor = UnityEngine.Cursor;
 
 namespace GravityGame.Player
@@ -15,124 +18,156 @@ namespace GravityGame.Player
     /// </summary>
     public class GravityDirectionInput : MonoBehaviour
     {
+        [Header("References")]
+        [SerializeField] Transform _playerTransform;
+        [SerializeField] Camera _camera;
         [SerializeField] Axes _visualizationAxes;
+
+        [Header("Input")]
+        [SerializeField] InputActionReference _startGravityInput;
+        [SerializeField] InputActionReference _cancelGravityInput;
+
+        [Header("Parameters")]
         [SerializeField] float _maxObjectRange = 30;
-        [SerializeField] float _aimBufferDuration = 0.25f;
+        [SerializeField] Timer _gravityChangeCooldown = new(1.5f);
+        [SerializeField] Timer _aimBuffer = new(0.25f);
+
+        [Header("Preview")]
+        [SerializeField] Material _previewMaterial;
         [SerializeField] float _previewDistance = 4f;
         [SerializeField] float _previewCycleDuration = 1.5f;
-        [CanBeNull] GravityModifier _aimedObject;
-        [CanBeNull] GravityModifier _lastAimedObject;
-        float _lastObjectAimedTime;
-        [CanBeNull] GameObject _lastSelectedObject;
 
-        [CanBeNull] GravityModifier _selectedObject;
-
-        Coroutine _previewCoroutine;
-        [CanBeNull] GameObject _previewCloneInstance;
-        [CanBeNull] Vector3? _currentPreviewDirection;
+        [Header("Audio")]
+        [SerializeField] AudioClip _changeGravitySound;
+        [SerializeField] AudioClip _cannotChangeGravitySound;
 
         static GravityDirectionRadialMenu GravityChangeMenu => GameUI.instance.elements.GravityDirectionRadialMenu;
 
-        void Update()
+        PlayerCarry _carry;
+
+        GravityModifier _target;
+        bool _tryChangingGravity;
+
+        Coroutine _previewCoroutine;
+        [CanBeNull] GameObject _previewCloneInstance;
+        Vector3 _currentPreviewDirection;
+
+        void OnEnable()
         {
-            var hitObject = RaycastForSelectableObject();
-
-            if (hitObject) {
-                _aimedObject = hitObject.GetComponent<GravityModifier>();
-                if (!_selectedObject || hitObject != _selectedObject.gameObject) {
-                    if (hitObject != _lastSelectedObject) {
-                        ToggleOutlineOnObject(hitObject, 1);
-                        ToggleOutlineOnObject(_lastSelectedObject, 0);
-                    } else {
-                        ToggleOutlineOnObject(hitObject, 1);
-                    }
-                }
-
-                _lastSelectedObject = hitObject;
-                _lastAimedObject = _aimedObject;
-                _lastObjectAimedTime = Time.time;
-            } else {
-                _aimedObject = null;
-                if (_lastSelectedObject &&
-                    Time.time - _lastObjectAimedTime > _aimBufferDuration &&
-                    (!_selectedObject || _lastSelectedObject != _selectedObject.gameObject)) {
-                    ToggleOutlineOnObject(_lastSelectedObject, 0);
-                    _lastSelectedObject = null;
-                }
-            }
-
-            if (Input.GetMouseButtonDown(1))
-                if (!_selectedObject) {
-                    GravityModifier objectToSelect = null;
-                    if (_aimedObject) objectToSelect = _aimedObject;
-                    else if (_lastAimedObject && Time.time - _lastObjectAimedTime < _aimBufferDuration)
-                        objectToSelect = _lastAimedObject;
-
-                    if (objectToSelect) {
-                        _selectedObject = objectToSelect;
-                        if (_selectedObject.gameObject != _lastSelectedObject) {
-                            ToggleOutlineOnObject(_lastSelectedObject, 0);
-                            ToggleOutlineOnObject(_selectedObject.gameObject, 1);
-                            _lastSelectedObject = _selectedObject.gameObject;
-                        }
-                    }
-                }
-
-            bool isInteracting = Input.GetMouseButton(1) && _selectedObject;
-
-            switch (isInteracting) {
-                case true when !GravityChangeMenu.visible:
-                    GravityChangeMenu.visible = true;
-                    Cursor.lockState = CursorLockMode.None;
-                    Cursor.visible = true;
-                    if (_selectedObject) {
-                        SetVisualizedDirection(_selectedObject.GravityDirection);
-                        ToggleOutlineOnObject(_selectedObject.gameObject, 1);
-                        _lastSelectedObject = _selectedObject.gameObject;
-                    }
-                    break;
-                case false when GravityChangeMenu.visible:
-                    StopGravityPreview();
-                    var direction = GetRadialMenuGravityDirection();
-                    if (_selectedObject && direction.HasValue) _selectedObject.GravityDirection = direction.Value;
-
-                    SetVisualizedDirection(Vector3.zero);
-
-                    GravityChangeMenu.visible = false;
-                    Cursor.lockState = CursorLockMode.Locked;
-                    Cursor.visible = false;
-
-                    _selectedObject = null;
-                    break;
-            }
-
-            if (isInteracting) {
-                if (!_selectedObject) return;
-                ToggleOutlineOnObject(_selectedObject.gameObject, 1);
-
-                var newDirection = GetRadialMenuGravityDirection();
-                SetVisualizedDirection(newDirection ?? _selectedObject.GravityDirection);
-
-                if (newDirection.HasValue) {
-                    if (!_previewCloneInstance || _currentPreviewDirection != newDirection) {
-                        StopGravityPreview();
-                        StartGravityPreview(_selectedObject, newDirection.Value);
-                    }
-                } else {
-                    StopGravityPreview();
-                }
-                _currentPreviewDirection = newDirection;
-            } else if (_previewCloneInstance) {
-                StopGravityPreview();
-            }
+            _carry = GetComponent<PlayerCarry>();
+            SetVisualizedDirection(Vector3.zero);
         }
 
-        void OnEnable() => SetVisualizedDirection(Vector3.zero);
         void OnDisable() => StopGravityPreview();
         void OnDestroy() => StopGravityPreview();
 
+        void Update()
+        {
+            // Update Input
+            bool start = _startGravityInput.action.WasPressedThisFrame();
+            bool stopped = !_startGravityInput.action.IsPressed();
+            bool canceled = _cancelGravityInput.action.WasPressedThisFrame();
+
+            if (start) _tryChangingGravity = true;
+            if (stopped || canceled) _tryChangingGravity = false;
+
+            bool wasChangingGravity = GravityChangeMenu.visible;
+
+            // Switch Target
+            bool canSwitchTarget = !wasChangingGravity || _target == null;
+            if (canSwitchTarget) {
+                var last = _target;
+                var hit = RaycastForSelectableObject();
+                if (hit) {
+                    // switch to new hit
+                    _target = hit;
+                    _aimBuffer.Start();
+                } else if (!_aimBuffer.IsActive) {
+                    // switch from old hit
+                    _target = null;
+                }
+                
+                if (_gravityChangeCooldown.IsActive) {
+                    // cannot have target when on cooldown
+                    if (start && _target) GetComponent<AudioSource>().PlayOneShot(_cannotChangeGravitySound, 0.2f);
+                    _target = null;
+                } else if (_carry.CarriedObject && !wasChangingGravity) {
+                    // carried object is always target
+                    _target = _carry.CarriedObject.GetComponent<GravityModifier>();
+                }
+
+                if (_target != last) {
+                    if (_target) ToggleOutlineOnObject(_target.gameObject, 1);
+                    if (last) ToggleOutlineOnObject(last.gameObject, 0);
+                }
+            }
+
+            // Start / Stop changing gravity
+            if (_tryChangingGravity) {
+                if (_target && !wasChangingGravity) {
+                    // Start changing gravity
+                    Cursor.lockState = CursorLockMode.None;
+                    Cursor.visible = true;
+                    GravityChangeMenu.visible = true;
+                    SetGravityChangeMenuColors();
+                }
+            } else {
+                // Stop changing gravity
+                if (wasChangingGravity) {
+                    var direction = GetRadialMenuGravityDirection();
+                    bool applyGravity = _target && direction.HasValue && !canceled;
+                    if (applyGravity) {
+                        if (_target.GravityDirection != direction.Value) {
+                            if (_changeGravitySound) GetComponent<AudioSource>().PlayOneShot(_changeGravitySound, 0.3f);
+                            _gravityChangeCooldown.Start();
+                        }
+                        _target.GravityDirection = direction.Value;
+                    }
+
+                    _aimBuffer.Stop();
+                    StopGravityPreview();
+
+                    Cursor.lockState = CursorLockMode.Locked;
+                    Cursor.visible = false;
+                    GravityChangeMenu.visible = false;
+                }
+            }
+
+            // Update while changing gravity
+            bool isChangingGravity = GravityChangeMenu.visible && _target;
+            if (isChangingGravity) {
+                ToggleOutlineOnObject(_target.gameObject, 1);
+
+                var direction = GetRadialMenuGravityDirection() ?? GetClosestCardinalDirection(_target.GravityDirection);
+                SetVisualizedDirection(direction);
+
+                if (!_previewCloneInstance || _currentPreviewDirection != direction) {
+                    StartGravityPreview(_target, direction);
+                    _currentPreviewDirection = direction;
+                }
+            }
+        }
+
+        void SetGravityChangeMenuColors()
+        {
+            var up = GetClosestCardinalDirection(_playerTransform.up);
+            var right = GetClosestCardinalDirection(_camera.transform.right);
+            var forward = Vector3.Cross(right, up).normalized;
+            var rightColor = GravityChangeMenu.CardinalDirectionToColor(right);
+            var upColor = GravityChangeMenu.CardinalDirectionToColor(up);
+            var forwardColor = GravityChangeMenu.CardinalDirectionToColor(forward);
+            GravityChangeMenu.ColorForZone = zone => zone switch {
+                GravityDirectionRadialMenu.Zone.None => Color.clear,
+                GravityDirectionRadialMenu.Zone.Left or GravityDirectionRadialMenu.Zone.Right => rightColor,
+                GravityDirectionRadialMenu.Zone.Up or GravityDirectionRadialMenu.Zone.Down => upColor,
+                GravityDirectionRadialMenu.Zone.OuterUp or GravityDirectionRadialMenu.Zone.OuterDown => forwardColor,
+                _ => throw new ArgumentOutOfRangeException(nameof(zone), zone, null)
+            };
+        }
+
         void StartGravityPreview(GravityModifier originalObjectToPreview, Vector3 direction)
         {
+            SetVisualizedDirection(direction);
             StopGravityPreview();
             _previewCloneInstance = Instantiate(
                 originalObjectToPreview.gameObject,
@@ -140,11 +175,18 @@ namespace GravityGame.Player
                 originalObjectToPreview.transform.rotation
             );
             _currentPreviewDirection = direction;
-            
+
             if (_previewCloneInstance) {
                 _previewCloneInstance.GetComponent<Rigidbody>().isKinematic = true;
                 _previewCloneInstance.GetComponent<GravityModifier>().enabled = false;
-                _previewCloneInstance.GetComponent<Collider>().enabled = false;
+                _previewCloneInstance.GetComponent<Renderer>().SetMaterials(new List<Material> { _previewMaterial });
+                foreach (var renderer in _previewCloneInstance.GetComponentsInChildren<Renderer>()) {
+                    renderer.SetMaterials(new List<Material> { _previewMaterial });
+                }
+                _previewCloneInstance.transform.localScale *= .999f;
+                foreach (var component in _previewCloneInstance.GetComponentsInChildren<Collider>()) {
+                    component.enabled = false;
+                }
                 _previewCoroutine = StartCoroutine(
                     PreviewGravityMovementRoutine(_previewCloneInstance.transform, originalObjectToPreview.transform, direction)
                 );
@@ -153,6 +195,8 @@ namespace GravityGame.Player
 
         void StopGravityPreview()
         {
+            SetVisualizedDirection(Vector3.zero);
+
             if (_previewCoroutine != null) {
                 StopCoroutine(_previewCoroutine);
                 _previewCoroutine = null;
@@ -187,37 +231,39 @@ namespace GravityGame.Player
         }
 
         [CanBeNull]
-        GameObject RaycastForSelectableObject()
+        GravityModifier RaycastForSelectableObject()
         {
-            var cam = Camera.main!;
-            var ray = new Ray(cam.transform.position, cam.transform.forward);
+            var ray = new Ray(_camera.transform.position, _camera.transform.forward);
             // Note TG: other objects may block the hit, maybe need to ignore more layers in the future
             int layerMask = ~LayerMask.GetMask("AxisGizmo", "Player");
 
             if (Physics.Raycast(ray, out var hitInfo, _maxObjectRange, layerMask, QueryTriggerInteraction.Ignore)) {
-                if (hitInfo.transform.gameObject.TryGetComponent<GravityModifier>(out _)) return hitInfo.transform.gameObject;
+                if (hitInfo.transform.gameObject.TryGetComponent<GravityModifier>(out var g))
+                    return g;
             }
             return null;
         }
 
-        static Vector3? GetRadialMenuGravityDirection()
+        Vector3? GetRadialMenuGravityDirection()
         {
-            var cam = Camera.main!;
-            var screenCenter = cam.ViewportToScreenPoint(new Vector3(0.5f, 0.5f));
+            var screenCenter = _camera.ViewportToScreenPoint(new Vector3(0.5f, 0.5f));
             var mouseOffset = Input.mousePosition - screenCenter;
-            float distance = mouseOffset.magnitude;
 
-            var up = Vector3.up;
-            var forward = GetClosestCardinalDirection(Vector3.ProjectOnPlane(cam.transform.forward, up).normalized);
-            var right = Vector3.Cross(up, forward).normalized;
-
-            if (distance < GravityChangeMenu.DeadZoneRadius) return null;
-
-            if (distance < GravityChangeMenu.InnerRadius) return mouseOffset.y > 0 ? forward : -forward;
-
-            if (Mathf.Abs(mouseOffset.x) > Mathf.Abs(mouseOffset.y)) return mouseOffset.x > 0 ? right : -right;
-
-            return mouseOffset.y > 0 ? up : -up;
+            var up = GetClosestCardinalDirection(_playerTransform.up);
+            var right = GetClosestCardinalDirection(_camera.transform.right);
+            var forward = Vector3.Cross(right, up).normalized;
+            
+            var dir = GravityChangeMenu.GetDirection(mouseOffset);
+            return dir switch {
+                GravityDirectionRadialMenu.Zone.None => null,
+                GravityDirectionRadialMenu.Zone.Left => -right,
+                GravityDirectionRadialMenu.Zone.Right => right,
+                GravityDirectionRadialMenu.Zone.Up => up,
+                GravityDirectionRadialMenu.Zone.Down => -up,
+                GravityDirectionRadialMenu.Zone.OuterUp => forward,
+                GravityDirectionRadialMenu.Zone.OuterDown => -forward,
+                _ => throw new ArgumentOutOfRangeException()
+            };
         }
 
         void SetVisualizedDirection(Vector3 direction)
@@ -235,11 +281,8 @@ namespace GravityGame.Player
             GameObject GetDisplayedAxis()
             {
                 if (direction.y != 0) return direction.y > 0 ? _visualizationAxes.Up : _visualizationAxes.Down;
-
                 if (direction.x != 0) return direction.x > 0 ? _visualizationAxes.Right : _visualizationAxes.Left;
-
                 if (direction.z != 0) return direction.z > 0 ? _visualizationAxes.Forward : _visualizationAxes.Back;
-
                 return null;
             }
         }

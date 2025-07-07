@@ -12,14 +12,14 @@ TagManager:
   - Player
   - Water
   - UI
-  - interactableLayer
-  - 
+  - Interactable
+  - GlassDebris
   - Outlines
-  - 
+  - Laser
   - AxisGizmo
+  - Force Field
   - 
-  - 
-  - 
+  - Rope
   - 
   - 
   - 

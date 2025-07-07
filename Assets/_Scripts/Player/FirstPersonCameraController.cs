@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Serialization;
 
 namespace GravityGame.Player
 {
@@ -14,18 +15,20 @@ namespace GravityGame.Player
         [SerializeField] Transform _playerBody;
         [SerializeField] InputActionReference _lookAction;
 
-        float _lookDownRotation;
-        float _lookRightRotation;
+        public float LookDownRotation;
+        public float LookRightRotation;
 
         void Start()
         {
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
+            // Don't render player
+            // Note TG: may need to change in the future
+            GetComponent<Camera>().cullingMask &= ~LayerMask.GetMask("Player"); 
         }
 
         void Update()
         {
-            
             // Note TG: Debug functionality to lock / unlock mouse when pressing escape to tab out of the Unity game window.
             // We might need to do this differently in the future or disable this in the build.
             if (Input.GetButtonDown("Cancel")) {
@@ -41,13 +44,16 @@ namespace GravityGame.Player
 
             var lookInput = _lookAction.action.ReadValue<Vector2>();
             var lookInputDelta = lookInput * (_mouseSensitivity * Time.deltaTime);
-            _lookRightRotation += lookInputDelta.x;
-            _lookDownRotation += lookInputDelta.y;
-            _lookDownRotation = Mathf.Clamp(_lookDownRotation, -90f, 90f);
+            LookRightRotation += lookInputDelta.x;
+            LookDownRotation += lookInputDelta.y;
+            LookDownRotation = Mathf.Clamp(LookDownRotation, -90f, 90f);
 
-            transform.localRotation = Quaternion.Euler(_lookDownRotation, _lookRightRotation, 0f);
-
-            // _playerBody.Rotate(Vector3.up * lookInputDelta.x);
+            if (_playerBody == null || _playerBody == transform) {
+                transform.localRotation = Quaternion.Euler(LookDownRotation, LookRightRotation, 0f);
+            } else {
+                transform.localRotation = Quaternion.Euler(LookDownRotation, 0f, 0f);
+                _playerBody.localRotation = Quaternion.Euler(0f, LookRightRotation, 0f);
+            }
         }
     }
 }

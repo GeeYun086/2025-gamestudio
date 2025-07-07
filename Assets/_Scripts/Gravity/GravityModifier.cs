@@ -1,4 +1,7 @@
+using System;
+using GravityGame.Player;
 using GravityGame.Puzzle_Elements;
+using GravityGame.SaveAndLoadSystem;
 using UnityEngine;
 
 namespace GravityGame.Gravity
@@ -9,38 +12,46 @@ namespace GravityGame.Gravity
     ///     <see cref="GravityDirection" /> is shared between all objects with the same <see cref="Group" />
     /// </summary>
     [RequireComponent(typeof(Rigidbody))]
-    public class GravityModifier : MonoBehaviour
+    public class GravityModifier : MonoBehaviour, ISaveData<GravityModifier.SaveData>
     {
+        [SerializeField] Vector3 _gravityDirection = Vector3.down;
         public Vector3 GravityDirection
         {
-            get => _gravityDirection;
+            get => _gravityDirection.normalized;
             set {
                 if (value == _gravityDirection)
                     return;
-                if(Group != GravityGroup.None)
-                    GravityGroupHandler.Instance.AlertGravityGroup(Group, value);
+                if (Group != GravityGroup.None)
+                    GravityGroupHandler.AlertGravityGroup(Group, value);
                 _gravityDirection = value;
             }
         }
-        
-        Vector3 _gravityDirection = Vector3.down;
-        public float GravityMagnitude = 9.81f;
-        public GravityGroup Group = GravityGroup.None;
 
-        public enum GravityGroup { None, Red, Blue, Green }
+        public float GravityMagnitude = 9.81f;
+
+        public Vector3 Gravity => GravityDirection * GravityMagnitude;
+
+        public enum GravityGroup { None, Player, Red, Blue, Green }
+
+        public GravityGroup Group = GravityGroup.None;
 
         Rigidbody _rigidbody;
 
-        void Awake()
+        void OnEnable()
         {
             _rigidbody = GetComponent<Rigidbody>();
             _rigidbody.useGravity = false;
-            if(Group != GravityGroup.None)
-                GravityGroupHandler.Instance.OnGravityGroupDirectionChange += SetGravityDirectionWithoutGroupAlert;
+            GravityGroupHandler.OnGravityGroupDirectionChange += SetGravityDirectionWithoutGroupAlert;
+        }
+
+        void OnDisable()
+        {
+            GravityGroupHandler.OnGravityGroupDirectionChange -= SetGravityDirectionWithoutGroupAlert;
         }
 
         void FixedUpdate()
         {
+            if (GetComponent<PlayerMovement>() != null) return;
             _rigidbody.AddForce(GravityDirection.normalized * GravityMagnitude, ForceMode.Acceleration);
         }
 
@@ -50,9 +61,37 @@ namespace GravityGame.Gravity
                 _gravityDirection = gravityDirection;
         }
 
-        void OnDestroy()
+    #region Save and Load
+        
+        [Serializable]
+        public struct SaveData
         {
-            GravityGroupHandler.Instance.OnGravityGroupDirectionChange -= SetGravityDirectionWithoutGroupAlert;
+            public Vector3 Gravity;
+            public Vector3 Position;
+            public Quaternion Rotation;
         }
+        
+        public SaveData Save() =>
+            new() {
+                Gravity = Gravity,
+                Position = _rigidbody.position,
+                Rotation = _rigidbody.rotation,
+            };
+
+        public void Load(SaveData data)
+        {
+            GravityMagnitude = data.Gravity.magnitude;
+            GravityDirection = data.Gravity.normalized;
+            _rigidbody.position = data.Position;
+            _rigidbody.rotation = data.Rotation;
+            _rigidbody.linearVelocity = Vector3.zero;
+            _rigidbody.angularVelocity = Vector3.zero;
+        }
+        
+        [field: SerializeField] public int SaveDataID { get; set; }
+
+        public bool ShouldBeSaved { get; set; } = true;
+
+    #endregion
     }
 }
