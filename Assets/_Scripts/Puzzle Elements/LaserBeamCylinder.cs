@@ -7,34 +7,14 @@ namespace GravityGame.PuzzleElements
     [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer), typeof(CapsuleCollider))]
     public class LaserBeamCylinder : MonoBehaviour
     {
-        float _maxDistance;
-        float _beamRadius;
-        float _flatDamage;
-        float _knockbackForce;
-        float _damageCooldown;
-        LayerMask _obstacleMask;
-        
+        LaserSpawner _laserSpawner;
         MeshFilter _meshFilter;
         MeshRenderer _meshRenderer;
         CapsuleCollider _collider;
 
         // Cooldown to avoid spamming the player with damage every frame
         readonly Dictionary<PlayerHealth, float> _cooldowns = new();
-
-        ///public float DamageCooldown = 0.3f;
-
-        public void Configure(ILaserConfig config)
-        {
-            _maxDistance = config.MaxDistance;
-            _beamRadius = config.BeamRadius;
-            _flatDamage = config.FlatDamage;
-            _knockbackForce = config.KnockbackForce;
-            _damageCooldown = config.DamageCooldown;
-            _obstacleMask = config.ObstacleMask;
-            UpdateBeamAndCollider();
-        }
-
-
+        
         void Awake()
         {
             _meshFilter = GetComponent<MeshFilter>();
@@ -49,43 +29,52 @@ namespace GravityGame.PuzzleElements
 #endif
         }
 
-        void Start() => UpdateBeamAndCollider();
+        void Start()
+        {
+            _laserSpawner = GetComponentInParent<LaserSpawner>();
+            UpdateBeamAndCollider();
+        }
+
         void OnEnable() => UpdateBeamAndCollider();
-        void Update() => UpdateBeamAndCollider();
+        void FixedUpdate() => UpdateBeamAndCollider();
 
         void OnCollisionEnter(Collision collision)
         {
-            TryDamageAndKnockback(collision.collider);
+            TryDamageAndKnockback(collision);
         }
 
         void OnCollisionStay(Collision collision)
         {
-            TryDamageAndKnockback(collision.collider);
+            TryDamageAndKnockback(collision);
         }
 
-        void TryDamageAndKnockback(Collider other)
+        /// <summary>
+        /// Carl:
+        /// The knockback is no longer based on world coordinates but on the local coordinates of the laser. This should lead to equal behaviour
+        /// regardless of the player's gravity.
+        /// </summary>
+        void TryDamageAndKnockback(Collision other)
         {
-            var playerHealth = other.GetComponent<PlayerHealth>();
+            var playerHealth = other.gameObject.GetComponent<PlayerHealth>();
             if (playerHealth == null) return;
 
             // Cooldown check
             if (_cooldowns.TryGetValue(playerHealth, out float lastTime) &&
-                Time.time - lastTime < _damageCooldown)
+                Time.time - lastTime < _laserSpawner.DamageCooldown)
                 return;
 
-            playerHealth.TakeDamage(_flatDamage);
-            Debug.Log($"[LaserBeamCylinder] Player hit by collision! Damage applied: {_flatDamage}. Current Health: {playerHealth.CurrentHealth}");
+            playerHealth.TakeDamage(_laserSpawner.FlatDamage);
+            Debug.Log($"[LaserBeamCylinder] Player hit by collision! Damage applied: {_laserSpawner.FlatDamage}. Current Health: {playerHealth.CurrentHealth}");
 
-            var playerRb = other.GetComponent<Rigidbody>();
+            var playerRb = other.gameObject.GetComponent<Rigidbody>();
             if (playerRb != null) {
-                // Push away from the center of the beam
-                var beamDirection = transform.parent.forward;
-                var pushDir = (other.transform.position - transform.position).normalized;
-                var projectedPushDir = Vector3.ProjectOnPlane(pushDir, beamDirection).normalized;
-                var knockbackDir = projectedPushDir;
-                knockbackDir.y = 0f; // Keep it horizontal
-                playerRb.AddForce(knockbackDir * _knockbackForce, ForceMode.Impulse);
-                Debug.Log($"[LaserBeamCylinder] Knockback applied to player: {knockbackDir * _knockbackForce}");
+                //playerRb.linearVelocity = Vector3.zero;
+                Vector3 localPlayerPos = transform.InverseTransformPoint(other.transform.position);
+                Vector3 localPushDir = (localPlayerPos-new Vector3(0,localPlayerPos.y,0)).normalized;
+                Vector3 worldPushDir = transform.TransformDirection(localPushDir);
+                float totalForce = _laserSpawner.KnockbackForce;
+                playerRb.AddForce(worldPushDir * totalForce, ForceMode.Impulse);
+                Debug.Log($"[LaserBeamCylinder] Knockback applied to player: {worldPushDir * _laserSpawner.KnockbackForce}");
             }
 
             if (playerHealth.CurrentHealth <= 0)
@@ -106,20 +95,20 @@ namespace GravityGame.PuzzleElements
 
             var start = origin.position + origin.forward * 0.01f;
             var dir = origin.forward;
-            float length = _maxDistance;
+            float length = _laserSpawner.MaxDistance;
 
-            if (Physics.Raycast(start, dir, out var hit, _maxDistance, _obstacleMask)) {
+            if (Physics.Raycast(start, dir, out var hit, _laserSpawner.MaxDistance, _laserSpawner.ObstacleMask)) {
                 length = hit.distance;
             }
 
             // Always align and scale the laser cylinder forward
             transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
-            transform.localScale = new Vector3(_beamRadius, length * 0.5f, _beamRadius);
+            transform.localScale = new Vector3(_laserSpawner.BeamRadius, length * 0.5f, _laserSpawner.BeamRadius);
             transform.localPosition = new Vector3(0f, 0f, length * 0.5f);
-
+            
             // Update collider to match visuals, compensating for transform scaling
             _collider.direction = 1; // Y-axis
-            _collider.radius = _beamRadius;
+            _collider.radius = _laserSpawner.BeamRadius;
 
             // Inverse of the Y-scale so that height * scaleY == world-space length
             float invScaleY = 1f / transform.localScale.y;

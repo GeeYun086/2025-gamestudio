@@ -9,7 +9,7 @@ using UnityEngine;
 ///     Now supports Redstone power: the laser is active when "powered" (unless InvertRedstoneSignal is enabled).
 /// </summary>
 [RequireComponent(typeof(Transform))]
-public class LaserSpawner : RedstoneComponent, ILaserConfig
+public class LaserSpawner : RedstoneComponent
 {
     [Header("Laser Prefab")]
     [Tooltip("Drag your LaserBeam prefab here.")]
@@ -90,12 +90,6 @@ public class LaserSpawner : RedstoneComponent, ILaserConfig
         var worldPos = transform.TransformPoint(_spawnOffset);
         _spawnedLaser = Instantiate(_laserPrefab, worldPos, new Quaternion(0, 0, 0, 0));
         _spawnedLaser.transform.SetParent(transform, worldPositionStays: true);
-        var laserBeam = _spawnedLaser.GetComponent<LaserBeamCylinder>();
-        if (laserBeam != null) {
-            laserBeam.Configure(this);
-        } else {
-            Debug.LogError($"{nameof(LaserSpawner)}: Laser prefab does not have a {nameof(LaserBeamCylinder)} component.", this);
-        }
         OnLaserSpawned?.Invoke(_spawnedLaser);
     }
 
