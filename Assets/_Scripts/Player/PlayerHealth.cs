@@ -13,11 +13,16 @@ namespace GravityGame.Player
     public class PlayerHealth : SingletonMonoBehavior<PlayerHealth>
     {
         public UnityEvent OnPlayerDied;
+        [SerializeField] PlayerMovement _playerMovement;
+        [SerializeField] FirstPersonCameraController _cameraController;
+        [SerializeField] SmoothCamera _smoothCamera;
+        [SerializeField] Transform _cameraTransform;
+
         public static float MaxHealth => 100f;
         public float CurrentHealth { get; private set; }
         bool IsDead => CurrentHealth <= 0;
 
-        const float DeathFadeDuration = 1.0f;
+        const float DeathFadeDuration = 1.5f;
         const float RegenerationRate = 20f;
         const float RegenerationDelay = 2f;
         const float MaxVignetteOpacity = 0.8f;
@@ -26,9 +31,12 @@ namespace GravityGame.Player
         float _timeSinceLastDamage;
         Texture2D _vignetteTexture;
 
+        Vector3 _initialCameraLocalPos;
+
         void Awake()
         {
             CreateVignetteTexture();
+            _initialCameraLocalPos = _cameraTransform.localPosition;
             OnEnable();
         }
 
@@ -39,6 +47,14 @@ namespace GravityGame.Player
             CurrentHealth = MaxHealth;
             _timeSinceLastDamage = RegenerationDelay;
             _deathFadeAlpha = 0f;
+
+            _playerMovement.enabled = true;
+            _cameraController.enabled = true;
+            _cameraController.LookDownRotation = 0;
+            _cameraController.LookRightRotation = _cameraController.transform.parent.localEulerAngles.y;
+            _smoothCamera.enabled = true;
+            _cameraTransform.localPosition = _initialCameraLocalPos;
+            _cameraTransform.localRotation = Quaternion.identity;
         }
 
         void Update()
@@ -66,14 +82,31 @@ namespace GravityGame.Player
         void Die()
         {
             if (_deathFadeAlpha > 0f) return;
+
+            _playerMovement.enabled = false;
+            _cameraController.enabled = false;
+            _smoothCamera.enabled = false;
+
             StartCoroutine(FadeToBlackThenRespawn());
         }
 
         IEnumerator FadeToBlackThenRespawn()
         {
             float timer = 0f;
+
+            var startPos = _cameraTransform.localPosition;
+            var startRot = _cameraTransform.localRotation;
+            float rollDirection = Random.value < 0.5f ? 1f : -1f;
+            var endPos = startPos + new Vector3(-rollDirection * 1.5f, -1f, 0);
+            var endRot = startRot * Quaternion.Euler(0, 0, 90f * rollDirection);
+
             while (timer < DeathFadeDuration) {
-                _deathFadeAlpha = Mathf.Lerp(0f, 1f, timer / DeathFadeDuration);
+                float progress = 1 - Mathf.Pow(1 - timer / DeathFadeDuration, 3);
+
+                _deathFadeAlpha = Mathf.Lerp(0f, 1f, progress);
+                _cameraTransform.localPosition = Vector3.Lerp(startPos, endPos, progress);
+                _cameraTransform.localRotation = Quaternion.Slerp(startRot, endRot, progress);
+
                 timer += Time.deltaTime;
                 yield return null;
             }
