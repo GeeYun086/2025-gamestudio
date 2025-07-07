@@ -9,20 +9,6 @@ EditorBuildSettings:
     path: Assets/Scenes/MainScene.unity
     guid: 99c9720ab356a0642a771bea13969a05
   - enabled: 1
-    path: Assets/Scenes/CargoSection.unity
-    guid: 26b6895977eb4804cbab57ba21326a4c
-  - enabled: 1
-    path: Assets/Scenes/[2.4]Cargo.unity
-    guid: c41ef10aef44d244788f70b19639a525
-  - enabled: 1
-    path: Assets/Scenes/[2.1]Cargo.unity
-    guid: a06d4c39f250abc46b194a2e49c10cff
-  - enabled: 1
-    path: Assets/Scenes/[2.2]Cargo.unity
-    guid: ece649bfc2cd35e48a0c7340c5596e8b
-  - enabled: 1
-    path: Assets/Scenes/[2.3]Cargo.unity
-    guid: c116ee9d141aad4408f5b3f2655c71a4
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0
