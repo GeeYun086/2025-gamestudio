@@ -35,10 +35,6 @@
                         text="Settings"
                         class="menu-item" />
                     <engine:Button
-                        name="AudioButton"
-                        text="Audio"
-                        class="menu-item" />
-                    <engine:Button
                         name="CreditsButton"
                         text="Credits"
                         class="menu-item" />

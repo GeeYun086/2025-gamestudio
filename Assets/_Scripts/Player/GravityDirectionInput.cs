@@ -41,7 +41,7 @@ namespace GravityGame.Player
         [SerializeField] AudioClip _changeGravitySound;
         [SerializeField] AudioClip _cannotChangeGravitySound;
 
-        static GravityDirectionRadialMenu GravityChangeMenu => GameUI.instance.elements.GravityDirectionRadialMenu;
+        static GravityDirectionRadialMenu GravityChangeMenu => GameUI.Instance.Elements.GravityDirectionRadialMenu;
 
         PlayerCarry _carry;
 
