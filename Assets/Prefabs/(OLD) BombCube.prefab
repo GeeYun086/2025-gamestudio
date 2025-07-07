@@ -125,7 +125,7 @@ GameObject:
   - component: {fileID: 7659109521922652848}
   - component: {fileID: 9102643707808039048}
   m_Layer: 0
-  m_Name: BombCube
+  m_Name: (OLD) BombCube
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
