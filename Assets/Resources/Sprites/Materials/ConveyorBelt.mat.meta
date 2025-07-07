@@ -1,5 +1,9 @@
 fileFormatVersion: 2
+<<<<<<<< HEAD:Assets/Scenes/enemy scene/NavMesh-NavMesh Surface.asset.meta
+guid: 6c1e115a41b77a541b5e476c20f8adee
+========
 guid: 640f9f77da484ca499208b43df2f9419
+>>>>>>>> fix-spider-carrier-1:Assets/Resources/Sprites/Materials/ConveyorBelt.mat.meta
 NativeFormatImporter:
   externalObjects: {}
   mainObjectFileID: 2100000
