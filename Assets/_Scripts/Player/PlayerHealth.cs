@@ -102,8 +102,11 @@ namespace GravityGame.Player
 
         void HandleHealthRegeneration()
         {
-            _timeSinceLastDamage += Time.deltaTime;
-            if (_timeSinceLastDamage >= RegenerationDelay && CurrentHealth < MaxHealth) Heal(RegenerationRate * Time.deltaTime);
+            if (_timeSinceLastDamage < RegenerationDelay) {
+                _timeSinceLastDamage += Time.deltaTime;
+            } else if (CurrentHealth < MaxHealth) {
+                Heal(RegenerationRate * Time.deltaTime);
+            }
         }
 
         void CreateVignetteTexture()
