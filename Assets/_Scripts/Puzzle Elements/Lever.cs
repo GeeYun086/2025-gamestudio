@@ -30,9 +30,6 @@ namespace GravityGame.Puzzle_Elements
 
         void SetPowered(bool value)
         {
-            // Wenn sich nichts ändert, abbrechen
-            if (_isPowered == value) return;
-
             _isPowered = value;
             _leverOn.SetActive(_isPowered);
             _leverOff.SetActive(!_isPowered);
@@ -41,8 +38,7 @@ namespace GravityGame.Puzzle_Elements
             foreach (var component in _logicComponents.Where(c => c != null)) {
                 component.IsPowered = _isPowered;
             }
-
-            // Audio-Events feuern
+            
             if (_isPowered)
                 OnSwitchedOn?.Invoke();
             else
@@ -55,13 +51,10 @@ namespace GravityGame.Puzzle_Elements
 
         void OnValidate() => SetPowered(_isPowered);
         
-        
     #region Save and Load
 
         public bool Save() => _isPowered;
-
         public void Load(bool data) => SetPowered(data);
-
         [field: SerializeField] public int SaveDataID { get; set; }
 
     #endregion

@@ -1,12 +1,16 @@
 using UnityEngine;
 
+/// <summary>
+/// Plays the assigned on/off audio clips when its PlayOn() or PlayOff() methods are called.
+/// </summary>
 [RequireComponent(typeof(AudioSource))]
 public class SwitchSound : MonoBehaviour
 {
-    [Header("Switch-Sounds")]
-    [Tooltip("Sound beim Einschalten")]
+    [Header("Switch Sounds")]
+    [Tooltip("Audio clip to play when switched on")]
     [SerializeField] private AudioClip _clipOn;
-    [Tooltip("Sound beim Ausschalten")]
+    
+    [Tooltip("Audio clip to play when switched off")]
     [SerializeField] private AudioClip _clipOff;
 
     private AudioSource _src;
@@ -14,19 +18,16 @@ public class SwitchSound : MonoBehaviour
     void Awake()
     {
         _src = GetComponent<AudioSource>();
-        _src.playOnAwake = false;
-        // räumlicher 3D-Sound (kann weg, wenn 2D-Sound gewünscht)
-        _src.spatialBlend = 1f;
     }
 
-    /// <summary>Wird aufgerufen, wenn der Hebel an geht.</summary>
+    
     public void PlayOn()
     {
         if (_clipOn != null)
             _src.PlayOneShot(_clipOn);
     }
 
-    /// <summary>Wird aufgerufen, wenn der Hebel aus geht.</summary>
+    
     public void PlayOff()
     {
         if (_clipOff != null)
