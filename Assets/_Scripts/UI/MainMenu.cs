@@ -8,7 +8,7 @@ using UnityEditor;
 namespace GravityGame.UI
 {
     /// <summary>
-    /// Handles the main menu UI: styling, element binding, and button callbacks.
+    ///     Handles the main menu UI: styling, element binding, and button callbacks.
     /// </summary>
     [RequireComponent(typeof(UIDocument))]
     public class MainMenu : MonoBehaviour
@@ -16,62 +16,58 @@ namespace GravityGame.UI
         [Header("Assign your OCRA.ttf Unity Font here")]
         public Font OcrFont;
 
-        private Label  _titleLabel;
-        private Button _newGameButton;
-        private Button _continueButton;
-        private Button _settingsButton;
-        private Button _creditsButton;
-        private Button _quitButton;
+        Label _titleLabel;
+        Button _newGameButton;
+        Button _continueButton;
+        Button _settingsButton;
+        Button _creditsButton;
+        Button _quitButton;
 
-        private void OnEnable()
+        void OnEnable()
         {
             // Retrieve the root element from the attached UIDocument.
             var root = GetComponent<UIDocument>().rootVisualElement;
 
             // Find UI elements by their names in the UXML.
-            _titleLabel     = root.Q<Label>("Title");
-            _newGameButton  = root.Q<Button>("NewGameButton");
+            _titleLabel = root.Q<Label>("Title");
+            _newGameButton = root.Q<Button>("NewGameButton");
             _continueButton = root.Q<Button>("ContinueButton");
             _settingsButton = root.Q<Button>("SettingsButton");
-            _creditsButton  = root.Q<Button>("CreditsButton");
-            _quitButton     = root.Q<Button>("QuitButton");
+            _creditsButton = root.Q<Button>("CreditsButton");
+            _quitButton = root.Q<Button>("QuitButton");
 
             // If any element is missing, log an error and abort initialization.
-            if (_titleLabel     == null ||
-                _newGameButton  == null ||
+            if (_titleLabel == null ||
+                _newGameButton == null ||
                 _continueButton == null ||
                 _settingsButton == null ||
-                _creditsButton  == null ||
-                _quitButton     == null)
-            {
+                _creditsButton == null ||
+                _quitButton == null) {
                 Debug.LogError("MainMenu: One or more UI elements could not be found in UXML!");
                 return;
             }
 
             // Apply OCRA font and custom styling if a font asset is assigned.
-            if (OcrFont != null)
-            {
+            if (OcrFont != null) {
                 var sFont = new StyleFont(OcrFont);
 
                 // Title label: set font, font size, and color.
                 _titleLabel.style.unityFont = sFont;
-                _titleLabel.style.fontSize  = 46;
-                _titleLabel.style.color     = new StyleColor(Color.red);
+                _titleLabel.style.fontSize = 46;
+                _titleLabel.style.color = new StyleColor(Color.red);
 
                 // Buttons: set font and font size.
-                _newGameButton.style.unityFont    = sFont;
-                _newGameButton.style.fontSize     = 20;
-                _continueButton.style.unityFont   = sFont;
-                _continueButton.style.fontSize    = 20;
-                _settingsButton.style.unityFont   = sFont;
-                _settingsButton.style.fontSize    = 20;
-                _creditsButton.style.unityFont    = sFont;
-                _creditsButton.style.fontSize     = 20;
-                _quitButton.style.unityFont       = sFont;
-                _quitButton.style.fontSize        = 20;
-            }
-            else
-            {
+                _newGameButton.style.unityFont = sFont;
+                _newGameButton.style.fontSize = 20;
+                _continueButton.style.unityFont = sFont;
+                _continueButton.style.fontSize = 20;
+                _settingsButton.style.unityFont = sFont;
+                _settingsButton.style.fontSize = 20;
+                _creditsButton.style.unityFont = sFont;
+                _creditsButton.style.fontSize = 20;
+                _quitButton.style.unityFont = sFont;
+                _quitButton.style.fontSize = 20;
+            } else {
                 Debug.LogWarning("MainMenu: OcrFont is null. Text will use the default font.");
             }
 
@@ -79,49 +75,49 @@ namespace GravityGame.UI
             _titleLabel.text = "Game title";
 
             // Register click event handlers for each button.
-            _newGameButton.clicked     += OnNewGameClicked;
-            _continueButton.clicked    += OnContinueClicked;
-            _settingsButton.clicked    += OnSettingsClicked;
-            _creditsButton.clicked     += OnCreditsClicked;
-            _quitButton.clicked        += OnQuitClicked;
+            _newGameButton.clicked += OnNewGameClicked;
+            _continueButton.clicked += OnContinueClicked;
+            _settingsButton.clicked += OnSettingsClicked;
+            _creditsButton.clicked += OnCreditsClicked;
+            _quitButton.clicked += OnQuitClicked;
         }
 
         /// <summary>
-        /// Loads the main game scene when starting a new game.
+        ///     Loads the main game scene when starting a new game.
         /// </summary>
-        private void OnNewGameClicked()
+        void OnNewGameClicked()
         {
             SceneManager.LoadScene("MainScene");
         }
 
         /// <summary>
-        /// Placeholder for loading saved progress. To be implemented.
+        ///     Placeholder for loading saved progress. To be implemented.
         /// </summary>
-        private void OnContinueClicked()
+        void OnContinueClicked()
         {
             // TODO: Integrate save system to load existing game progress.
         }
 
         /// <summary>
-        /// Placeholder for opening the settings interface. To be implemented.
+        ///     Placeholder for opening the settings interface. To be implemented.
         /// </summary>
-        private void OnSettingsClicked()
+        void OnSettingsClicked()
         {
             // TODO: Open settings panel or scene.
         }
 
         /// <summary>
-        /// Placeholder for showing the credits screen. To be implemented.
+        ///     Placeholder for showing the credits screen. To be implemented.
         /// </summary>
-        private void OnCreditsClicked()
+        void OnCreditsClicked()
         {
             // TODO: Show credits panel or scene.
         }
 
         /// <summary>
-        /// Quits the application; if running in the editor, stops play mode.
+        ///     Quits the application; if running in the editor, stops play mode.
         /// </summary>
-        private void OnQuitClicked()
+        void OnQuitClicked()
         {
 #if UNITY_EDITOR
             EditorApplication.isPlaying = false;
