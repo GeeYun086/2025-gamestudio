@@ -20,6 +20,7 @@ namespace GravityGame.Player
         const float DeathFadeDuration = 1.0f;
         const float RegenerationRate = 20f;
         const float RegenerationDelay = 2f;
+        const float MaxVignetteOpacity = 0.8f;
 
         float _deathFadeAlpha;
         float _timeSinceLastDamage;
@@ -90,9 +91,11 @@ namespace GravityGame.Player
                 return;
             }
 
-            float damageAlpha = Mathf.Max(1f - CurrentHealth / MaxHealth, Mathf.Max(0f, 1f - _timeSinceLastDamage / RegenerationDelay));
-            if (damageAlpha > 0f && _vignetteTexture) {
-                GUI.color = new Color(255, 0, 0, 0.6f * damageAlpha);
+            float damageIntensity = 1f - CurrentHealth / MaxHealth;
+            if (damageIntensity > 0f && _vignetteTexture) {
+                GUI.color = new Color(0.5f, 0f, 0f) {
+                    a = damageIntensity * MaxVignetteOpacity
+                };
                 GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), _vignetteTexture);
             }
         }
