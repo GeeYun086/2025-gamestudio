@@ -58,14 +58,6 @@ namespace GravityGame.PuzzleElements
             var playerHealth = other.gameObject.GetComponent<PlayerHealth>();
             if (playerHealth == null) return;
 
-            // Cooldown check
-            if (_cooldowns.TryGetValue(playerHealth, out float lastTime) &&
-                Time.time - lastTime < _laserSpawner.DamageCooldown)
-                return;
-
-            playerHealth.TakeDamage(_laserSpawner.FlatDamage);
-            Debug.Log($"[LaserBeamCylinder] Player hit by collision! Damage applied: {_laserSpawner.FlatDamage}. Current Health: {playerHealth.CurrentHealth}");
-
             var playerRb = other.gameObject.GetComponent<Rigidbody>();
             if (playerRb != null) {
                 //playerRb.linearVelocity = Vector3.zero;
@@ -73,9 +65,17 @@ namespace GravityGame.PuzzleElements
                 Vector3 localPushDir = (localPlayerPos-new Vector3(0,localPlayerPos.y,0)).normalized;
                 Vector3 worldPushDir = transform.TransformDirection(localPushDir);
                 float totalForce = _laserSpawner.KnockbackForce;
-                playerRb.AddForce(worldPushDir * totalForce, ForceMode.Impulse);
+                playerRb.linearVelocity = worldPushDir * totalForce;
                 Debug.Log($"[LaserBeamCylinder] Knockback applied to player: {worldPushDir * _laserSpawner.KnockbackForce}");
             }
+            
+            // Cooldown check
+            if (_cooldowns.TryGetValue(playerHealth, out float lastTime) &&
+                Time.time - lastTime < _laserSpawner.DamageCooldown)
+                return;
+
+            playerHealth.TakeDamage(_laserSpawner.FlatDamage);
+            Debug.Log($"[LaserBeamCylinder] Player hit by collision! Damage applied: {_laserSpawner.FlatDamage}. Current Health: {playerHealth.CurrentHealth}");
 
             if (playerHealth.CurrentHealth <= 0)
                 Debug.Log("[LaserBeamCylinder] Player killed by laser.");
