@@ -12,7 +12,7 @@ namespace GravityGame.Puzzle_Elements
         [SerializeField] float _pullRadius = 20f;
         [SerializeField] float _pullForce = 50f;
         [SerializeField] LayerMask _affectedLayers = -1;
-        [SerializeField] AnimationCurve _forceCurve = AnimationCurve.Linear(0f, 1f, 1f, 0f);
+        [SerializeField] AnimationCurve _forceCurve = AnimationCurve.Linear(0f, 0f, 1f, 1f);
 
         MeshCollider _meshCollider;
 
@@ -38,15 +38,11 @@ namespace GravityGame.Puzzle_Elements
                 var rb = hitColliders[i].GetComponent<Rigidbody>();
                 if (!rb || rb.gameObject == gameObject) continue;
                 if (Vector3.Dot(rb.position - transform.position, transform.forward) <= 0) continue;
-
-                var projectionOnPlane = new Plane(transform.forward, transform.position).ClosestPointOnPlane(rb.position);
-                var lineOfSightVector = rb.position - transform.position;
-
-                float t = Mathf.Clamp01(Vector3.Dot(projectionOnPlane - transform.position, lineOfSightVector) / lineOfSightVector.sqrMagnitude);
-                var pullVector = (transform.position + lineOfSightVector * t) - rb.position;
-
+                
+                var pullVector = _meshCollider.ClosestPoint(rb.position) - rb.position;
+                float forceMultiplier = _forceCurve.Evaluate(1f - Mathf.Clamp01(pullVector.magnitude / _pullRadius));
                 rb.AddForce(
-                    pullVector.normalized * (_pullForce * _forceCurve.Evaluate(1f - Mathf.Clamp01(pullVector.magnitude / _pullRadius))),
+                    pullVector.normalized * (_pullForce * forceMultiplier),
                     ForceMode.Acceleration
                 );
             }
