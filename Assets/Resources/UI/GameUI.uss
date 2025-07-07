@@ -2,7 +2,6 @@
 .pause-menu {
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
-    background-image: resource("UI/Images/bg_pausemenu");
     background-size: cover;
     background-position: center;
     display: flex;
@@ -14,7 +13,7 @@
 .menu-frame {
     width: 1500px;
     height: 800px;
-    background-image: resource("UI/Images/MenuFrame");
+    background-image: resource("UI/Images/pausemenu");
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
