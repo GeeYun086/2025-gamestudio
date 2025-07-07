@@ -13,16 +13,18 @@ namespace GravityGame
         Transform _player;
         Renderer _sphereRenderer;
         GameObject _laser;
+        GameObject _fakeLaser;
         [SerializeField] Material _unprovoked;
         [SerializeField] Material _provoked;
         [SerializeField] Material _aggressive;
         Stopwatch _timer;
-        Vector3? _targetRotation;
+        Vector3? _targetForward;
 
         void Awake()
         {
             _sphereRenderer = gameObject.transform.GetChild(0).GetComponent<Renderer>();
             _laser = gameObject.transform.GetChild(0).GetChild(3).gameObject;
+            _fakeLaser = gameObject.transform.GetChild(0).GetChild(4).gameObject;
             _player = GameObject.FindWithTag("Player").transform;
         }
 
@@ -32,14 +34,17 @@ namespace GravityGame
             switch (distance) {
                 case < 8:
                     _sphereRenderer.material = _provoked;
+                    _fakeLaser.SetActive(true);
                     Shoot(.5f);
                     break;
                 case < 12:
                     _sphereRenderer.material = _aggressive;
+                    _fakeLaser.SetActive(true);
                     Shoot(2f);
                     break;
                 default:
                     _laser.SetActive(false);
+                    _fakeLaser.SetActive(false);
                     _sphereRenderer.material = _unprovoked;
                     ResetTimer();
                     LookAround();
@@ -55,10 +60,15 @@ namespace GravityGame
 
         void LookAround()
         {
-            if (_targetRotation == null || (transform.localEulerAngles - _targetRotation.Value).magnitude < 60f)
-                _targetRotation = new Vector3(Random.Range(-85, 0), Random.Range(-180, 180), 0);
-            if (_targetRotation != null)
-                transform.Rotate((transform.rotation.eulerAngles - _targetRotation.Value) * Time.deltaTime / 3);
+            if (_targetForward == null || Vector3.Angle(transform.forward, _targetForward.Value) < 5f) {
+                Vector3 randomDirection = Random.onUnitSphere;
+                if (randomDirection.y < 0)
+                    randomDirection.y = -randomDirection.y;
+                _targetForward = randomDirection;
+            }
+
+            Quaternion targetRotation = Quaternion.LookRotation(_targetForward.Value, Vector3.up);
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, Time.deltaTime * 60f);
         }
 
         void Shoot(float delay)
