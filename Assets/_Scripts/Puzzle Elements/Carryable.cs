@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using GravityGame.Player;
 using UnityEngine;
 
@@ -18,7 +19,7 @@ namespace GravityGame.Puzzle_Elements
         void OnEnable()
         {
             Rigidbody = GetComponent<Rigidbody>();
-            Collider = GetComponent<Collider>();
+            Collider = GetComponents<Collider>().FirstOrDefault(c => !c.isTrigger);
         }
 
         public void Interact()

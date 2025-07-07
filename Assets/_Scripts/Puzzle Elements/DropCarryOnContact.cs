@@ -14,7 +14,7 @@ namespace GravityGame.Puzzle_Elements
         {
             if (!collision.gameObject.TryGetComponent<PlayerCarry>(out var carry)) return;
             var rb = carry.GetComponent<Rigidbody>();
-            var point = carry.transform.position + 1.0f * transform.up;
+            var point = carry.transform.position + 1.0f * carry.transform.up;
             var direction = -Vector3.Project(rb.linearVelocity, transform.forward).normalized;
             var dropPoint = point + direction * 1.0f;
             carry.ForceDrop(dropPoint);
