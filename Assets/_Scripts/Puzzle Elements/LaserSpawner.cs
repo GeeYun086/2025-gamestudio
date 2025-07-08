@@ -1,5 +1,7 @@
 ﻿using System;
+using GravityGame;
 using GravityGame.Puzzle_Elements;
+using GravityGame.PuzzleElements;
 using UnityEngine;
 
 /// <summary>
@@ -12,6 +14,21 @@ public class LaserSpawner : RedstoneComponent
     [Header("Laser Prefab")]
     [Tooltip("Drag your LaserBeam prefab here.")]
     [SerializeField] GameObject _laserPrefab;
+
+    [Header("Laser Settings")]
+    [SerializeField] float _maxDistance; 
+    [SerializeField] float _flatDamage;
+    [SerializeField] float _knockbackForce;
+    [SerializeField] float _beamRadius;
+    [SerializeField] float _damageCooldown;
+    [SerializeField] LayerMask _obstacleMask;
+    
+    public float MaxDistance => _maxDistance;
+    public float FlatDamage => _flatDamage;
+    public float KnockbackForce => _knockbackForce;
+    public float BeamRadius => _beamRadius;
+    public float DamageCooldown => _damageCooldown;
+    public LayerMask ObstacleMask => _obstacleMask;
 
     [Header("Spawn Settings")]
     [Tooltip("Offset from this GameObject’s position to spawn the beam origin.")]
@@ -71,13 +88,13 @@ public class LaserSpawner : RedstoneComponent
         }
         DestroyLaser();
         var worldPos = transform.TransformPoint(_spawnOffset);
-        _spawnedLaser = Instantiate(_laserPrefab, worldPos, transform.rotation);
+        _spawnedLaser = Instantiate(_laserPrefab, worldPos, new Quaternion(0, 0, 0, 0));
         _spawnedLaser.transform.SetParent(transform, worldPositionStays: true);
         OnLaserSpawned?.Invoke(_spawnedLaser);
     }
 
     /// <summary>
-    ///     Destroys the last spawned laser instance, if one exists.
+    ///     Destroys the last spawned laser instance if one exists.
     /// </summary>
     void DestroyLaser()
     {
