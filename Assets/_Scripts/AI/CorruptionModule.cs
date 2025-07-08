@@ -30,6 +30,11 @@ namespace GravityGame
 
         void Update()
         {
+            if (!transform.parent) {
+                _laser.SetActive(false);
+                _fakeLaser.SetActive(false);
+                return;
+            }
             float distance = Vector3.Distance(_player.position, transform.position);
             switch (distance) {
                 case < 8:
