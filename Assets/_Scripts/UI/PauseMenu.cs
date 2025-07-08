@@ -6,7 +6,7 @@ using Cursor = UnityEngine.Cursor;
 namespace GravityGame.UI
 {
     /// <summary>
-    ///     Manages the pause menu UI, including show/hide logic, volume control, Save button,
+    ///     Manages the pause menu UI, including show/hide logic, volume control, Save/Cancel behavior,
     ///     and navigation back to main menu.
     /// </summary>
     [RequireComponent(typeof(GameUI))]
@@ -25,7 +25,7 @@ namespace GravityGame.UI
         Button _backButton;
         Button _saveButton;
 
-        // sliders & their numeric-readout labels
+        // sliders & their numeric‐readout labels
         Slider _sfxSlider;
         Slider _musicSlider;
         Label _sfxValueLabel;
@@ -83,18 +83,16 @@ namespace GravityGame.UI
             _musicSlider = e.MusicVolumeSlider;
 
             // grab both volume labels by their UXML name ("volumelabel")
-            var volumeLabels = root
-                .Query<Label>(name: "volumelabel")
-                .ToList();
+            var volumeLabels = root.Query<Label>(name: "volumelabel").ToList();
             if (volumeLabels.Count >= 2) {
                 _sfxValueLabel = volumeLabels[0];
                 _musicValueLabel = volumeLabels[1];
             } else {
-                Debug.LogError("PauseMenu: Couldn't find both volume-labels in UXML!");
+                Debug.LogError("PauseMenu: Couldn't find both volume‐labels in UXML!");
                 return;
             }
 
-            // bail-out if anything is null
+            // bail‐out if anything is null
             if (_pauseMenu == null || _mainPanel == null || _settingsPanel == null ||
                 _resumeButton == null || _settingsButton == null ||
                 _mainMenuButton == null || _backButton == null || _saveButton == null ||
@@ -113,47 +111,26 @@ namespace GravityGame.UI
             _resumeButton.clicked += ResumeGame;
             _settingsButton.clicked += ShowSettings;
             _mainMenuButton.clicked += GoToMainMenu;
-            _backButton.clicked += ShowMain;
-            _saveButton.clicked += SaveSettings;
+            _backButton.clicked += ShowMain; // Cancel: just flip panels
+            _saveButton.clicked += SaveSettings; // Persist & flip
 
-            // load saved prefs (0–1), convert to 0–100, set sliders & labels
-            float savedSfxNorm = PlayerPrefs.GetFloat(PrefSfxVolume, 1f);
-            float savedMusicNorm = PlayerPrefs.GetFloat(PrefMusicVolume, 1f);
-            float savedSfxPct = savedSfxNorm * 100f;
-            float savedMusicPct = savedMusicNorm * 100f;
-
-            _sfxSlider.value = savedSfxPct;
-            _musicSlider.value = savedMusicPct;
-            _sfxValueLabel.text = $"{Mathf.RoundToInt(savedSfxPct)}";
-            _musicValueLabel.text = $"{Mathf.RoundToInt(savedMusicPct)}";
-
-            // slider callbacks keep labels & prefs in sync
+            // slider callbacks: update labels (and audio feedback if desired),
+            // but **do not** write to PlayerPrefs here.
             _sfxSlider.RegisterValueChangedCallback(evt => {
                     float pct = evt.newValue;
-                    float norm = pct / 100f;
-                    PlayerPrefs.SetFloat(PrefSfxVolume, norm);
+                    // Optional live feedback:
+                    // AudioListener.volume = pct / 100f;
                     _sfxValueLabel.text = $"{Mathf.RoundToInt(pct)}";
                 }
             );
 
             _musicSlider.RegisterValueChangedCallback(evt => {
                     float pct = evt.newValue;
-                    float norm = pct / 100f;
-                    PlayerPrefs.SetFloat(PrefMusicVolume, norm);
+                    // Optional live feedback:
+                    // ... apply to Music mixer ...
                     _musicValueLabel.text = $"{Mathf.RoundToInt(pct)}";
                 }
             );
-
-            // font styling
-            if (OcrFont != null) {
-                var sFont = new StyleFont(OcrFont);
-                foreach (var btn in new[] { _resumeButton, _settingsButton, _mainMenuButton, _backButton, _saveButton }) {
-                    btn.style.unityFont = sFont;
-                    btn.style.fontSize = 20;
-                }
-            } else {
-                Debug.LogWarning("PauseMenu: OcrFont is null. Default font will be used.");
-            }
 
             _initialized = true;
         }
@@ -182,6 +159,15 @@ namespace GravityGame.UI
 
         void ShowSettings()
         {
+            // **Reset** sliders & labels to last‐saved before showing
+            float savedSfxPct = PlayerPrefs.GetFloat(PrefSfxVolume, 1f) * 100f;
+            float savedMusicPct = PlayerPrefs.GetFloat(PrefMusicVolume, 1f) * 100f;
+
+            _sfxSlider.value = savedSfxPct;
+            _musicSlider.value = savedMusicPct;
+            _sfxValueLabel.text = $"{Mathf.RoundToInt(savedSfxPct)}";
+            _musicValueLabel.text = $"{Mathf.RoundToInt(savedMusicPct)}";
+
             _mainPanel.style.display = DisplayStyle.None;
             _settingsPanel.style.display = DisplayStyle.Flex;
         }
@@ -200,14 +186,14 @@ namespace GravityGame.UI
 
         void SaveSettings()
         {
-            // Persist both volumes
+            // Persist both volumes (0–100 → 0–1)
             PlayerPrefs.SetFloat(PrefSfxVolume, _sfxSlider.value / 100f);
             PlayerPrefs.SetFloat(PrefMusicVolume, _musicSlider.value / 100f);
             PlayerPrefs.Save();
 
             // Optionally apply immediately:
             AudioListener.volume = PlayerPrefs.GetFloat(PrefSfxVolume, 1f);
-            // TODO: route music volume to your mixer group as well
+            // TODO: route music volume to your mixer group.
 
             // Return to the main pause panel
             ShowMain();
