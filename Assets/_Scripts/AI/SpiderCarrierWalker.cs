@@ -111,19 +111,6 @@ namespace GravityGame.AI
                 Vector3 posError = _carrySocket.position - _carriedRb.position;
                 Vector3 posForce = posError * _spring - _carriedRb.linearVelocity * _damper;
                 _carriedRb.AddForce(posForce, ForceMode.Acceleration);
-                
-                Vector3 surfaceNormal = SampleSurfaceNormal(_agent.velocity.normalized);
-                Vector3 forwardOnPlane = Vector3.Cross(transform.right, surfaceNormal).normalized;
-                Quaternion targetRot = Quaternion.LookRotation(forwardOnPlane, surfaceNormal);
-                
-                Quaternion qError = targetRot * Quaternion.Inverse(_carriedRb.rotation);
-                qError.ToAngleAxis(out float angleDeg, out Vector3 axis);
-                if (angleDeg > 180f) angleDeg -= 360f;
-                float angleRad = angleDeg * Mathf.Deg2Rad;
-
-                Vector3 torque = axis.normalized * (angleRad * _spring)
-                                 - _carriedRb.angularVelocity * _damper;
-                //_carriedRb.AddTorque(torque, ForceMode.Acceleration);
             }
         }
 
@@ -136,7 +123,7 @@ namespace GravityGame.AI
             _targetCarryable = null;
             
             _carriedRb = _carriedCarryable.GetComponent<Rigidbody>();
-            _carriedRb.useGravity = true;
+            //_carriedRb.useGravity = true;
             _carriedRb.freezeRotation = true;
             
             _agent.stoppingDistance = _originalStoppingDistance;
@@ -199,7 +186,8 @@ namespace GravityGame.AI
                 Rigidbody rb = _carriedCarryable.GetComponent<Rigidbody>();
                 if (rb != null) {
                     rb.isKinematic = false;
-                    rb.useGravity = false;
+                    //rb.useGravity = false;
+                    rb.freezeRotation = false;
                 }
                 GameObject go = _carriedCarryable.gameObject;
                 _ignoreUntil[go] = Time.time + _ignoreSeconds;

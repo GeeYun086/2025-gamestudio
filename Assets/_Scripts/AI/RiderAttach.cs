@@ -49,7 +49,6 @@ public class RiderAttach : MonoBehaviour
         if(_playerRb == null) return;
 
         _playerRb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
-        _playerRb.interpolation = RigidbodyInterpolation.Interpolate;
         _isRiding = true;
     }
 
@@ -64,7 +63,6 @@ public class RiderAttach : MonoBehaviour
         _carryCollider = GetComponentInChildren<BoxCollider>();
 
         _playerRb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
-        _playerRb.interpolation         = RigidbodyInterpolation.Interpolate;
 
         _isRiding = true;
     }
@@ -87,21 +85,6 @@ public class RiderAttach : MonoBehaviour
         Vector3 vel      = _playerRb.linearVelocity;
         Vector3 force    = error * _posSpring - vel * _posDamper;
         _playerRb.AddForce(force, ForceMode.Acceleration);
-
-
-        Vector3 surfUp  = _carrySocket.up;
-        Vector3 forwardOnPlane = Vector3.Cross(-_carrySocket.right, surfUp).normalized;
-        Quaternion targetRot    = Quaternion.LookRotation(forwardOnPlane, surfUp);
-
-        Quaternion qError = targetRot * Quaternion.Inverse(_playerRb.rotation);
-        qError.ToAngleAxis(out float angleDeg, out Vector3 axis);
-        if (angleDeg > 180f) angleDeg -= 360f;
-        float angleRad = angleDeg * Mathf.Deg2Rad;
-
-        Vector3 angVel = _playerRb.angularVelocity;
-        Vector3 torque = axis.normalized * (angleRad * _rotSpring)
-                         - angVel * _rotDamper;
-        _playerRb.AddTorque(torque, ForceMode.Acceleration);
     }
     
     public bool CanAttach
