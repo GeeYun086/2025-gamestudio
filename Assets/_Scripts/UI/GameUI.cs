@@ -18,22 +18,24 @@ namespace GravityGame.UI
         public readonly Button SettingsButton;
         public readonly Button MainMenuButton;
         public readonly Button BackButton;
+        public readonly Button SaveButton;
         public readonly Slider SfxVolumeSlider;
         public readonly Slider MusicVolumeSlider;
 
         public GameUIElements(VisualElement root)
         {
             GravityDirectionRadialMenu = root.Q<GravityDirectionRadialMenu>("RadialMenu") ?? new GravityDirectionRadialMenu();
-            DebugElement              = root.Q<VisualElement>("Debug")          ?? new VisualElement();
-            PauseMenu                 = root.Q<VisualElement>("PauseMenu")      ?? new VisualElement();
-            MainPanel                 = root.Q<VisualElement>("MainPanel")      ?? new VisualElement();
-            SettingsPanel             = root.Q<VisualElement>("SettingsPanel")  ?? new VisualElement();
-            ResumeButton              = root.Q<Button>("ResumeButton")          ?? new Button();
-            SettingsButton            = root.Q<Button>("SettingsButton")        ?? new Button();
-            MainMenuButton            = root.Q<Button>("MainMenuButton")        ?? new Button();
-            BackButton                = root.Q<Button>("BackButton")            ?? new Button();
-            SfxVolumeSlider           = root.Q<Slider>("SfxVolumeSlider")      ?? new Slider();
-            MusicVolumeSlider         = root.Q<Slider>("MusicVolumeSlider")    ?? new Slider();
+            DebugElement = root.Q<VisualElement>("Debug") ?? new VisualElement();
+            PauseMenu = root.Q<VisualElement>("PauseMenu") ?? new VisualElement();
+            MainPanel = root.Q<VisualElement>("MainPanel") ?? new VisualElement();
+            SettingsPanel = root.Q<VisualElement>("SettingsPanel") ?? new VisualElement();
+            ResumeButton = root.Q<Button>("ResumeButton") ?? new Button();
+            SettingsButton = root.Q<Button>("SettingsButton") ?? new Button();
+            MainMenuButton = root.Q<Button>("MainMenuButton") ?? new Button();
+            BackButton = root.Q<Button>("BackButton") ?? new Button();
+            SaveButton = root.Q<Button>("SaveButton") ?? new Button();
+            SfxVolumeSlider = root.Q<Slider>("SfxVolumeSlider") ?? new Slider();
+            MusicVolumeSlider = root.Q<Slider>("MusicVolumeSlider") ?? new Slider();
         }
     }
 

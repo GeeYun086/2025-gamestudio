@@ -6,7 +6,8 @@ using Cursor = UnityEngine.Cursor;
 namespace GravityGame.UI
 {
     /// <summary>
-    /// Manages the pause menu UI, including show/hide logic, volume control, and navigation back to main menu.
+    ///     Manages the pause menu UI, including show/hide logic, volume control, Save button,
+    ///     and navigation back to main menu.
     /// </summary>
     [RequireComponent(typeof(GameUI))]
     public class PauseMenu : MonoBehaviour
@@ -14,21 +15,25 @@ namespace GravityGame.UI
         [Header("Assign your OCRA.ttf Unity Font here")]
         public Font OcrFont;
 
-        private VisualElement _pauseMenu;
-        private VisualElement _mainPanel;
-        private VisualElement _settingsPanel;
+        // panels & buttons
+        VisualElement _pauseMenu;
+        VisualElement _mainPanel;
+        VisualElement _settingsPanel;
+        Button _resumeButton;
+        Button _settingsButton;
+        Button _mainMenuButton;
+        Button _backButton;
+        Button _saveButton;
 
-        private Button _resumeButton;
-        private Button _settingsButton;
-        private Button _mainMenuButton;
-        private Button _backButton;
+        // sliders & their numeric-readout labels
+        Slider _sfxSlider;
+        Slider _musicSlider;
+        Label _sfxValueLabel;
+        Label _musicValueLabel;
 
-        private Slider _sfxSlider;
-        private Slider _musicSlider;
-
-        private bool _initialized;
-        private const string PrefSfxVolume   = "SfxVolume";
-        private const string PrefMusicVolume = "MusicVolume";
+        bool _initialized;
+        const string PrefSfxVolume = "SfxVolume";
+        const string PrefMusicVolume = "MusicVolume";
 
         void Awake()
         {
@@ -49,125 +54,163 @@ namespace GravityGame.UI
             if (Input.GetKeyDown(KeyCode.P))
                 TogglePause();
 
-            if (Time.timeScale == 0f)
-            {
+            if (Time.timeScale == 0f) {
                 Cursor.lockState = CursorLockMode.None;
-                Cursor.visible   = true;
+                Cursor.visible = true;
             }
         }
 
-        private void TryInitialize()
+        void TryInitialize()
         {
             if (_initialized || GameUI.Instance == null)
                 return;
 
+            var root = GameUI.Instance.UIDocument.rootVisualElement;
             var e = GameUI.Instance.Elements;
-            _pauseMenu     = e.PauseMenu;
-            _mainPanel     = e.MainPanel;
+
+            // grab panels & buttons
+            _pauseMenu = e.PauseMenu;
+            _mainPanel = e.MainPanel;
             _settingsPanel = e.SettingsPanel;
+            _resumeButton = e.ResumeButton;
+            _settingsButton = e.SettingsButton;
+            _mainMenuButton = e.MainMenuButton;
+            _backButton = e.BackButton;
+            _saveButton = e.SaveButton;
 
-            _resumeButton  = e.ResumeButton;
-            _settingsButton= e.SettingsButton;
-            _mainMenuButton= e.MainMenuButton;
-            _backButton    = e.BackButton;
+            // grab sliders
+            _sfxSlider = e.SfxVolumeSlider;
+            _musicSlider = e.MusicVolumeSlider;
 
-            _sfxSlider     = e.SfxVolumeSlider;
-            _musicSlider   = e.MusicVolumeSlider;
+            // grab both volume labels by their UXML name ("volumelabel")
+            var volumeLabels = root
+                .Query<Label>(name: "volumelabel")
+                .ToList();
+            if (volumeLabels.Count >= 2) {
+                _sfxValueLabel = volumeLabels[0];
+                _musicValueLabel = volumeLabels[1];
+            } else {
+                Debug.LogError("PauseMenu: Couldn't find both volume-labels in UXML!");
+                return;
+            }
 
-            // Bail out if any element is missing
+            // bail-out if anything is null
             if (_pauseMenu == null || _mainPanel == null || _settingsPanel == null ||
                 _resumeButton == null || _settingsButton == null ||
-                _mainMenuButton == null || _backButton == null ||
-                _sfxSlider == null || _musicSlider == null)
-            {
+                _mainMenuButton == null || _backButton == null || _saveButton == null ||
+                _sfxSlider == null || _musicSlider == null ||
+                _sfxValueLabel == null || _musicValueLabel == null) {
                 Debug.LogError("PauseMenu: One or more UI elements could not be found!");
                 return;
             }
 
-            // Hide everything initially
-            _pauseMenu.style.display     = DisplayStyle.None;
-            _mainPanel.style.display     = DisplayStyle.None;
+            // hide panels at start
+            _pauseMenu.style.display = DisplayStyle.None;
+            _mainPanel.style.display = DisplayStyle.None;
             _settingsPanel.style.display = DisplayStyle.None;
 
-            // Hook up buttons
-            _resumeButton.clicked   += ResumeGame;
+            // hook up buttons
+            _resumeButton.clicked += ResumeGame;
             _settingsButton.clicked += ShowSettings;
             _mainMenuButton.clicked += GoToMainMenu;
-            _backButton.clicked     += ShowMain;
+            _backButton.clicked += ShowMain;
+            _saveButton.clicked += SaveSettings;
 
-            // Load saved prefs & set slider values
-            float savedSfx   = PlayerPrefs.GetFloat(PrefSfxVolume,   1f);
-            float savedMusic = PlayerPrefs.GetFloat(PrefMusicVolume, 1f);
-            _sfxSlider.value   = savedSfx;
-            _musicSlider.value = savedMusic;
+            // load saved prefs (0–1), convert to 0–100, set sliders & labels
+            float savedSfxNorm = PlayerPrefs.GetFloat(PrefSfxVolume, 1f);
+            float savedMusicNorm = PlayerPrefs.GetFloat(PrefMusicVolume, 1f);
+            float savedSfxPct = savedSfxNorm * 100f;
+            float savedMusicPct = savedMusicNorm * 100f;
 
-            _sfxSlider.RegisterValueChangedCallback(evt =>
-            {
-                PlayerPrefs.SetFloat(PrefSfxVolume, evt.newValue);
-                // TODO: Apply to your SFX mixer group here
-            });
-            _musicSlider.RegisterValueChangedCallback(evt =>
-            {
-                PlayerPrefs.SetFloat(PrefMusicVolume, evt.newValue);
-                // TODO: Apply to your Music mixer group here
-            });
+            _sfxSlider.value = savedSfxPct;
+            _musicSlider.value = savedMusicPct;
+            _sfxValueLabel.text = $"{Mathf.RoundToInt(savedSfxPct)}";
+            _musicValueLabel.text = $"{Mathf.RoundToInt(savedMusicPct)}";
 
-            // Apply OCRA font to buttons
-            if (OcrFont != null)
-            {
-                var sFont = new StyleFont(OcrFont);
-                foreach (var btn in new[]{ _resumeButton, _settingsButton, _mainMenuButton, _backButton })
-                {
-                    btn.style.unityFont = sFont;
-                    btn.style.fontSize  = 20;
+            // slider callbacks keep labels & prefs in sync
+            _sfxSlider.RegisterValueChangedCallback(evt => {
+                    float pct = evt.newValue;
+                    float norm = pct / 100f;
+                    PlayerPrefs.SetFloat(PrefSfxVolume, norm);
+                    _sfxValueLabel.text = $"{Mathf.RoundToInt(pct)}";
                 }
-            }
-            else
-            {
+            );
+
+            _musicSlider.RegisterValueChangedCallback(evt => {
+                    float pct = evt.newValue;
+                    float norm = pct / 100f;
+                    PlayerPrefs.SetFloat(PrefMusicVolume, norm);
+                    _musicValueLabel.text = $"{Mathf.RoundToInt(pct)}";
+                }
+            );
+
+            // font styling
+            if (OcrFont != null) {
+                var sFont = new StyleFont(OcrFont);
+                foreach (var btn in new[] { _resumeButton, _settingsButton, _mainMenuButton, _backButton, _saveButton }) {
+                    btn.style.unityFont = sFont;
+                    btn.style.fontSize = 20;
+                }
+            } else {
                 Debug.LogWarning("PauseMenu: OcrFont is null. Default font will be used.");
             }
 
             _initialized = true;
         }
 
-        private void TogglePause()
+        void TogglePause()
         {
             if (!_initialized) return;
             if (Time.timeScale == 0f) ResumeGame();
-            else                        PauseGame();
+            else PauseGame();
         }
 
-        private void PauseGame()
+        void PauseGame()
         {
             Time.timeScale = 0f;
             _pauseMenu.style.display = DisplayStyle.Flex;
             ShowMain();
         }
 
-        private void ResumeGame()
+        void ResumeGame()
         {
             Time.timeScale = 1f;
             _pauseMenu.style.display = DisplayStyle.None;
             Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible   = false;
+            Cursor.visible = false;
         }
 
-        private void ShowSettings()
+        void ShowSettings()
         {
-            _mainPanel.style.display     = DisplayStyle.None;
+            _mainPanel.style.display = DisplayStyle.None;
             _settingsPanel.style.display = DisplayStyle.Flex;
         }
 
-        private void ShowMain()
+        void ShowMain()
         {
             _settingsPanel.style.display = DisplayStyle.None;
-            _mainPanel.style.display     = DisplayStyle.Flex;
+            _mainPanel.style.display = DisplayStyle.Flex;
         }
 
-        private void GoToMainMenu()
+        void GoToMainMenu()
         {
             Time.timeScale = 1f;
             SceneManager.LoadScene("MainMenu");
+        }
+
+        void SaveSettings()
+        {
+            // Persist both volumes
+            PlayerPrefs.SetFloat(PrefSfxVolume, _sfxSlider.value / 100f);
+            PlayerPrefs.SetFloat(PrefMusicVolume, _musicSlider.value / 100f);
+            PlayerPrefs.Save();
+
+            // Optionally apply immediately:
+            AudioListener.volume = PlayerPrefs.GetFloat(PrefSfxVolume, 1f);
+            // TODO: route music volume to your mixer group as well
+
+            // Return to the main pause panel
+            ShowMain();
         }
     }
 }
