@@ -67,6 +67,12 @@ namespace GravityGame.UI
                 : new VisualElement();
 
             Elements = new GameUIElements(root);
+
+            // **Hide** all pause‐menu panels immediately,
+            // so nothing is visible until PauseMenu.TogglePause() runs.
+            Elements.PauseMenu.style.display     = DisplayStyle.None;
+            Elements.MainPanel.style.display     = DisplayStyle.None;
+            Elements.SettingsPanel.style.display = DisplayStyle.None;
         }
     }
 }
