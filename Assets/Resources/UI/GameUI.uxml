@@ -1,21 +1,18 @@
-<engine:UXML xmlns:engine="UnityEngine.UIElements" noNamespaceSchemaLocation="../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
-    <Style src="project://database/Assets/Resources/UI/GameUI.uss?fileID=7433441132597879392&amp;guid=a9534c0c813c45c6a5b4a048a6b04b1d&amp;type=3#GameUI" />
-    <engine:VisualElement name="PauseMenu" class="menu-frame" style="background-size: 1920px 1080px; width: 1920px; height: 1080px; background-image: resource(&apos;UI/Images/pausemenu&apos;); background-color: rgba(0, 0, 0, 0.32);">
-        <engine:VisualElement name="VisualElement" class="button-list" style="height: 1080px; width: 100%; margin-left: 50px; -unity-font-definition: url(&quot;project://database/Assets/Fonts/OCRA.ttf?fileID=12800000&amp;guid=9abada186f8687a40bbb14d189b9e26d&amp;type=3#OCRA&quot;); -unity-font-style: bold; font-size: 32px; top: 386px; left: 770px; background-size: 1920px 1080px;">
-            <engine:Button name="ResumeButton" text="Resume" class="menu-item" style="margin-top: 0; background-size: 50px 50%; width: 250px; height: 40px; background-color: rgba(5, 5, 5, 0); margin-left: 5px; margin-bottom: 0; padding-left: 2px; color: rgb(255, 255, 255); border-top-width: 0; border-right-width: 0; border-bottom-width: 0; border-left-width: 0;" />
-            <engine:Button name="SettingsButton" text="Settings" class="menu-item" style="width: 250px; height: 40px; margin-top: 0; position: relative; top: 42px; margin-bottom: 0; margin-left: 5px; background-color: rgba(223, 220, 226, 0); padding-left: 2px; color: rgb(255, 255, 255); border-top-width: 0; border-right-width: 0; border-bottom-width: 0; border-left-width: 0;" />
-            <engine:Button name="CreditsButton" text="Credits" class="menu-item" style="height: 40px; width: 250px; top: 83px; padding-left: 2px; margin-top: 0; margin-left: 5px; margin-bottom: 0; -unity-background-image-tint-color: rgb(255, 255, 255); background-color: rgba(170, 165, 174, 0); color: rgb(255, 255, 255); border-top-width: 0; border-right-width: 0; border-bottom-width: 0; border-left-width: 0;" />
-            <engine:Button name="MainMenuButton" text="Main Menu" class="menu-item" style="top: 123px; margin-top: 0; margin-bottom: 0; margin-left: 5px; padding-left: 2px; height: 40px; width: 250px; background-color: rgba(154, 150, 170, 0); color: rgb(255, 255, 255); border-top-width: 0; border-right-width: 0; border-bottom-width: 0; border-left-width: 0;" />
-        </engine:VisualElement>
-        <engine:VisualElement name="SettingsPanel" class="panel-content settings-panel" style="display: none;">
-            <engine:Label name="SoundLevelsLabel" text="Sound Levels" class="menu-header" />
-            <engine:VisualElement class="separator" />
-            <engine:VisualElement class="slider-container">
-                <engine:VisualElement class="icon-sound" />
-                <engine:Slider name="VolumeSlider" high-value="1" page-size="0.05" show-input-field="true" class="modern-slider" />
-            </engine:VisualElement>
-            <engine:VisualElement class="separator" />
-            <engine:Button name="BackButton" text="Back" class="menu-item" style="margin-top: 8px;" />
+<engine:UXML xmlns:engine="UnityEngine.UIElements"
+             noNamespaceSchemaLocation="../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/Resources/UI/GameUI.uss?fileID=7433441132597879392&amp;guid=a9534c0c813c45c6a5b4a048a6b04b1d&amp;type=3#GameUI"/>
+    <engine:VisualElement name="PauseMenu" class="menu-frame"
+                          style="background-size: 1920px 1080px; width: 1920px; height: 1080px; background-image: resource(&apos;UI/Images/pausemenu&apos;); background-color: rgba(0, 0, 0, 0.32);">
+        <engine:VisualElement name="VisualElement" class="button-list"
+                              style="height: 1080px; width: 100%; margin-left: 50px; -unity-font-definition: url(&quot;project://database/Assets/Fonts/OCRA.ttf?fileID=12800000&amp;guid=9abada186f8687a40bbb14d189b9e26d&amp;type=3#OCRA&quot;); -unity-font-style: bold; font-size: 32px; top: 386px; left: 770px; background-size: 1920px 1080px;">
+            <engine:Button name="ResumeButton" text="Resume" class="menu-item"
+                           style="margin-top: 0; background-size: 50px 50%; width: 250px; height: 40px; background-color: rgba(5, 5, 5, 0); margin-left: 5px; margin-bottom: 0; padding-left: 2px; color: rgb(255, 255, 255); border-top-width: 0; border-right-width: 0; border-bottom-width: 0; border-left-width: 0;"/>
+            <engine:Button name="SettingsButton" text="Settings" class="menu-item"
+                           style="width: 250px; height: 40px; margin-top: 0; position: relative; top: 42px; margin-bottom: 0; margin-left: 5px; background-color: rgba(223, 220, 226, 0); padding-left: 2px; color: rgb(255, 255, 255); border-top-width: 0; border-right-width: 0; border-bottom-width: 0; border-left-width: 0;"/>
+            <engine:Button name="CreditsButton" text="Credits" class="menu-item"
+                           style="height: 40px; width: 250px; top: 83px; padding-left: 2px; margin-top: 0; margin-left: 5px; margin-bottom: 0; -unity-background-image-tint-color: rgb(255, 255, 255); background-color: rgba(170, 165, 174, 0); color: rgb(255, 255, 255); border-top-width: 0; border-right-width: 0; border-bottom-width: 0; border-left-width: 0;"/>
+            <engine:Button name="MainMenuButton" text="Main Menu" class="menu-item"
+                           style="top: 123px; margin-top: 0; margin-bottom: 0; margin-left: 5px; padding-left: 2px; height: 40px; width: 250px; background-color: rgba(154, 150, 170, 0); color: rgb(255, 255, 255); border-top-width: 0; border-right-width: 0; border-bottom-width: 0; border-left-width: 0;"/>
         </engine:VisualElement>
     </engine:VisualElement>
 </engine:UXML>
