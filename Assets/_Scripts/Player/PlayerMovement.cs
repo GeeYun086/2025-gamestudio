@@ -93,7 +93,7 @@ namespace GravityGame.Player
             float deltaTime = Time.fixedDeltaTime;
             var velocity = _rigidbody.linearVelocity;
             var gravity = Gravity;
-            
+
             _ground = CheckGround(transform.position);
 
             // Get ground velocity (e.g. moving platform)
@@ -102,11 +102,10 @@ namespace GravityGame.Player
             if (_ground.HasStableGround) {
                 if (dynamicGround) {
                     groundVelocity = dynamicGround.linearVelocity;
-                }
-                else if (_ground.Hit.collider.gameObject.TryGetComponent<ConveyorBelt>(out var conveyorBelt)) {
+                } else if (_ground.Hit.collider.gameObject.TryGetComponent<ConveyorBelt>(out var conveyorBelt)) {
                     groundVelocity = conveyorBelt.Velocity;
                 }
-                 
+
                 var groundVelocityDelta = groundVelocity - _lastGroundVelocity;
                 const float platformStopThreshold = 1.0f;
                 bool groundStoppedImmediately = Vector3.Dot(groundVelocityDelta, _lastGroundVelocity) < 0
@@ -126,7 +125,7 @@ namespace GravityGame.Player
                 // Ground Friction
                 var velocityRelativeToGround = velocity - groundVelocity;
                 if (_inputDirection != Vector3.zero) {
-                    var velocityInInputDir = Vector3.Dot(velocityRelativeToGround, _inputDirection.normalized);
+                    float velocityInInputDir = Vector3.Dot(velocityRelativeToGround, _inputDirection.normalized);
                     if (velocityInInputDir > 0 && velocityInInputDir < MaxMoveSpeed) {
                         // No friction in input direction
                         velocityRelativeToGround -= velocityInInputDir * _inputDirection.normalized;
@@ -243,7 +242,7 @@ namespace GravityGame.Player
                 velocity = jumpUp + jumpForward + groundVelocity;
                 // Debug.Log($"up: {jumpUp} fwd: {jumpForward} ground: {groundVelocity}");
             }
-            
+
             // Step
             if (FindStep() is { HasStableGround: true } step) {
                 if (DebugStepDetection) Debug.Log("Player Stepped!");
@@ -254,7 +253,7 @@ namespace GravityGame.Player
                 _rigidbody.MovePosition(transform.position + up.normalized * (up.magnitude + tpUpBonus));
 
                 // eliminate downwards velocity
-                var upVelocity = Mathf.Max(0f, Vector3.Dot(_rigidbody.linearVelocity, transform.up));
+                float upVelocity = Mathf.Max(0f, Vector3.Dot(_rigidbody.linearVelocity, transform.up));
                 _rigidbody.AddForce(-upVelocity * transform.up, ForceMode.VelocityChange);
                 gravity = Vector3.zero;
             }
@@ -269,7 +268,7 @@ namespace GravityGame.Player
             if (!dynamicGround.TryGetComponent<Carryable>(out _) || dynamicGround.mass >= _rigidbody.mass) {
                 return true;
             }
-            
+
             const float timeToHitGround = 0.05f;
             // first test with sweep
             var endPos = dynamicGround.position + pushDownVelocity * timeToHitGround;
@@ -284,9 +283,9 @@ namespace GravityGame.Player
 
             // second test failsafe (if already inside collider, sweep will not detect it)
             const float overlapScale = 0.9f; // to prevent rounding errors
-            var layer = ~LayerMask.GetMask("Player") & ~dynamicGround.excludeLayers;
+            int layer = ~LayerMask.GetMask("Player") & ~dynamicGround.excludeLayers;
             var results = new Collider[2];
-            var size = Physics.OverlapBoxNonAlloc(
+            int size = Physics.OverlapBoxNonAlloc(
                 endPos, dynamicGround.transform.lossyScale * (0.5f * overlapScale), results, dynamicGround.rotation, layer
             );
 
@@ -328,17 +327,19 @@ namespace GravityGame.Player
             var results = new RaycastHit[4];
             int numResults = Physics.SphereCastNonAlloc(feetPosition, radius, down, results, distance, layerMask, QueryTriggerInteraction.Ignore);
             foreach (var originalHit in results.Take(numResults).OrderBy(hit => hit.distance)) {
-                if (_carry.CarriedObject?.Collider == originalHit.collider)
-                    continue;
-                var verifiedHit = originalHit;
-                if (originalHit.point == Vector3.zero) {
-                    // Hit point is zero, the sphere cast may have started inside an object
+                bool isCarriedObject = _carry.CarriedObject?.Collider == originalHit.collider;
+                bool isZero = originalHit.point == Vector3.zero; // Hit point is zero, the sphere cast may have started inside an object
+                bool excludesPlayer = (originalHit.collider.excludeLayers.value & (1 << gameObject.layer)) != 0;
+                if (isCarriedObject || isZero || excludesPlayer) {
+                    // not valid ground
                     continue;
                 }
+                var verifiedHit = originalHit;
                 if (Physics.Raycast(
-                        originalHit.point + margin * transform.up, down, out var hit, distance, layerMask, QueryTriggerInteraction.Ignore
+                        originalHit.point + margin * transform.up, down, out var hit, distance, originalHit.collider.gameObject.layer, QueryTriggerInteraction.Ignore
                     )) {
-                    verifiedHit = hit; // Note TG: recast, because spherecast sometimes does not get the actual ground normal for some reason 
+                    // Note TG: recast, because spherecast sometimes does not get the actual ground normal for some reason
+                    verifiedHit = hit; 
                 }
                 var info = new GroundInfo();
                 info.Hit = verifiedHit;
