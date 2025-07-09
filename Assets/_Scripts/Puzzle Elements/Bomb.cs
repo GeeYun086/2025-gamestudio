@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using GravityGame.Gravity;
 using GravityGame.Player;
+using GravityGame.AI;
 using UnityEngine;
 
 namespace GravityGame.Puzzle_Elements
@@ -49,6 +50,7 @@ namespace GravityGame.Puzzle_Elements
             if (_isArmed) return;
             if (other.gameObject == gameObject || other.transform.IsChildOf(transform)) return;
             if (GetComponent<Rigidbody>() && other.attachedRigidbody == GetComponent<Rigidbody>()) return;
+            if (other.isTrigger) return;
             ArmForExplosion();
         }
 
@@ -91,7 +93,7 @@ namespace GravityGame.Puzzle_Elements
                     continue;
                 }
 
-                var enemy = hitColliders[i].GetComponentInParent<NavMeshPatrol>();
+                var enemy = hitColliders[i].GetComponentInParent<SpiderCarrierWalker>();
                 if (enemy) {
                     HandleEnemyImpact(enemy, distance);
                     continue;
@@ -117,21 +119,27 @@ namespace GravityGame.Puzzle_Elements
             }
         }
 
-        void HandleEnemyImpact(NavMeshPatrol enemy, float distance)
+        void HandleEnemyImpact(SpiderCarrierWalker enemy, float distance)
         {
-            var enemyRb = enemy.GetComponentInParent<Rigidbody>();
             if (distance <= _explosionRadius) {
-                // TODO FS: Change to damage enemy when enemy health is implemented)
-                Destroy(enemy.gameObject);
-                enemyRb.AddExplosionForce(_pushbackForce, transform.position, _explosionRadius, 0f, ForceMode.Impulse);
-            } else if (_pushbackRadius > 0 && distance <= _pushbackRadius) {
-                enemyRb.AddExplosionForce(_pushbackForce, transform.position, _pushbackRadius, 0f, ForceMode.Impulse);
+                enemy.ForceDropCarryable();
+            }
+            if (enemy.TryGetComponent<Rigidbody>(out var enemyRb)) {
+                if (distance <= _explosionRadius) {
+                    enemyRb.AddExplosionForce(_pushbackForce, transform.position, _explosionRadius, 0f, ForceMode.Impulse);
+                } else if (_pushbackRadius > 0 && distance <= _pushbackRadius) {
+                    enemyRb.AddExplosionForce(_pushbackForce, transform.position, _pushbackRadius, 0f, ForceMode.Impulse);
+                }
             }
         }
 
         void HandleBreakableImpact(Breakable breakable, float distance)
         {
-            if (distance <= _explosionRadius) breakable.Break();
+            if (distance <= _explosionRadius) {
+                var velocity = breakable.transform.position - transform.position;
+                velocity = velocity.normalized * 30f;
+                breakable.Break(transform.position, velocity);
+            }
         }
 
         void HandleRigidbodyImpact(Rigidbody rb, float distance)

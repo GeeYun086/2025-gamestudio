@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 441566092756746209}
   - component: {fileID: 9221678561039675299}
   - component: {fileID: 4901931043490904103}
-  m_Layer: 7
+  m_Layer: 9
   m_Name: LaserBeamCylinder
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -123,11 +123,3 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 84bb250c28584d1bb92008a4cdd82135, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  MaxDistance: 20
-  ObstacleMask:
-    serializedVersion: 2
-    m_Bits: 73
-  FlatDamage: 50
-  KnockbackForce: 20
-  BeamRadius: 0.1
-  DamageCooldown: 0.3
