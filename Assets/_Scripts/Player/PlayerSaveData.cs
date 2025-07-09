@@ -3,6 +3,7 @@ using GravityGame.Gravity;
 using GravityGame.SaveAndLoadSystem;
 using GravityGame.Utils;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace GravityGame.Player
 {
@@ -25,7 +26,7 @@ namespace GravityGame.Player
         {
             public Vector3 Position;
             public float LookRight;
-            public Vector3 Up;
+            public Vector3 Gravity;
             public int LastCheckpointID;
         }
 
@@ -34,7 +35,7 @@ namespace GravityGame.Player
             var saveData = new SaveData {
                 Position = transform.position,
                 LookRight = Camera.LookRightRotation,
-                Up = transform.up,
+                Gravity = GravityModifier.GravityDirection,
                 LastCheckpointID = 0
             };
             if (InjectCheckpointData != null) {
@@ -48,7 +49,7 @@ namespace GravityGame.Player
             Rigidbody.MovePosition(data.Position);
             Camera.LookRightRotation = data.LookRight;
             Camera.LookDownRotation = 0;
-            transform.up = data.Up;
+            GravityModifier.GravityDirection = data.Gravity;
             ActiveCheckpoint = data.LastCheckpointID;
             
             Rigidbody.linearVelocity = Vector3.zero;
