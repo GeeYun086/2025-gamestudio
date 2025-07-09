@@ -45,6 +45,7 @@ namespace GravityGame.Player
         CapsuleCollider _collider;
         PlayerCarry _carry;
         Camera _camera;
+        DynamicFOV _fov;
 
         Vector3 _inputDirection;
         Vector3 _lastGroundVelocity;
@@ -70,6 +71,7 @@ namespace GravityGame.Player
             _rigidbody = GetComponent<Rigidbody>();
             _camera = GetComponentInChildren<Camera>();
             _carry = GetComponent<PlayerCarry>();
+            _fov = GetComponentInChildren<DynamicFOV>();
 
             _rigidbody.constraints = RigidbodyConstraints.FreezeRotation;
             _rigidbody.interpolation = RigidbodyInterpolation.Interpolate;
@@ -92,13 +94,14 @@ namespace GravityGame.Player
             _inputDirection = forward * input.y + right * input.x;
             _inputDirection = Vector3.ClampMagnitude(_inputDirection, 1f);
             _sprintHeld = SprintInput.action.IsPressed();
+            bool isSprinting = _inputDirection != Vector3.zero && _sprintHeld;
+            _fov.CurrentState = isSprinting ? DynamicFOV.State.Sprinting : DynamicFOV.State.Normal;
         }
 
         void FixedUpdate()
         {
             transform.up = -Gravity;
             Move();
-            
         }
 
         void Move()
