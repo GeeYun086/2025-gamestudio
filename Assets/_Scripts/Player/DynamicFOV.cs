@@ -33,12 +33,20 @@ namespace GravityGame.Player
                 State.Sprinting => _baseFOV * _sprintFovMultiplier,
                 _ => throw new ArgumentOutOfRangeException()
             };
-            _camera.fieldOfView = Mathf.Lerp(_camera.fieldOfView, _targetFOV, _fovChangeSpeed * Time.deltaTime);
+            var fov = Mathf.Lerp(_camera.fieldOfView, _targetFOV, _fovChangeSpeed * Time.deltaTime);
+            SetFov(fov);
         }
 
         void OnValidate()
         {
-            GetComponent<Camera>().fieldOfView = _baseFOV;
+            SetFov(_baseFOV);
+        }
+
+        void SetFov(float fov)
+        {
+            foreach (var cam in GetComponentsInChildren<Camera>()) {
+                cam.fieldOfView = fov;
+            }
         }
     }
 }
