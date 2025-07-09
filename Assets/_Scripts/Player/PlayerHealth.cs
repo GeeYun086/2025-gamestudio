@@ -86,6 +86,7 @@ namespace GravityGame.Player
             _playerMovement.enabled = false;
             _cameraController.enabled = false;
             _smoothCamera.enabled = false;
+            _playerMovement.GetComponent<Rigidbody>().linearVelocity = Vector3.zero;
 
             StartCoroutine(FadeToBlackThenRespawn());
         }
@@ -111,9 +112,9 @@ namespace GravityGame.Player
                 yield return null;
             }
 
-            OnPlayerDied?.Invoke();
-            SaveAndLoad.Instance.Load();
+            OnPlayerDied?.Invoke(); 
             ResetPlayerState();
+            SaveAndLoad.Instance.Load();
         }
 
         void OnGUI()
