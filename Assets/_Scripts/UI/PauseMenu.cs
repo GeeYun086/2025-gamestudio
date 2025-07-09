@@ -34,13 +34,7 @@ namespace GravityGame.UI
         bool _initialized;
         const string PrefSfxVolume = "SfxVolume";
         const string PrefMusicVolume = "MusicVolume";
-
-        void Awake()
-        {
-            // Only keep in MainScene
-            if (SceneManager.GetActiveScene().name != "MainScene")
-                Destroy(gameObject);
-        }
+        
 
         void OnEnable()
         {
