@@ -367,6 +367,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   OcrFont: {fileID: 12800000, guid: 9abada186f8687a40bbb14d189b9e26d, type: 3}
+  _newGameSceneAsset: {fileID: 102900000, guid: 99c9720ab356a0642a771bea13969a05, type: 3}
+  _newGameSceneName: 
 --- !u!114 &1269363765
 MonoBehaviour:
   m_ObjectHideFlags: 0
