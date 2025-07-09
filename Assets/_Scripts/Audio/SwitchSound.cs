@@ -8,14 +8,14 @@ public class SwitchSound : MonoBehaviour
 {
     [Header("Switch Sounds")]
     [Tooltip("Audio clip to play when switched on")]
-    [SerializeField] private AudioClip _clipOn;
+    [SerializeField] AudioClip _clipOn;
     
     [Tooltip("Audio clip to play when switched off")]
-    [SerializeField] private AudioClip _clipOff;
+    [SerializeField] AudioClip _clipOff;
 
-    private AudioSource _src;
+    AudioSource _src;
 
-    void Awake()
+    void OnEnable()
     {
         _src = GetComponent<AudioSource>();
     }
@@ -24,13 +24,13 @@ public class SwitchSound : MonoBehaviour
     public void PlayOn()
     {
         if (_clipOn != null)
-            _src.PlayOneShot(_clipOn);
+            _src?.PlayOneShot(_clipOn);
     }
 
     
     public void PlayOff()
     {
         if (_clipOff != null)
-            _src.PlayOneShot(_clipOff);
+            _src?.PlayOneShot(_clipOff);
     }
 }

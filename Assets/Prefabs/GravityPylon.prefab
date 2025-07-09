@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 7191714069842665239}
   - component: {fileID: 1521955435885714591}
   m_Layer: 6
-  m_Name: Cube (1)
+  m_Name: Pylon Cube
   m_TagString: Cube
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -154,6 +154,7 @@ MonoBehaviour:
   _gravityDirection: {x: 0, y: -1, z: 0}
   GravityMagnitude: 9.81
   Group: 1
+  <SaveDataID>k__BackingField: 0
 --- !u!1001 &5942574479247945243
 PrefabInstance:
   m_ObjectHideFlags: 0
