@@ -102,6 +102,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 82c4cda855974e24a859ecef155676c4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  WalkSpeed: 4
   MaxMoveSpeed: 8
   MoveAcceleration: 50
   GroundFriction: 13
@@ -120,6 +121,7 @@ MonoBehaviour:
     Duration: 0.2
   MoveInput: {fileID: -1680190386980627800, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   JumpInput: {fileID: -2099379676528639254, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  SprintInput: {fileID: -7812156759233276172, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   DebugStepDetection: 0
 --- !u!54 &1163891898892029019
 Rigidbody:
