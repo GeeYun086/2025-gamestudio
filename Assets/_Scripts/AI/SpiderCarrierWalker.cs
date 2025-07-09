@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using GravityGame.Gravity;
 using GravityGame.Puzzle_Elements;
@@ -37,6 +38,11 @@ namespace GravityGame.AI
         bool _isApproachingObject = false;
         bool _isCarrying = false;
         float _originalStoppingDistance;
+
+        Rigidbody _carriedRb;
+        SpringJoint _carrySpring;
+        [SerializeField] float _spring = 800f;
+        [SerializeField] float _damper = 50f;
 
         void Awake()
         {
@@ -98,19 +104,27 @@ namespace GravityGame.AI
             }
         }
 
+        void FixedUpdate()
+        {
+            if (_isCarrying && _carriedRb != null)
+            {
+                Vector3 posError = _carrySocket.position - _carriedRb.position;
+                Vector3 posForce = posError * _spring - _carriedRb.linearVelocity * _damper;
+                _carriedRb.AddForce(posForce, ForceMode.Acceleration);
+            }
+        }
+
         private void PickUp()
         {
-            Transform objT = _targetCarryable.transform;
-            objT.SetParent(_carrySocket, true);
-            objT.localPosition = Vector3.zero;
-            objT.localRotation = Quaternion.identity;
-            objT.GetComponent<Rigidbody>().isKinematic = true;
-
             _carriedCarryable = _targetCarryable;
             _carriedGravity = _carriedCarryable.GetComponent<GravityModifier>();
             _isCarrying = true;
             _isApproachingObject = false;
             _targetCarryable = null;
+            
+            _carriedRb = _carriedCarryable.GetComponent<Rigidbody>();
+            //_carriedRb.useGravity = true;
+            _carriedRb.freezeRotation = true;
             
             _agent.stoppingDistance = _originalStoppingDistance;
             _agent.SetDestination(_waypoints[_currentIndex].position);
@@ -172,6 +186,8 @@ namespace GravityGame.AI
                 Rigidbody rb = _carriedCarryable.GetComponent<Rigidbody>();
                 if (rb != null) {
                     rb.isKinematic = false;
+                    //rb.useGravity = false;
+                    rb.freezeRotation = false;
                 }
                 GameObject go = _carriedCarryable.gameObject;
                 _ignoreUntil[go] = Time.time + _ignoreSeconds;
