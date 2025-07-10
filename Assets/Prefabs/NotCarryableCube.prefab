@@ -16,7 +16,6 @@ GameObject:
   - component: {fileID: 701094689451312738}
   - component: {fileID: 8030090321904850059}
   - component: {fileID: 5735985433874089844}
-  - component: {fileID: 1294556758841930574}
   - component: {fileID: 8273589724784435803}
   - component: {fileID: 5522769443945218700}
   m_Layer: 6
@@ -161,6 +160,7 @@ MonoBehaviour:
   _gravityDirection: {x: 0, y: -1, z: 0}
   GravityMagnitude: 9.81
   Group: 0
+  <SaveDataID>k__BackingField: 0
 --- !u!114 &8030090321904850059
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -275,18 +275,6 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
---- !u!114 &1294556758841930574
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4662317870626134877}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f555451c1a2fcbb48ae9d16f23635942, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &8273589724784435803
 MonoBehaviour:
   m_ObjectHideFlags: 0
