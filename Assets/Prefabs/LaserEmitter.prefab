@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1682645185086417255}
   - component: {fileID: 5431743147402366525}
-  m_Layer: 7
+  m_Layer: 9
   m_Name: LaserEmitter
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -68,7 +68,7 @@ GameObject:
   - component: {fileID: 8579586617673685416}
   - component: {fileID: 2283488750355230857}
   - component: {fileID: 8386816223847046166}
-  m_Layer: 7
+  m_Layer: 9
   m_Name: 'EmitterGizmo '
   m_TagString: Untagged
   m_Icon: {fileID: 0}

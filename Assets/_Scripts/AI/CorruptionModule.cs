@@ -1,7 +1,6 @@
 using System.Collections;
 using UnityEngine;
 using System.Diagnostics;
-using Debug = UnityEngine.Debug;
 
 namespace GravityGame
 {
@@ -14,36 +13,44 @@ namespace GravityGame
         Renderer _sphereRenderer;
         GameObject _laser;
         GameObject _fakeLaser;
+        [SerializeField] Material _broken;
         [SerializeField] Material _unprovoked;
         [SerializeField] Material _provoked;
         [SerializeField] Material _aggressive;
         Stopwatch _timer;
         Vector3? _targetForward;
+        bool _isBroken;
 
         void Awake()
         {
-            _sphereRenderer = gameObject.transform.GetChild(0).GetComponent<Renderer>();
-            _laser = gameObject.transform.GetChild(0).GetChild(3).gameObject;
-            _fakeLaser = gameObject.transform.GetChild(0).GetChild(4).gameObject;
+            _sphereRenderer = gameObject.transform.GetComponent<Renderer>();
+            _laser = gameObject.transform.GetChild(3).gameObject;
+            _fakeLaser = gameObject.transform.GetChild(4).gameObject;
             _player = GameObject.FindWithTag("Player").transform;
+            ResetTimer();
         }
 
         void Update()
         {
+            if (_isBroken) return;
             if (!transform.parent) {
                 _laser.SetActive(false);
                 _fakeLaser.SetActive(false);
+                _sphereRenderer.material = _broken;
+                GetComponent<Rigidbody>().useGravity = true;
+                StartCoroutine(Despawn());
+                _isBroken = true;
                 return;
             }
             float distance = Vector3.Distance(_player.position, transform.position);
             switch (distance) {
-                case < 8:
-                    _sphereRenderer.material = _provoked;
+                case < 5.5f:
+                    _sphereRenderer.material = _aggressive;
                     _fakeLaser.SetActive(true);
                     Shoot(.5f);
                     break;
-                case < 12:
-                    _sphereRenderer.material = _aggressive;
+                case < 7:
+                    _sphereRenderer.material = _provoked;
                     _fakeLaser.SetActive(true);
                     Shoot(2f);
                     break;
@@ -73,7 +80,7 @@ namespace GravityGame
             }
 
             Quaternion targetRotation = Quaternion.LookRotation(_targetForward.Value, Vector3.up);
-            transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, Time.deltaTime * 60f);
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, Time.deltaTime * 160f);
         }
 
         void Shoot(float delay)
@@ -91,6 +98,12 @@ namespace GravityGame
         {
             yield return new WaitForSeconds(.3f);
             _laser.SetActive(false);
+        }
+
+        IEnumerator Despawn()
+        {
+            yield return new WaitForSeconds(5f);
+            Destroy(gameObject);
         }
     }
 }
