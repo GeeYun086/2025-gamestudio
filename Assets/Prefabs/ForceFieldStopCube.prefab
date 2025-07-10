@@ -44,7 +44,7 @@ GameObject:
   - component: {fileID: 7635226885333822244}
   - component: {fileID: 1333396912018789273}
   - component: {fileID: 4359489964549750594}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: Plane
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -152,7 +152,7 @@ GameObject:
   - component: {fileID: 545735866172927530}
   - component: {fileID: 5377712035445524935}
   - component: {fileID: 589444688078246851}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: DropCarryOnContact
   m_TagString: Untagged
   m_Icon: {fileID: 0}
