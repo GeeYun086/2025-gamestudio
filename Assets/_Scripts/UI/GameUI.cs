@@ -1,37 +1,78 @@
-using GravityGame.Utils;
 using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace GravityGame.UI
 {
     /// <summary>
-    ///     This hosts the sub-elements that are queried from the root GameUI element centrally,
-    ///     so we can adjust whenever this whenever the layout of the GameUI document changes,
-    ///     and we need to query the elements differently.
+    ///     Centralized access to all UI elements in the Game UI Document.
+    ///     Ensures no field is ever null by falling back to empty stubs when an element is missing.
     /// </summary>
-    public record GameUIElements(VisualElement Root)
+    public class GameUIElements
     {
-        public readonly GravityDirectionRadialMenu GravityDirectionRadialMenu = Root.Q<GravityDirectionRadialMenu>();
-        public readonly VisualElement DebugElement = Root.Q("Debug");
+        public readonly GravityDirectionRadialMenu GravityDirectionRadialMenu;
+        public readonly VisualElement DebugElement;
+        public readonly VisualElement PauseMenu;
+        public readonly VisualElement MainPanel;
+        public readonly VisualElement SettingsPanel;
+        public readonly Button ResumeButton;
+        public readonly Button SettingsButton;
+        public readonly Button MainMenuButton;
+        public readonly Button BackButton;
+        public readonly Button SaveButton;
+        public readonly Slider SfxVolumeSlider;
+        public readonly Slider MusicVolumeSlider;
+
+        public GameUIElements(VisualElement root)
+        {
+            GravityDirectionRadialMenu = root.Q<GravityDirectionRadialMenu>("RadialMenu") ?? new GravityDirectionRadialMenu();
+            DebugElement = root.Q<VisualElement>("Debug") ?? new VisualElement();
+            PauseMenu = root.Q<VisualElement>("PauseMenu") ?? new VisualElement();
+            MainPanel = root.Q<VisualElement>("MainPanel") ?? new VisualElement();
+            SettingsPanel = root.Q<VisualElement>("SettingsPanel") ?? new VisualElement();
+            ResumeButton = root.Q<Button>("ResumeButton") ?? new Button();
+            SettingsButton = root.Q<Button>("SettingsButton") ?? new Button();
+            MainMenuButton = root.Q<Button>("MainMenuButton") ?? new Button();
+            BackButton = root.Q<Button>("BackButton") ?? new Button();
+            SaveButton = root.Q<Button>("SaveButton") ?? new Button();
+            SfxVolumeSlider = root.Q<Slider>("SfxVolumeSlider") ?? new Slider();
+            MusicVolumeSlider = root.Q<Slider>("MusicVolumeSlider") ?? new Slider();
+        }
     }
 
-    /// <summary>
-    ///     Contains the UI document for the in-game player UI
-    ///     If you want to add any other in-game UI, add it to the attached UIDocument
-    ///     <remarks>
-    ///         Note TG: If that is possible, I think we should make the pause or main menu UI their own UIDocuments
-    ///     </remarks>
-    /// </summary>
     [RequireComponent(typeof(UIDocument))]
-    public class GameUI : SingletonMonoBehavior<GameUI>
+    public class GameUI : MonoBehaviour
     {
+        public static GameUI Instance { get; private set; }
         public UIDocument UIDocument { get; private set; }
         public GameUIElements Elements { get; private set; }
 
+        void Awake()
+        {
+            // Optional: Only allow this GameUI in a specific scene
+            // if (SceneManager.GetActiveScene().name != "MainScene") { Destroy(gameObject); return; }
+
+            if (Instance != null && Instance != this) {
+                Destroy(gameObject);
+                return;
+            }
+
+            Instance = this;
+        }
+
         void OnEnable()
         {
-            UIDocument = gameObject.GetComponent<UIDocument>();
-            Elements = new GameUIElements(UIDocument.rootVisualElement);
+            UIDocument = GetComponent<UIDocument>();
+            var root = UIDocument != null
+                ? UIDocument.rootVisualElement
+                : new VisualElement();
+
+            Elements = new GameUIElements(root);
+
+            // **Hide** all pause‐menu panels immediately,
+            // so nothing is visible until PauseMenu.TogglePause() runs.
+            Elements.PauseMenu.style.display = DisplayStyle.None;
+            Elements.MainPanel.style.display = DisplayStyle.None;
+            Elements.SettingsPanel.style.display = DisplayStyle.None;
         }
     }
 }
