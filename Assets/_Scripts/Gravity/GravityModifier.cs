@@ -74,18 +74,21 @@ namespace GravityGame.Gravity
         public SaveData Save() =>
             new() {
                 Gravity = Gravity,
-                Position = _rigidbody.position,
-                Rotation = _rigidbody.rotation,
+                Position = transform.position,
+                Rotation = transform.rotation,
             };
 
         public void Load(SaveData data)
         {
+            _rigidbody = GetComponent<Rigidbody>();
             GravityMagnitude = data.Gravity.magnitude;
             GravityDirection = data.Gravity.normalized;
-            _rigidbody.position = data.Position;
-            _rigidbody.rotation = data.Rotation;
-            _rigidbody.linearVelocity = Vector3.zero;
-            _rigidbody.angularVelocity = Vector3.zero;
+            _rigidbody.MovePosition(data.Position);
+            _rigidbody.MoveRotation(data.Rotation);
+            if (!_rigidbody.isKinematic) {
+                _rigidbody.linearVelocity = Vector3.zero;
+                _rigidbody.angularVelocity = Vector3.zero;    
+            }
         }
         
         [field: SerializeField] public int SaveDataID { get; set; }

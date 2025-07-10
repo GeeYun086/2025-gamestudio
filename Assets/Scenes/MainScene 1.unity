@@ -2057,7 +2057,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2720951526659814876, guid: 64e97b85a4f90c348a6daf19eecade02, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 1.76
+      value: -1.5
       objectReference: {fileID: 0}
     - target: {fileID: 2720951526659814876, guid: 64e97b85a4f90c348a6daf19eecade02, type: 3}
       propertyPath: m_LocalPosition.y
@@ -2065,7 +2065,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2720951526659814876, guid: 64e97b85a4f90c348a6daf19eecade02, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -13.55
+      value: -9.31
       objectReference: {fileID: 0}
     - target: {fileID: 2720951526659814876, guid: 64e97b85a4f90c348a6daf19eecade02, type: 3}
       propertyPath: m_LocalRotation.w
@@ -2105,7 +2105,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9181645947103299050, guid: 64e97b85a4f90c348a6daf19eecade02, type: 3}
       propertyPath: m_Interpolate
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -2276,11 +2276,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0036f16028494bca8c80d6fdfd34a43f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _playerObject: {fileID: 894321223}
-  _gameObjectCheckpoints: []
-  _respawnHeightOffset: 2
-  _playerMovementScript: {fileID: 0}
-  _cameraController: {fileID: 0}
 --- !u!4 &1717834592
 Transform:
   m_ObjectHideFlags: 0
