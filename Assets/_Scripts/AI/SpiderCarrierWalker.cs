@@ -2,20 +2,22 @@ using System;
 using System.Collections.Generic;
 using GravityGame.Gravity;
 using GravityGame.Puzzle_Elements;
-using log4net.Appender;
+using GravityGame.SaveAndLoadSystem;
 using UnityEngine;
 using UnityEngine.AI;
 
 namespace GravityGame.AI
 {
     [RequireComponent(typeof(NavMeshAgent))]
-    public class SpiderCarrierWalker : MonoBehaviour
+    public class SpiderCarrierWalker : MonoBehaviour, ISaveData
     {
         [SerializeField] Transform _waypointParent;
-        
+
+        [SerializeField] bool _isEvil;
+        [SerializeField] GameObject _corruptionModule;
         [SerializeField] Transform _carrySocket;
         [SerializeField] float _detectionRadius = 2f;
-        
+
         [SerializeField] float _rotationSpeed = 5f;
 
         [SerializeField] float _normalRayDistance = 1f;
@@ -26,15 +28,15 @@ namespace GravityGame.AI
         Dictionary<GameObject, float> _ignoreUntil = new();
         GravityModifier _carriedGravity;
         FixedJoint _carryJoint;
-        
+
         private NavMeshAgent _agent;
         SphereCollider _detectionTrigger;
         private List<Transform> _waypoints = new List<Transform>();
         private int _currentIndex = 0;
         private int _direction = 1; // +1 = forward, -1 = backward
-        
+
         private Carryable _targetCarryable;
-        private Carryable _carriedCarryable;
+        private GameObject _carriedObject;
         bool _isApproachingObject = false;
         bool _isCarrying = false;
         float _originalStoppingDistance;
@@ -49,14 +51,14 @@ namespace GravityGame.AI
             _agent = GetComponent<NavMeshAgent>();
             _agent.updatePosition = true;
             _agent.updateRotation = false;
-            
+
             _ignoreUntil.Clear();
-            
+
             _detectionTrigger = GetComponent<SphereCollider>();
             _detectionTrigger.isTrigger = true;
             _detectionTrigger.radius = _detectionRadius;
             _detectionTrigger.center = Vector3.zero;
-            
+
             _originalStoppingDistance = _agent.stoppingDistance;
 
             if (_waypointParent != null) {
@@ -95,19 +97,19 @@ namespace GravityGame.AI
                     AdvanceWaypoint();
             }
             Vector3 desiredVel = _agent.desiredVelocity;
-            if (desiredVel.sqrMagnitude > 0.01f)
-            {
+            if (desiredVel.sqrMagnitude > 0.01f) {
                 Vector3 surfaceNormal = SampleSurfaceNormal(desiredVel.normalized);
                 Quaternion targetRot = Quaternion.LookRotation(desiredVel, surfaceNormal);
-                transform.rotation = Quaternion.Slerp(transform.rotation, targetRot,
-                    _rotationSpeed * Time.deltaTime);
+                transform.rotation = Quaternion.Slerp(
+                    transform.rotation, targetRot,
+                    _rotationSpeed * Time.deltaTime
+                );
             }
         }
 
         void FixedUpdate()
         {
-            if (_isCarrying && _carriedRb != null)
-            {
+            if (_isCarrying && _carriedRb != null) {
                 Vector3 posError = _carrySocket.position - _carriedRb.position;
                 Vector3 posForce = posError * _spring - _carriedRb.linearVelocity * _damper;
                 _carriedRb.AddForce(posForce, ForceMode.Acceleration);
@@ -116,37 +118,34 @@ namespace GravityGame.AI
 
         private void PickUp()
         {
-            _carriedCarryable = _targetCarryable;
-            _carriedGravity = _carriedCarryable.GetComponent<GravityModifier>();
+            _carriedObject = _targetCarryable.gameObject;
+            _carriedGravity = _carriedObject.GetComponent<GravityModifier>();
             _isCarrying = true;
             _isApproachingObject = false;
             _targetCarryable = null;
-            
-            _carriedRb = _carriedCarryable.GetComponent<Rigidbody>();
+
+            _carriedRb = _carriedObject.GetComponent<Rigidbody>();
             //_carriedRb.useGravity = true;
             _carriedRb.freezeRotation = true;
-            
+
             _agent.stoppingDistance = _originalStoppingDistance;
             _agent.SetDestination(_waypoints[_currentIndex].position);
         }
-        
+
         private void AdvanceWaypoint()
         {
             _currentIndex += _direction;
-            if (_currentIndex >= _waypoints.Count)
-            {
+            if (_currentIndex >= _waypoints.Count) {
                 _currentIndex = _waypoints.Count - 1;
                 _direction = -1;
-            }
-            else if (_currentIndex < 0)
-            {
+            } else if (_currentIndex < 0) {
                 _currentIndex = 0;
                 _direction = 1;
             }
             _agent.stoppingDistance = _originalStoppingDistance;
             _agent.SetDestination(_waypoints[_currentIndex].position);
         }
-        
+
         private Vector3 SampleSurfaceNormal(Vector3 moveDir)
         {
             RaycastHit hit;
@@ -181,23 +180,22 @@ namespace GravityGame.AI
 
         void DropCarried()
         {
-            if (_carriedCarryable != null) {
-                _carriedCarryable.transform.SetParent(null, true);
-                Rigidbody rb = _carriedCarryable.GetComponent<Rigidbody>();
-                if (rb != null) {
-                    rb.isKinematic = false;
+            if (_carriedObject != null) {
+                _carriedObject.transform.SetParent(null, true);
+                if (_carriedRb != null) {
+                    _carriedRb.isKinematic = false;
                     //rb.useGravity = false;
-                    rb.freezeRotation = false;
+                    _carriedRb.freezeRotation = false;
                 }
-                GameObject go = _carriedCarryable.gameObject;
-                _ignoreUntil[go] = Time.time + _ignoreSeconds;
-                
-                _carriedCarryable = null;
+                _ignoreUntil[_carriedObject] = Time.time + _ignoreSeconds;
+
+                _isEvil = false;
+                _carriedObject = null;
                 _isCarrying = false;
                 _carriedGravity = null;
-                
+
                 GetComponentInChildren<RiderAttach>().CanAttach = false;
-                
+
                 _agent.stoppingDistance = _originalStoppingDistance;
                 _agent.SetDestination(_waypoints[_currentIndex].position);
             }
@@ -205,10 +203,37 @@ namespace GravityGame.AI
 
         public void ForceDropCarryable()
         {
-            if (_isCarrying || _carriedCarryable != null)
+            if (_isCarrying || _carriedObject != null)
                 DropCarried();
         }
-        
+
         bool IsDefaultGravity(Vector3 dir) => Vector3.Angle(dir.normalized, Vector3.down) < 1f;
+
+        [field: SerializeField] public int SaveDataID { get; set; }
+        public string SaveToJson()
+        {
+            Debug.Log("save evil: " + _isEvil);
+            return _isEvil.ToString();
+        }
+
+        public void LoadFromJson(string data)
+        {
+            _isEvil = bool.Parse(data);
+            Debug.Log("load evil: " + _isEvil);
+        }
+
+        public void OnAfterLoad()
+        {
+            if (_isEvil && !_isCarrying)
+                CarryCorruptionModule();
+        }
+
+        void CarryCorruptionModule()
+        {
+            _carriedObject = Instantiate(_corruptionModule, transform.position, Quaternion.identity);
+            _carriedObject.transform.SetParent(transform.parent, true);
+            _isCarrying = true;
+            _carriedRb = _carriedObject.GetComponent<Rigidbody>();
+        }
     }
 }

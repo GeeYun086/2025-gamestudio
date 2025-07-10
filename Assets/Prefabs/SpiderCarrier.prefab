@@ -320,6 +320,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _waypointParent: {fileID: 0}
+  _isEvil: 0
+  _corruptionModule: {fileID: 426052714202754902, guid: e85ea7966ac4780408b8768ed69e92f4, type: 3}
   _carrySocket: {fileID: 4715745792198065692}
   _detectionRadius: 3
   _rotationSpeed: 5
@@ -333,6 +335,7 @@ MonoBehaviour:
   _ignoreSeconds: 3
   _spring: 800
   _damper: 50
+  <SaveDataID>k__BackingField: 0
 --- !u!135 &8362038230200651538
 SphereCollider:
   m_ObjectHideFlags: 0

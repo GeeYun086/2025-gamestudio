@@ -12,7 +12,6 @@ namespace GravityGame.Player
     [RequireComponent(typeof(PlayerMovement))]
     public class PlayerHealth : SingletonMonoBehavior<PlayerHealth>
     {
-        public UnityEvent OnPlayerDied;
         [SerializeField] PlayerMovement _playerMovement;
         [SerializeField] FirstPersonCameraController _cameraController;
         [SerializeField] SmoothCamera _smoothCamera;
@@ -112,7 +111,6 @@ namespace GravityGame.Player
                 yield return null;
             }
 
-            OnPlayerDied?.Invoke(); 
             ResetPlayerState();
             SaveAndLoad.Instance.Load();
         }
