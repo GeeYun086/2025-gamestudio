@@ -1,3 +1,4 @@
+using GravityGame.UI;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Serialization;
@@ -29,16 +30,17 @@ namespace GravityGame.Player
 
         void Update()
         {
+#if UNITY_EDITOR
             // Note TG: Debug functionality to lock / unlock mouse when pressing escape to tab out of the Unity game window.
-            // We might need to do this differently in the future or disable this in the build.
             if (Input.GetButtonDown("Cancel")) {
                 Cursor.lockState = CursorLockMode.None;
                 Cursor.visible = true;
             }
-            if (Input.GetMouseButtonDown(0)) {
+            if (Input.GetMouseButtonDown(0) && !GameUI.Instance.Elements.GravityDirectionRadialMenu.visible) {
                 Cursor.lockState = CursorLockMode.Locked;
                 Cursor.visible = false;
             }
+#endif
             if (Cursor.lockState != CursorLockMode.Locked)
                 return;
 

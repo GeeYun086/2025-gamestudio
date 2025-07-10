@@ -13,6 +13,7 @@ namespace GravityGame.Player
     public class PlayerMovement : MonoBehaviour
     {
         [Header("Ground Movement")]
+        public float WalkSpeed = 4.0f;
         public float MaxMoveSpeed = 8.0f;
         public float MoveAcceleration = 70.0f;
         public float GroundFriction = 8.0f;
@@ -35,6 +36,7 @@ namespace GravityGame.Player
         [Header("Input")]
         public InputActionReference MoveInput;
         public InputActionReference JumpInput;
+        public InputActionReference SprintInput;
 
         [Header("Debug")]
         public bool DebugStepDetection;
@@ -43,10 +45,13 @@ namespace GravityGame.Player
         CapsuleCollider _collider;
         PlayerCarry _carry;
         Camera _camera;
+        DynamicFOV _fov;
 
         Vector3 _inputDirection;
         Vector3 _lastGroundVelocity;
         GroundInfo _ground;
+        
+        bool _sprintHeld;
 
         struct GroundInfo
         {
@@ -66,11 +71,19 @@ namespace GravityGame.Player
             _rigidbody = GetComponent<Rigidbody>();
             _camera = GetComponentInChildren<Camera>();
             _carry = GetComponent<PlayerCarry>();
+            _fov = GetComponentInChildren<DynamicFOV>();
 
             _rigidbody.constraints = RigidbodyConstraints.FreezeRotation;
             _rigidbody.interpolation = RigidbodyInterpolation.Interpolate;
 
             JumpInput.action.performed += _ => JumpPreGroundedGraceTime.Start();
+            
+            
+            SprintInput.action.Enable();
+        }
+        void OnDisable()
+        {
+            SprintInput.action.Disable();
         }
 
         void Update()
@@ -80,6 +93,9 @@ namespace GravityGame.Player
             var forward = Vector3.Cross(right, transform.up);
             _inputDirection = forward * input.y + right * input.x;
             _inputDirection = Vector3.ClampMagnitude(_inputDirection, 1f);
+            _sprintHeld = SprintInput.action.IsPressed();
+            bool isSprinting = _inputDirection != Vector3.zero && _sprintHeld;
+            _fov.CurrentState = isSprinting ? DynamicFOV.State.Sprinting : DynamicFOV.State.Normal;
         }
 
         void FixedUpdate()
@@ -185,7 +201,10 @@ namespace GravityGame.Player
                 var velocityInInputDir = Vector3.Project(velocityRelativeToGround, _inputDirection);
                 bool movingInOppositeDirection = Vector3.Dot(velocityInInputDir, _inputDirection) < 0;
 
-                float moveSpeed = _ground.HasStableGround ? MaxMoveSpeed : MaxAirMoveSpeed;
+                float moveSpeed = _ground.HasStableGround
+                    ? (_sprintHeld ? MaxMoveSpeed : WalkSpeed)
+                    : MaxAirMoveSpeed;
+
                 float acceleration = _ground.HasStableGround ? MoveAcceleration : AirAcceleration;
 
                 bool hasNotReachedMaxSpeed = velocityInInputDir.magnitude < moveSpeed || movingInOppositeDirection;
@@ -410,5 +429,6 @@ namespace GravityGame.Player
             if (DebugStepDetection) Debug.DrawRay(origin, dir * hit.distance, Color.yellow);
             return noStep;
         }
+        
     }
 }

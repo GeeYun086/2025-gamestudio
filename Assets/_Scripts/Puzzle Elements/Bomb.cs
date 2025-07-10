@@ -1,7 +1,7 @@
 ﻿using System.Collections;
-using GravityGame.AI;
 using GravityGame.Gravity;
 using GravityGame.Player;
+using GravityGame.AI;
 using UnityEngine;
 
 namespace GravityGame.Puzzle_Elements
@@ -50,6 +50,7 @@ namespace GravityGame.Puzzle_Elements
             if (_isArmed) return;
             if (other.gameObject == gameObject || other.transform.IsChildOf(transform)) return;
             if (GetComponent<Rigidbody>() && other.attachedRigidbody == GetComponent<Rigidbody>()) return;
+            if (other.isTrigger) return;
             ArmForExplosion();
         }
 
@@ -120,12 +121,15 @@ namespace GravityGame.Puzzle_Elements
 
         void HandleEnemyImpact(SpiderCarrierWalker enemy, float distance)
         {
-            var enemyRb = enemy.GetComponent<Rigidbody>();
             if (distance <= _explosionRadius) {
                 enemy.ForceDropCarryable();
-                enemyRb.AddExplosionForce(_pushbackForce, transform.position, _explosionRadius, 0f, ForceMode.Impulse);
-            } else if (_pushbackRadius > 0 && distance <= _pushbackRadius) {
-                enemyRb.AddExplosionForce(_pushbackForce, transform.position, _pushbackRadius, 0f, ForceMode.Impulse);
+            }
+            if (enemy.TryGetComponent<Rigidbody>(out var enemyRb)) {
+                if (distance <= _explosionRadius) {
+                    enemyRb.AddExplosionForce(_pushbackForce, transform.position, _explosionRadius, 0f, ForceMode.Impulse);
+                } else if (_pushbackRadius > 0 && distance <= _pushbackRadius) {
+                    enemyRb.AddExplosionForce(_pushbackForce, transform.position, _pushbackRadius, 0f, ForceMode.Impulse);
+                }
             }
         }
 

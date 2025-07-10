@@ -43,13 +43,17 @@ namespace GravityGame.SaveAndLoadSystem
         public void Save()
         {
             var data = Data.Entries.ToDictionary(e => e.DataID);
-            foreach (var (_, saveData) in FindObjectsWithSaveData()) {
-                string jsonData = saveData.SaveToJson();
-                var entry = new SaveDataEntry {
-                    DataID = saveData.SaveDataID,
-                    JsonData = jsonData
-                };
-                data[saveData.SaveDataID] = entry;
+            foreach (var (obj, saveData) in FindObjectsWithSaveData()) {
+                try {
+                    string jsonData = saveData.SaveToJson();
+                    var entry = new SaveDataEntry {
+                        DataID = saveData.SaveDataID,
+                        JsonData = jsonData
+                    };
+                    data[saveData.SaveDataID] = entry;
+                } catch (Exception e) {
+                    Debug.LogError($"Failed to Save {obj}: " + e);
+                }
             }
             Data.Entries = data.Values.ToList();
             Debug.Log($"[{nameof(SaveAndLoad)}] saved ({Data.Entries.Count}) entries.");

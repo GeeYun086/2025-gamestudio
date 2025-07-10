@@ -130,7 +130,7 @@ GameObject:
   - component: {fileID: 17704529}
   - component: {fileID: 17704528}
   m_Layer: 0
-  m_Name: PathParent
+  m_Name: SurfacePath
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -304,11 +304,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _drawSphere: 1
---- !u!4 &867233074 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 4715745792198065692, guid: 6d797a3af3ab1c94fa9671fac86dd6c5, type: 3}
-  m_PrefabInstance: {fileID: 1206160268}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &943329427
 GameObject:
   m_ObjectHideFlags: 0
@@ -362,17 +357,9 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 940829440026960932, guid: 6d797a3af3ab1c94fa9671fac86dd6c5, type: 3}
-      propertyPath: carrySocket
-      value: 
-      objectReference: {fileID: 867233074}
     - target: {fileID: 1048923521071570241, guid: 6d797a3af3ab1c94fa9671fac86dd6c5, type: 3}
       propertyPath: m_Name
       value: SpiderCarrier (1)
-      objectReference: {fileID: 0}
-    - target: {fileID: 2429256306779573535, guid: 6d797a3af3ab1c94fa9671fac86dd6c5, type: 3}
-      propertyPath: m_AutoBraking
-      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6245572535198503719, guid: 6d797a3af3ab1c94fa9671fac86dd6c5, type: 3}
       propertyPath: m_LocalPosition.x
@@ -417,7 +404,7 @@ PrefabInstance:
     - target: {fileID: 6957728184661553550, guid: 6d797a3af3ab1c94fa9671fac86dd6c5, type: 3}
       propertyPath: _waypointParent
       value: 
-      objectReference: {fileID: 17704529}
+      objectReference: {fileID: 2950253383699510651}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -864,7 +851,7 @@ GameObject:
   - component: {fileID: 2950253383699510651}
   - component: {fileID: 6456338243104194804}
   m_Layer: 0
-  m_Name: PathParent
+  m_Name: WallPath
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
