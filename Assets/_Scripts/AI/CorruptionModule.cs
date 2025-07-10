@@ -11,8 +11,8 @@ namespace GravityGame
     {
         Transform _player;
         Renderer _sphereRenderer;
-        GameObject _laser;
-        GameObject _fakeLaser;
+        [SerializeField] GameObject _laser;
+        [SerializeField] GameObject _fakeLaser;
         [SerializeField] Material _broken;
         [SerializeField] Material _unprovoked;
         [SerializeField] Material _provoked;
@@ -24,8 +24,6 @@ namespace GravityGame
         void Awake()
         {
             _sphereRenderer = gameObject.transform.GetComponent<Renderer>();
-            _laser = gameObject.transform.GetChild(3).gameObject;
-            _fakeLaser = gameObject.transform.GetChild(4).gameObject;
             _player = GameObject.FindWithTag("Player").transform;
             ResetTimer();
         }
@@ -85,7 +83,7 @@ namespace GravityGame
 
         void Shoot(float delay)
         {
-            Vector3 playerHead = _player.position + new Vector3(0, 1f, 0);
+            Vector3 playerHead = _player.position + _player.transform.up;
             transform.LookAt(playerHead);
             if (_timer.ElapsedMilliseconds / 1000f > delay) {
                 _laser.SetActive(true);
