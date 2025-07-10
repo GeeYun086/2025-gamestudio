@@ -19,6 +19,7 @@ namespace GravityGame.Puzzle_Elements
 
         [SerializeField] float _speed = 5f;
         [SerializeField] Behavior _behavior;
+        [SerializeField] float _waitTimeBeforeLoop;
 
         const float ReachThreshold = 0.01f;
 
@@ -26,6 +27,7 @@ namespace GravityGame.Puzzle_Elements
 
         bool _isPowered;
         bool _isMovingToEnd;
+        float _waitTimeCounter;
 
         void Awake()
         {
@@ -56,7 +58,13 @@ namespace GravityGame.Puzzle_Elements
                 _rigidbody.MovePosition(destination);
                 _rigidbody.MoveRotation(_isMovingToEnd ? endRot : startRot);
                 if (_behavior is Behavior.Looping or Behavior.WhenPoweredLooping) {
-                    SwitchDirection();
+                    if (_waitTimeCounter < _waitTimeBeforeLoop) {
+                        _waitTimeCounter += Time.fixedDeltaTime;
+                        _rigidbody.linearVelocity = Vector3.zero; // Stop moving while waiting
+                    } else {
+                        _waitTimeCounter = 0f; // Reset wait time
+                        SwitchDirection();
+                    }
                 } else {
                     _rigidbody.linearVelocity = Vector3.zero;
                 }
